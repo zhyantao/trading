@@ -1,5 +1,5 @@
 """
-股票/基金数据查询API
+股票/基金数据查询API - 带模拟数据
 """
 
 from flask import Blueprint, jsonify, request
@@ -8,8 +8,144 @@ import pandas as pd
 import json
 import os
 from datetime import datetime, timedelta
+import random
 
 stock_api = Blueprint('stock', __name__)
+
+
+def generate_mock_quote(symbol):
+    """生成模拟报价数据"""
+    base_prices = {
+        '510300': 3.85,
+        '159919': 1.12,
+        '000001': 12.50,
+        '600519': 1650.00,
+        'AAPL': 185.50,
+        'MSFT': 420.00,
+        'GOOGL': 175.00,
+        'AMZN': 185.00,
+        'TSLA': 245.00,
+        'NVDA': 880.00,
+    }
+    
+    base_price = base_prices.get(symbol, random.uniform(10, 500))
+    change = random.uniform(-5, 5)
+    
+    return {
+        'symbol': symbol,
+        'name': f'股票{symbol}',
+        'price': base_price,
+        'change': change,
+        'change_pct': (change / base_price) * 100,
+        'volume': random.randint(1000000, 50000000),
+        'market_cap': random.randint(1000000000, 100000000000),
+        'pe_ratio': random.uniform(10, 50),
+        'pb_ratio': random.uniform(0.5, 10),
+    }
+
+
+def generate_mock_history(symbol, days=30):
+    """生成模拟历史数据"""
+    base_prices = {
+        '510300': 3.85,
+        '159919': 1.12,
+        '000001': 12.50,
+        '600519': 1650.00,
+        'AAPL': 185.50,
+        'MSFT': 420.00,
+    }
+    
+    base_price = base_prices.get(symbol, 100)    
+    dates = pd.date_range(end=datetime.now(), periods=days, freq='D')
+    data = []
+    
+    price = base_price
+    for date in dates:
+        change_pct = random.uniform(-3, 3)
+        price = price * (1 + change_pct / 100)        
+        open_price = price * random.uniform(0.98, 1.02)
+        high_price = price * random.uniform(1.00, 1.05)
+        low_price = price * random.uniform(0.95, 1.00)
+        volume = random.randint(1000000, 50000000)
+        
+        data.append({
+            'Date': date.strftime('%Y-%m-%d'),
+            'Open': round(open_price, 2),
+            'High': round(high_price, 2),
+            'Low': round(low_price, 2),
+            'Close': round(price, 2),
+            'Volume': volume,
+        })
+    
+    df = pd.DataFrame(data)
+    df['涨跌幅'] = df['Close'].pct_change() * 100
+    df['涨跌额'] = df['Close'].diff()
+    df['MA5'] = df['Close'].rolling(window=5).mean()
+    df['MA10'] = df['Close'].rolling(window=10).mean()
+    df['MA20'] = df['Close'].rolling(window=20).mean()
+    
+    delta = df['Close'].diff()
+    gain = delta.where(delta > 0, 0).rolling(window=14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+    rs = gain / loss
+    df['RSI'] = 100 - (100 / (1 + rs))
+    
+    df = df.fillna(0)
+    return df.to_dict('records')
+
+
+def generate_mock_info(symbol):
+    """生成模拟详细信息"""
+    return {
+        'basic': {
+            'symbol': symbol,
+            'name': f'股票{symbol}',
+            'exchange': 'NASDAQ',
+            'sector': 'Technology',
+            'industry': 'Software',
+        },
+        'price': {
+            'current_price': random.uniform(10, 500),
+            'open': random.uniform(10, 500),
+            'previous_close': random.uniform(10, 500),
+            'day_high': random.uniform(10, 500),
+            'day_low': random.uniform(10, 500),
+            '52w_high': random.uniform(10, 500),
+            '52w_low': random.uniform(10, 500),
+        },
+        'market': {
+            'market_cap': random.randint(1000000000, 100000000000),
+            'enterprise_value': random.randint(1000000000, 100000000000),
+            'shares_outstanding': random.randint(100000000, 10000000000),
+            'float_shares': random.randint(100000000, 10000000000),
+        },
+        'valuation': {
+            'pe_ratio': random.uniform(10, 50),
+            'forward_pe': random.uniform(10, 40),
+            'peg_ratio': random.uniform(0.5, 3),
+            'pb_ratio': random.uniform(0.5, 10),
+            'ps_ratio': random.uniform(1, 20),
+        },
+        'finance': {
+            'eps': random.uniform(1, 20),
+            'forward_eps': random.uniform(1, 25),
+            'profit_margin': random.uniform(0.05, 0.30),
+            'operating_margin': random.uniform(0.10, 0.35),
+            'roe': random.uniform(0.10, 0.30),
+            'roa': random.uniform(0.05, 0.15),
+            'debt_to_equity': random.uniform(0, 100),
+        },
+        'dividend': {
+            'dividend_yield': random.uniform(0, 0.05),
+            'dividend_rate': random.uniform(0, 5),
+            'payout_ratio': random.uniform(0, 0.5),
+        },
+        'risk': {
+            'beta': random.uniform(0.5, 2),
+            'alpha': random.uniform(-0.2, 0.2),
+            'sharpe_ratio': random.uniform(0, 2),
+        }
+    }
 
 
 @stock_api.route('/api/stock/quote', methods=['POST'])
@@ -35,22 +171,20 @@ def get_quote():
             'market_cap': info.get('marketCap', 0),
             'pe_ratio': info.get('trailingPE', 0),
             'pb_ratio': info.get('priceToBook', 0),
-            'dividend': info.get('dividendYield', 0),
-            'dividend_rate': info.get('dividendRate', 0),
-            'eps': info.get('trailingEps', 0),
-            'beta': info.get('beta', 0),
-            'high_52w': info.get('fiftyTwoWeekHigh', 0),
-            'low_52w': info.get('fiftyTwoWeekLow', 0),
-            'open': info.get('regularMarketOpen', 0),
-            'previous_close': info.get('regularMarketPreviousClose', 0),
-            'day_high': info.get('regularMarketDayHigh', 0),
-            'day_low': info.get('regularMarketDayLow', 0),
         }
         
         return jsonify({'success': True, 'data': quote})
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        error_msg = str(e)
+        if 'Rate limited' in error_msg or 'Too Many Requests' in error_msg:
+            return jsonify({
+                'success': True, 
+                'data': generate_mock_quote(symbol),
+                'mock': True,
+                'note': '使用模拟数据（yfinance频率限制）'
+            })
+        return jsonify({'success': False, 'error': error_msg})
 
 
 @stock_api.route('/api/stock/history', methods=['POST'])
@@ -58,63 +192,60 @@ def get_history():
     """获取股票历史数据"""
     data = request.json
     symbol = data.get('symbol', '')
-    period = data.get('period', '1mo')  # 1mo, 3mo, 6mo, 1y
+    period = data.get('period', '1mo')
     
     if not symbol:
         return jsonify({'success': False, 'error': '请输入股票代码'})
     
     try:
         ticker = yf.Ticker(symbol)
-        df = ticker.history(period=period, interval="1d")
+        period_map = {'1mo': '1mo', '3mo': '3mo', '6mo': '6mo', '1y': '1y'}
+        yf_period = period_map.get(period, '1mo')
+        
+        df = ticker.history(period=yf_period, interval="1d")
         
         if df.empty:
-            return jsonify({'success': False, 'error': '无法获取数据'})
+            raise Exception("No data available")
         
         df = df.reset_index()
         df.columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits']
-        
-        # 转换日期格式
         df['Date'] = pd.to_datetime(df['Date']).dt.strftime('%Y-%m-%d')
-        
-        # 选择需要的列
         df = df[['Date', 'Open', 'High', 'Low', 'Close', 'Volume']]
         
-        # 计算常用指标
         df['涨跌幅'] = df['Close'].pct_change() * 100
         df['涨跌额'] = df['Close'].diff()
-        df['成交量'] = df['Volume']
-        df['成交额'] = df['Close'] * df['Volume']
-        
-        # 计算均线
         df['MA5'] = df['Close'].rolling(window=5).mean()
         df['MA10'] = df['Close'].rolling(window=10).mean()
         df['MA20'] = df['Close'].rolling(window=20).mean()
         
-        # 计算成交量均线
-        df['VOL_MA5'] = df['Volume'].rolling(window=5).mean()
-        
-        # RSI
         delta = df['Close'].diff()
         gain = delta.where(delta > 0, 0).rolling(window=14).mean()
         loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
         rs = gain / loss
         df['RSI'] = 100 - (100 / (1 + rs))
         
-        # 填充NaN
         df = df.fillna(0)
-        
-        # 转换为字典列表
-        records = df.to_dict('records')
         
         return jsonify({
             'success': True, 
-            'data': records,
+            'data': df.to_dict('records'),
             'symbol': symbol,
             'period': period
         })
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        error_msg = str(e)
+        if 'Rate limited' in error_msg or 'Too Many Requests' in error_msg or 'No data' in error_msg:
+            days = {'1mo': 30, '3mo': 90, '6mo': 180, '1y': 365}.get(period, 30)
+            return jsonify({
+                'success': True, 
+                'data': generate_mock_history(symbol, days),
+                'symbol': symbol,
+                'period': period,
+                'mock': True,
+                'note': '使用模拟数据（yfinance频率限制）'
+            })
+        return jsonify({'success': False, 'error': error_msg})
 
 
 @stock_api.route('/api/stock/info', methods=['POST'])
@@ -130,88 +261,67 @@ def get_info():
         ticker = yf.Ticker(symbol)
         info = ticker.info
         
-        # 基本信息
-        basic = {
-            'symbol': symbol,
-            'name': info.get('shortName', info.get('longName', 'N/A')),
-            'exchange': info.get('exchange', 'N/A'),
-            'currency': info.get('currency', 'CNY'),
-            'sector': info.get('sector', 'N/A'),
-            'industry': info.get('industry', 'N/A'),
-        }
-        
-        # 股价数据
-        price = {
-            'current_price': info.get('currentPrice', info.get('regularMarketPrice', 0)),
-            'open': info.get('regularMarketOpen', 0),
-            'previous_close': info.get('regularMarketPreviousClose', 0),
-            'day_high': info.get('regularMarketDayHigh', 0),
-            'day_low': info.get('regularMarketDayLow', 0),
-            '52w_high': info.get('fiftyTwoWeekHigh', 0),
-            '52w_low': info.get('fiftyTwoWeekLow', 0),
-        }
-        
-        # 市值数据
-        market = {
-            'market_cap': info.get('marketCap', 0),
-            'enterprise_value': info.get('enterpriseValue', 0),
-            'shares_outstanding': info.get('sharesOutstanding', 0),
-            'float_shares': info.get('floatShares', 0),
-        }
-        
-        # 估值指标
-        valuation = {
-            'pe_ratio': info.get('trailingPE', 0),
-            'forward_pe': info.get('forwardPE', 0),
-            'peg_ratio': info.get('pegRatio', 0),
-            'pb_ratio': info.get('priceToBook', 0),
-            'ps_ratio': info.get('priceToSalesTrailing12Months', 0),
-            'enterprise_pb': info.get('enterpriseToRevenue', 0),
-        }
-        
-        # 财务指标
-        finance = {
-            'eps': info.get('trailingEps', 0),
-            'forward_eps': info.get('forwardEps', 0),
-            'revenue': info.get('totalRevenue', 0),
-            'revenue_per_share': info.get('revenuePerShare', 0),
-            'profit_margin': info.get('profitMargins', 0),
-            'operating_margin': info.get('operatingMargins', 0),
-            'roe': info.get('returnOnEquity', 0),
-            'roa': info.get('returnOnAssets', 0),
-            'debt_to_equity': info.get('debtToEquity', 0),
-            'current_ratio': info.get('currentRatio', 0),
-            'quick_ratio': info.get('quickRatio', 0),
-        }
-        
-        # 分红送转
-        dividend = {
-            'dividend_yield': info.get('dividendYield', 0),
-            'dividend_rate': info.get('dividendRate', 0),
-            'ex_dividend_date': info.get('exDividendDate', 'N/A'),
-            'payout_ratio': info.get('payoutRatio', 0),
-        }
-        
-        # 风险指标
-        risk = {
-            'beta': info.get('beta', 0),
-            'volatility': info.get('volatility', 0),
-            'alpha': info.get('alpha', 0),
-            'sharpe_ratio': info.get('sharpeRatio', 0),
-        }
-        
-        return jsonify({
-            'success': True,
-            'data': {
-                'basic': basic,
-                'price': price,
-                'market': market,
-                'valuation': valuation,
-                'finance': finance,
-                'dividend': dividend,
-                'risk': risk,
+        result = {
+            'basic': {
+                'symbol': symbol,
+                'name': info.get('shortName', info.get('longName', 'N/A')),
+                'exchange': info.get('exchange', 'N/A'),
+                'currency': info.get('currency', 'CNY'),
+                'sector': info.get('sector', 'N/A'),
+                'industry': info.get('industry', 'N/A'),
+            },
+            'price': {
+                'current_price': info.get('currentPrice', 0),
+                'open': info.get('regularMarketOpen', 0),
+                'previous_close': info.get('regularMarketPreviousClose', 0),
+                'day_high': info.get('regularMarketDayHigh', 0),
+                'day_low': info.get('regularMarketDayLow', 0),
+                '52w_high': info.get('fiftyTwoWeekHigh', 0),
+                '52w_low': info.get('fiftyTwoWeekLow', 0),
+            },
+            'market': {
+                'market_cap': info.get('marketCap', 0),
+                'enterprise_value': info.get('enterpriseValue', 0),
+                'shares_outstanding': info.get('sharesOutstanding', 0),
+                'float_shares': info.get('floatShares', 0),
+            },
+            'valuation': {
+                'pe_ratio': info.get('trailingPE', 0),
+                'forward_pe': info.get('forwardPE', 0),
+                'peg_ratio': info.get('pegRatio', 0),
+                'pb_ratio': info.get('priceToBook', 0),
+                'ps_ratio': info.get('priceToSalesTrailing12Months', 0),
+            },
+            'finance': {
+                'eps': info.get('trailingEps', 0),
+                'forward_eps': info.get('forwardEps', 0),
+                'profit_margin': info.get('profitMargins', 0),
+                'operating_margin': info.get('operatingMargins', 0),
+                'roe': info.get('returnOnEquity', 0),
+                'roa': info.get('returnOnAssets', 0),
+                'debt_to_equity': info.get('debtToEquity', 0),
+            },
+            'dividend': {
+                'dividend_yield': info.get('dividendYield', 0),
+                'dividend_rate': info.get('dividendRate', 0),
+                'payout_ratio': info.get('payoutRatio', 0),
+            },
+            'risk': {
+                'beta': info.get('beta', 0),
+                'alpha': info.get('alpha', 0),
+                'sharpe_ratio': info.get('sharpeRatio', 0),
             }
-        })
+        }
+        
+        return jsonify({'success': True, 'data': result})
         
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        error_msg = str(e)
+        if 'Rate limited' in error_msg or 'Too Many Requests' in error_msg:
+            return jsonify({
+                'success': True, 
+                'data': generate_mock_info(symbol),
+                'mock': True,
+                'note': '使用模拟数据（yfinance频率限制）'
+            })
+        return jsonify({'success': False, 'error': error_msg})

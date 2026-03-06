@@ -171,12 +171,9 @@ export default function Home() {
           >
             📊 技术分析
           </button>
-          <button
-            onClick={() => setPage('stock')}
-            style={{ padding: '16px 0', border: 'none', background: 'none', cursor: 'pointer', borderBottom: page === 'stock' ? '2px solid #2563eb' : '2px solid transparent', color: page === 'stock' ? '#2563eb' : '#6b7280', fontWeight: 500 }}
-          >
+          <a href="/stock" style={{ padding: '16px 0', border: 'none', background: 'none', cursor: 'pointer', borderBottom: page === 'stock' ? '2px solid #2563eb' : '2px solid transparent', color: page === 'stock' ? '#2563eb' : '#6b7280', fontWeight: 500, textDecoration: 'none', display: 'inline-block' }}>
             📈 数据查询
-          </button>
+          </a>
           <button
             onClick={() => setPage('simulation')}
             style={{ padding: '16px 0', border: 'none', background: 'none', cursor: 'pointer', borderBottom: page === 'simulation' ? '2px solid #2563eb' : '2px solid transparent', color: page === 'simulation' ? '#2563eb' : '#6b7280', fontWeight: 500 }}
