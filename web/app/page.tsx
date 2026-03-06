@@ -52,6 +52,7 @@ export default function Home() {
 
   // 股票查询相关状态
   const [stockSymbol, setStockSymbol] = useState('');
+  const [stockSource, setStockSource] = useState('yfinance');
   const [stockLoading, setStockLoading] = useState(false);
   const [stockLogs, setStockLogs] = useState<LogEntry[]>([]);
   const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
@@ -100,7 +101,7 @@ export default function Home() {
     
     setStockLoading(true);
     clearStockLogs();
-    addStockLog(`开始查询股票: ${stockSymbol}`, 'info');
+    addStockLog(`开始查询股票: ${stockSymbol} (数据源: ${stockSource})`, 'info');
     setStockInfo(null);
     setStockHistory([]);
     setStockDetail(null);
@@ -110,48 +111,54 @@ export default function Home() {
       const quoteRes = await fetch('http://localhost:5001/api/stock/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: stockSymbol }),
+        body: JSON.stringify({ symbol: stockSymbol, source: stockSource }),
       });
       const quoteData = await quoteRes.json();
       
       if (quoteData.success) {
         setStockInfo(quoteData.data);
-        const mockNote = quoteData.mock ? ' (模拟数据)' : '';
-        addStockLog(`✓ 实时报价获取成功: $${quoteData.data.price?.toFixed(2)}${mockNote}`, 'success');
+        addStockLog(`✓ 实时报价获取成功: $${quoteData.data.price?.toFixed(2)}`, 'success');
       } else {
-        addStockLog(`✗ 实时报价获取失败: ${quoteData.error}`, 'error');
+        addStockLog(`✗ 实时报价失败: ${quoteData.error}`, 'error');
+        if (quoteData.suggestion) {
+          addStockLog(`💡 建议: ${quoteData.suggestion}`, 'info');
+        }
       }
 
       addStockLog('正在获取历史行情数据...', 'loading');
       const historyRes = await fetch('http://localhost:5001/api/stock/history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: stockSymbol, period: '1mo' }),
+        body: JSON.stringify({ symbol: stockSymbol, period: '1mo', source: stockSource }),
       });
       const historyData = await historyRes.json();
       
       if (historyData.success) {
         setStockHistory(historyData.data);
-        const mockNote = historyData.mock ? ' (模拟数据)' : '';
-        addStockLog(`✓ 历史数据获取成功: ${historyData.data.length} 条记录${mockNote}`, 'success');
+        addStockLog(`✓ 历史数据获取成功: ${historyData.data.length} 条记录`, 'success');
       } else {
-        addStockLog(`✗ 历史数据获取失败: ${historyData.error}`, 'error');
+        addStockLog(`✗ 历史数据失败: ${historyData.error}`, 'error');
+        if (historyData.suggestion) {
+          addStockLog(`💡 建议: ${historyData.suggestion}`, 'info');
+        }
       }
 
       addStockLog('正在获取详细信息...', 'loading');
       const infoRes = await fetch('http://localhost:5001/api/stock/info', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: stockSymbol }),
+        body: JSON.stringify({ symbol: stockSymbol, source: stockSource }),
       });
       const infoData = await infoRes.json();
       
       if (infoData.success) {
         setStockDetail(infoData.data);
-        const mockNote = infoData.mock ? ' (模拟数据)' : '';
-        addStockLog(`✓ 详细信息获取成功${mockNote}`, 'success');
+        addStockLog(`✓ 详细信息获取成功`, 'success');
       } else {
-        addStockLog(`✗ 详细信息获取失败: ${infoData.error}`, 'error');
+        addStockLog(`✗ 详细信息失败: ${infoData.error}`, 'error');
+        if (infoData.suggestion) {
+          addStockLog(`💡 建议: ${infoData.suggestion}`, 'info');
+        }
       }
 
       addStockLog('查询完成', 'info');
@@ -423,7 +430,16 @@ export default function Home() {
           <>
             {/* 搜索框 */}
             <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', marginBottom: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                <select
+                  value={stockSource}
+                  onChange={(e) => setStockSource(e.target.value)}
+                  style={{ padding: '12px 16px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px', backgroundColor: 'white', minWidth: '140px' }}
+                >
+                  <option value="yfinance">Yahoo Finance</option>
+                  <option value="tushare" disabled>tushare (暂不支持)</option>
+                  <option value="akshare" disabled>akshare (暂不支持)</option>
+                </select>
                 <input
                   type="text"
                   value={stockSymbol}
@@ -442,7 +458,7 @@ export default function Home() {
               </div>
               
               {/* 快捷选择 */}
-              <div style={{ marginTop: '12px' }}>
+              <div style={{ marginTop: '8px' }}>
                 <span style={{ fontSize: '14px', color: '#6b7280', marginRight: '12px' }}>快速选择:</span>
                 {[{ code: '510300', name: '沪深300ETF' }, { code: '159919', name: '券商ETF' }, { code: '000001', name: '平安银行' }, { code: '600519', name: '贵州茅台' }, { code: 'AAPL', name: '苹果' }, { code: 'MSFT', name: '微软' }].map((s) => (
                   <button
