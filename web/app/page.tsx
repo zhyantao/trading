@@ -47,8 +47,8 @@ const DEFAULT_SYMBOLS = [
 ];
 
 export default function Home() {
-  // 页面状态: analyze, simulation, stock
-  const [page, setPage] = useState<'analyze' | 'simulation' | 'stock'>('analyze');
+  // 页面状态: stock, analyze, simulation
+  const [page, setPage] = useState<'stock' | 'analyze' | 'simulation'>('stock');
 
   // 股票查询相关状态
   const [stockSymbol, setStockSymbol] = useState('');
@@ -292,16 +292,16 @@ export default function Home() {
       <nav style={{ backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '0 16px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '24px' }}>
           <button
-            onClick={() => setPage('analyze')}
-            style={{ padding: '16px 0', border: 'none', background: 'none', cursor: 'pointer', borderBottom: page === 'analyze' ? '2px solid #2563eb' : '2px solid transparent', color: page === 'analyze' ? '#2563eb' : '#6b7280', fontWeight: 500 }}
-          >
-            📊 技术分析
-          </button>
-          <button
             onClick={() => setPage('stock')}
             style={{ padding: '16px 0', border: 'none', background: 'none', cursor: 'pointer', borderBottom: page === 'stock' ? '2px solid #2563eb' : '2px solid transparent', color: page === 'stock' ? '#2563eb' : '#6b7280', fontWeight: 500 }}
           >
             📈 数据查询
+          </button>
+          <button
+            onClick={() => setPage('analyze')}
+            style={{ padding: '16px 0', border: 'none', background: 'none', cursor: 'pointer', borderBottom: page === 'analyze' ? '2px solid #2563eb' : '2px solid transparent', color: page === 'analyze' ? '#2563eb' : '#6b7280', fontWeight: 500 }}
+          >
+            📊 技术分析
           </button>
           <button
             onClick={() => setPage('simulation')}
@@ -503,13 +503,13 @@ export default function Home() {
                 </div>
                 <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                   <div style={{ fontSize: '14px', color: '#6b7280' }}>涨跌额</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: (stockInfo.change || 0) >= 0 ? '#16a34a' : '#dc2626' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: (stockInfo.change || 0) >= 0 ? '#dc2626' : '#16a34a' }}>
                     {stockInfo.change >= 0 ? '+' : ''}{stockInfo.change?.toFixed(2)}
                   </div>
                 </div>
                 <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
                   <div style={{ fontSize: '14px', color: '#6b7280' }}>涨跌幅</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: (stockInfo.change_pct || 0) >= 0 ? '#16a34a' : '#dc2626' }}>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: (stockInfo.change_pct || 0) >= 0 ? '#dc2626' : '#16a34a' }}>
                     {stockInfo.change_pct >= 0 ? '+' : ''}{stockInfo.change_pct?.toFixed(2)}%
                   </div>
                 </div>
@@ -544,12 +544,12 @@ export default function Home() {
                           <td style={{ padding: '10px 8px', textAlign: 'center' }}>{row.High?.toFixed(2)}</td>
                           <td style={{ padding: '10px 8px', textAlign: 'center' }}>{row.Low?.toFixed(2)}</td>
                           <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>{row.Close?.toFixed(2)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'center', color: (row.涨跌幅 || 0) >= 0 ? '#16a34a' : '#dc2626' }}>
+                          <td style={{ padding: '10px 8px', textAlign: 'center', color: (row.涨跌幅 || 0) >= 0 ? '#dc2626' : '#16a34a' }}>
                             {row.涨跌幅 >= 0 ? '+' : ''}{row.涨跌幅?.toFixed(2)}%
                           </td>
                           <td style={{ padding: '10px 8px', textAlign: 'center' }}>{formatNumber(row.Volume)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'center', color: row.Close > row.MA5 ? '#16a34a' : '#dc2626' }}>{row.MA5?.toFixed(2)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'center', color: row.Close > row.MA10 ? '#16a34a' : '#dc2626' }}>{row.MA10?.toFixed(2)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center', color: row.Close > row.MA5 ? '#dc2626' : '#16a34a' }}>{row.MA5?.toFixed(2)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center', color: row.Close > row.MA10 ? '#dc2626' : '#16a34a' }}>{row.MA10?.toFixed(2)}</td>
                           <td style={{ padding: '10px 8px', textAlign: 'center' }}>{row.RSI?.toFixed(1)}</td>
                         </tr>
                       ))
