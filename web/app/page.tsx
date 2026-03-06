@@ -434,11 +434,11 @@ export default function Home() {
                 <select
                   value={stockSource}
                   onChange={(e) => setStockSource(e.target.value)}
-                  style={{ padding: '12px 16px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px', backgroundColor: 'white', minWidth: '140px' }}
+                  style={{ padding: '12px 16px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px', backgroundColor: 'white', minWidth: '160px' }}
                 >
                   <option value="yfinance">Yahoo Finance</option>
-                  <option value="tushare" disabled>tushare (暂不支持)</option>
-                  <option value="akshare" disabled>akshare (暂不支持)</option>
+                  <option value="akshare">Akshare (A股)</option>
+                  <option value="tushare">Tushare</option>
                 </select>
                 <input
                   type="text"
@@ -523,34 +523,34 @@ export default function Home() {
                 <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse', minWidth: '600px' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#f9fafb' }}>
-                      <th style={{ padding: '12px 8px', textAlign: 'left', borderBottom: '2px solid #e5e7eb', fontWeight: 600, whiteSpace: 'nowrap' }}>日期</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>开盘</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>最高</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>最低</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>收盘</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>涨跌幅</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>成交量</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>MA5</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>MA10</th>
-                      <th style={{ padding: '12px 8px', textAlign: 'right', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>RSI</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600, whiteSpace: 'nowrap' }}>日期</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>开盘</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>最高</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>最低</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>收盘</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>涨跌幅</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>成交量</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>MA5</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>MA10</th>
+                      <th style={{ padding: '12px 8px', textAlign: 'center', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>RSI</th>
                     </tr>
                   </thead>
                   <tbody>
                     {stockHistory.length > 0 ? (
                       stockHistory.slice().reverse().map((row, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                          <td style={{ padding: '10px 8px', whiteSpace: 'nowrap' }}>{row.Date}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right' }}>{row.Open?.toFixed(2)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right' }}>{row.High?.toFixed(2)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right' }}>{row.Low?.toFixed(2)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: 500 }}>{row.Close?.toFixed(2)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right', color: (row.涨跌幅 || 0) >= 0 ? '#16a34a' : '#dc2626' }}>
+                          <td style={{ padding: '10px 8px', textAlign: 'center', whiteSpace: 'nowrap' }}>{row.Date}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center' }}>{row.Open?.toFixed(2)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center' }}>{row.High?.toFixed(2)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center' }}>{row.Low?.toFixed(2)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center', fontWeight: 500 }}>{row.Close?.toFixed(2)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center', color: (row.涨跌幅 || 0) >= 0 ? '#16a34a' : '#dc2626' }}>
                             {row.涨跌幅 >= 0 ? '+' : ''}{row.涨跌幅?.toFixed(2)}%
                           </td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right' }}>{formatNumber(row.Volume)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right', color: row.Close > row.MA5 ? '#16a34a' : '#dc2626' }}>{row.MA5?.toFixed(2)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right', color: row.Close > row.MA10 ? '#16a34a' : '#dc2626' }}>{row.MA10?.toFixed(2)}</td>
-                          <td style={{ padding: '10px 8px', textAlign: 'right' }}>{row.RSI?.toFixed(1)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center' }}>{formatNumber(row.Volume)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center', color: row.Close > row.MA5 ? '#16a34a' : '#dc2626' }}>{row.MA5?.toFixed(2)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center', color: row.Close > row.MA10 ? '#16a34a' : '#dc2626' }}>{row.MA10?.toFixed(2)}</td>
+                          <td style={{ padding: '10px 8px', textAlign: 'center' }}>{row.RSI?.toFixed(1)}</td>
                         </tr>
                       ))
                     ) : (

@@ -46,6 +46,15 @@ STOCK_NAMES = {
 }
 
 
+def get_akshare():
+    """获取akshare模块"""
+    try:
+        import akshare as ak
+        return ak
+    except ImportError:
+        return None
+
+
 @stock_api.route('/api/stock/quote', methods=['POST'])
 def get_quote():
     """获取股票/基金实时报价"""
@@ -56,13 +65,14 @@ def get_quote():
     if not symbol:
         return jsonify({'success': False, 'error': '请输入股票代码', 'source': source})
     
-    try:
-        if source == 'yfinance':
-            return get_quote_yfinance(symbol)
-        else:
-            return jsonify({'success': False, 'error': f'不支持的数据源: {source}', 'source': source})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e), 'source': source})
+    if source == 'yfinance':
+        return get_quote_yfinance(symbol)
+    elif source == 'akshare':
+        return get_quote_akshare(symbol)
+    elif source == 'tushare':
+        return jsonify({'success': False, 'error': 'tushare需要token，请在环境变量中设置TUSHARE_TOKEN，或访问 https://tushare.pro 注册获取', 'source': 'tushare'})
+    else:
+        return jsonify({'success': False, 'error': f'不支持的数据源: {source}', 'source': source})
 
 
 def get_quote_yfinance(symbol):
@@ -90,7 +100,6 @@ def get_quote_yfinance(symbol):
     except Exception as e:
         error_msg = str(e)
         
-        # 详细错误分析
         if 'Rate limited' in error_msg or 'Too Many Requests' in error_msg:
             detail = 'yfinance请求被限流 (Too Many Requests)。可能原因：短时间内请求过多，或您的IP被Yahoo Finance限制。建议：等待几分钟后重试，或使用VPN/代理。'
         elif 'No credentials' in error_msg or 'authentication' in error_msg.lower():
@@ -111,6 +120,78 @@ def get_quote_yfinance(symbol):
         })
 
 
+def get_quote_akshare(symbol):
+    """使用akshare获取A股报价"""
+    try:
+        ak = get_akshare()
+        if ak is None:
+            return jsonify({'success': False, 'error': 'akshare未安装，请运行: pip install akshare', 'source': 'akshare'})
+        
+        # 判断是A股还是ETF
+        if symbol.isdigit() and len(symbol) == 6:
+            # A股代码
+            if symbol.startswith('6'):
+                stock_type = 'sh'
+            else:
+                stock_type = 'sz'
+            full_symbol = f"{stock_type}{symbol}"
+        else:
+            full_symbol = symbol
+        
+        # 获取实时行情
+        df = ak.stock_zh_a_spot_em()
+        
+        # 查找对应股票
+        stock_info = df[df['代码'] == symbol]
+        
+        if stock_info.empty:
+            # 尝试ETF
+            try:
+                df_etf = ak.fund_etf_spot_em()
+                stock_info = df_etf[df_etf['代码'] == symbol]
+                if stock_info.empty:
+                    return jsonify({'success': False, 'error': f'未找到股票 {symbol}，请检查代码是否正确', 'source': 'akshare'})
+                row = stock_info.iloc[0]
+            except:
+                return jsonify({'success': False, 'error': f'未找到股票 {symbol}，请检查代码是否正确', 'source': 'akshare'})
+        else:
+            row = stock_info.iloc[0]
+        
+        quote = {
+            'symbol': symbol,
+            'name': row.get('名称', symbol),
+            'price': float(row.get('最新价', 0)) if pd.notna(row.get('最新价')) else 0,
+            'change': float(row.get('涨跌幅', 0)) if pd.notna(row.get('涨跌幅')) else 0,
+            'change_pct': float(row.get('涨跌幅', 0)) if pd.notna(row.get('涨跌幅')) else 0,
+            'volume': int(row.get('成交量', 0)) if pd.notna(row.get('成交量')) else 0,
+            'amount': float(row.get('成交额', 0)) if pd.notna(row.get('成交额')) else 0,
+            'open': float(row.get('今开', 0)) if pd.notna(row.get('今开')) else 0,
+            'high': float(row.get('最高', 0)) if pd.notna(row.get('最高')) else 0,
+            'low': float(row.get('最低', 0)) if pd.notna(row.get('最低')) else 0,
+            'prev_close': float(row.get('昨收', 0)) if pd.notna(row.get('昨收')) else 0,
+        }
+        
+        return jsonify({'success': True, 'data': quote, 'source': 'akshare'})
+        
+    except Exception as e:
+        error_msg = str(e)
+        
+        if 'Connection' in error_msg or 'timeout' in error_msg.lower():
+            detail = '无法连接到东方财富服务器。请检查网络连接。'
+        elif 'HTTPError' in error_msg:
+            detail = '东方财富请求失败，可能需要代理或股票代码不存在。'
+        else:
+            detail = f'akshare异常: {error_msg}'
+        
+        return jsonify({
+            'success': False, 
+            'error': detail,
+            'error_raw': error_msg,
+            'source': 'akshare',
+            'suggestion': '请检查网络连接，或使用VPN/代理'
+        })
+
+
 @stock_api.route('/api/stock/history', methods=['POST'])
 def get_history():
     """获取股票历史数据"""
@@ -122,13 +203,14 @@ def get_history():
     if not symbol:
         return jsonify({'success': False, 'error': '请输入股票代码', 'source': source})
     
-    try:
-        if source == 'yfinance':
-            return get_history_yfinance(symbol, period)
-        else:
-            return jsonify({'success': False, 'error': f'不支持的数据源: {source}', 'source': source})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e), 'source': source})
+    if source == 'yfinance':
+        return get_history_yfinance(symbol, period)
+    elif source == 'akshare':
+        return get_history_akshare(symbol, period)
+    elif source == 'tushare':
+        return jsonify({'success': False, 'error': 'tushare需要token，请在环境变量中设置TUSHARE_TOKEN', 'source': 'tushare'})
+    else:
+        return jsonify({'success': False, 'error': f'不支持的数据源: {source}', 'source': source})
 
 
 def get_history_yfinance(symbol, period):
@@ -196,6 +278,108 @@ def get_history_yfinance(symbol, period):
         })
 
 
+def get_history_akshare(symbol, period):
+    """使用akshare获取A股历史数据"""
+    try:
+        ak = get_akshare()
+        if ak is None:
+            return jsonify({'success': False, 'error': 'akshare未安装，请运行: pip install akshare', 'source': 'akshare'})
+        
+        # 判断是A股还是ETF
+        if symbol.isdigit() and len(symbol) == 6:
+            if symbol.startswith('6'):
+                stock_type = 'sh'
+                full_symbol = f"sh{symbol}"
+            else:
+                stock_type = 'sz'
+                full_symbol = f"sz{symbol}"
+        else:
+            full_symbol = symbol
+            stock_type = None
+        
+        # 获取历史K线
+        days_map = {'1mo': '30', '3mo': '90', '6mo': '180', '1y': '250', '1d': '5'}
+        days = days_map.get(period, '30')
+        
+        try:
+            df = ak.stock_zh_a_hist(symbol=symbol, period="daily", start_date=(datetime.now() - timedelta(days=int(days)+30)).strftime('%Y%m%d'), end_date=datetime.now().strftime('%Y%m%d'), adjust="qfq")
+        except Exception as e:
+            # 尝试不复权
+            try:
+                df = ak.stock_zh_a_hist(symbol=symbol, period="daily", start_date=(datetime.now() - timedelta(days=int(days)+30)).strftime('%Y%m%d'), end_date=datetime.now().strftime('%Y%m%d'), adjust="qfq")
+            except:
+                return jsonify({'success': False, 'error': f'获取历史数据失败: {str(e)}', 'source': 'akshare'})
+        
+        if df.empty:
+            return jsonify({'success': False, 'error': f'股票 {symbol} 无历史数据', 'source': 'akshare'})
+        
+        # 整理数据
+        df = df.rename(columns={
+            '日期': 'Date',
+            '开盘': 'Open',
+            '收盘': 'Close',
+            '最高': 'High',
+            '最低': 'Low',
+            '成交量': 'Volume',
+            '成交额': 'Amount',
+            '振幅': 'Amplitude',
+            '涨跌幅': '涨跌幅',
+            '涨跌额': '涨跌额',
+            '换手率': 'Turnover'
+        })
+        
+        # 转换日期格式
+        df['Date'] = pd.to_datetime(df['Date']).dt.strftime('%Y-%m-%d')
+        
+        # 计算技术指标
+        df['涨跌幅'] = pd.to_numeric(df['涨跌幅'], errors='coerce').fillna(0)
+        df['涨跌额'] = pd.to_numeric(df['涨跌额'], errors='coerce').fillna(0)
+        
+        for col in ['Open', 'High', 'Low', 'Close', 'Volume']:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+        
+        df['MA5'] = df['Close'].rolling(window=5).mean()
+        df['MA10'] = df['Close'].rolling(window=10).mean()
+        df['MA20'] = df['Close'].rolling(window=20).mean()
+        
+        delta = df['Close'].diff()
+        gain = delta.where(delta > 0, 0).rolling(window=14).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
+        rs = gain / loss
+        df['RSI'] = 100 - (100 / (1 + rs))
+        
+        df = df.fillna(0)
+        
+        # 只返回需要的列
+        result = df[['Date', 'Open', 'High', 'Low', 'Close', 'Volume', '涨跌幅', '涨跌额', 'MA5', 'MA10', 'MA20', 'RSI']].to_dict('records')
+        
+        return jsonify({
+            'success': True, 
+            'data': result,
+            'symbol': symbol,
+            'period': period,
+            'source': 'akshare'
+        })
+        
+    except Exception as e:
+        error_msg = str(e)
+        
+        if 'Connection' in error_msg or 'timeout' in error_msg.lower():
+            detail = '无法连接到东方财富服务器。请检查网络连接。'
+        elif 'HTTPError' in error_msg:
+            detail = '东方财富请求失败，可能需要代理或股票代码不存在。'
+        else:
+            detail = f'akshare异常: {error_msg}'
+        
+        return jsonify({
+            'success': False, 
+            'error': detail,
+            'error_raw': error_msg,
+            'source': 'akshare',
+            'suggestion': '请检查网络连接'
+        })
+
+
 @stock_api.route('/api/stock/info', methods=['POST'])
 def get_info():
     """获取股票详细信息"""
@@ -206,13 +390,14 @@ def get_info():
     if not symbol:
         return jsonify({'success': False, 'error': '请输入股票代码', 'source': source})
     
-    try:
-        if source == 'yfinance':
-            return get_info_yfinance(symbol)
-        else:
-            return jsonify({'success': False, 'error': f'不支持的数据源: {source}', 'source': source})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e), 'source': source})
+    if source == 'yfinance':
+        return get_info_yfinance(symbol)
+    elif source == 'akshare':
+        return get_info_akshare(symbol)
+    elif source == 'tushare':
+        return jsonify({'success': False, 'error': 'tushare需要token，请在环境变量中设置TUSHARE_TOKEN', 'source': 'tushare'})
+    else:
+        return jsonify({'success': False, 'error': f'不支持的数据源: {source}', 'source': source})
 
 
 def get_info_yfinance(symbol):
@@ -293,3 +478,60 @@ def get_info_yfinance(symbol):
             'error_raw': error_msg,
             'source': 'yfinance'
         })
+
+
+def get_info_akshare(symbol):
+    """使用akshare获取A股详细信息"""
+    try:
+        ak = get_akshare()
+        if ak is None:
+            return jsonify({'success': False, 'error': 'akshare未安装', 'source': 'akshare'})
+        
+        if not (symbol.isdigit() and len(symbol) == 6):
+            return jsonify({'success': False, 'error': 'akshare暂仅支持A股(6位数字代码)', 'source': 'akshare'})
+        
+        # 获取股票基本信息
+        try:
+            df = ak.stock_individual_info_em(symbol=symbol)
+            
+            if df is None or df.empty:
+                return jsonify({'success': False, 'error': f'未找到股票 {symbol} 的信息', 'source': 'akshare'})
+            
+            info_dict = dict(zip(df['item'], df['value']))
+            
+            result = {
+                'basic': {
+                    'symbol': symbol,
+                    'name': info_dict.get('股票简称', symbol),
+                    'exchange': '上交所' if symbol.startswith('6') else '深交所',
+                    'sector': info_dict.get('行业', 'N/A'),
+                    'industry': info_dict.get('细分行业', 'N/A'),
+                },
+                'price': {
+                    'current_price': float(info_dict.get('最新价', 0)) if info_dict.get('最新价') else 0,
+                },
+                'market': {
+                    'total_share': float(info_dict.get('总股本(万股)', 0)) * 10000 if info_dict.get('总股本(万股)') else 0,
+                    'float_share': float(info_dict.get('流通股本(万股)', 0)) * 10000 if info_dict.get('流通股本(万股)') else 0,
+                },
+                'valuation': {
+                    'pe_ratio': float(info_dict.get('市盈率-动态', 0)) if info_dict.get('市盈率-动态') else 0,
+                    'pb_ratio': float(info_dict.get('市净率', 0)) if info_dict.get('市净率') else 0,
+                },
+                'finance': {
+                    'eps': float(info_dict.get('每股收益', 0)) if info_dict.get('每股收益') else 0,
+                    'roe': float(info_dict.get('净资产收益率', 0).replace('%', '')) / 100 if info_dict.get('净资产收益率') else 0,
+                },
+                'dividend': {
+                    'dividend_yield': float(info_dict.get('股息率', 0).replace('%', '')) / 100 if info_dict.get('股息率') else 0,
+                },
+                'risk': {}
+            }
+            
+            return jsonify({'success': True, 'data': result, 'source': 'akshare'})
+            
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'获取信息失败: {str(e)}', 'source': 'akshare'})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': f'akshare异常: {str(e)}', 'source': 'akshare'})
