@@ -9,12 +9,21 @@ import json
 import os
 from datetime import datetime, timedelta
 import random
+import hashlib
 
 stock_api = Blueprint('stock', __name__)
 
+# 用股票代码生成固定的随机种子，保证相同股票数据一致
+def get_seed(symbol):
+    """根据股票代码生成随机种子"""
+    hash_obj = hashlib.md5(symbol.encode())
+    return int(hash_obj.hexdigest()[:8], 16)
+
 
 def generate_mock_quote(symbol):
-    """生成模拟报价数据"""
+    """生成模拟报价数据 - 使用固定种子保证一致性"""
+    rng = random.Random(get_seed(symbol))
+    
     base_prices = {
         '510300': 3.85,
         '159919': 1.12,
@@ -28,24 +37,26 @@ def generate_mock_quote(symbol):
         'NVDA': 880.00,
     }
     
-    base_price = base_prices.get(symbol, random.uniform(10, 500))
-    change = random.uniform(-5, 5)
+    base_price = base_prices.get(symbol, rng.uniform(10, 500))
+    change = rng.uniform(-5, 5)
     
     return {
         'symbol': symbol,
-        'name': f'股票{symbol}',
-        'price': base_price,
-        'change': change,
-        'change_pct': (change / base_price) * 100,
-        'volume': random.randint(1000000, 50000000),
-        'market_cap': random.randint(1000000000, 100000000000),
-        'pe_ratio': random.uniform(10, 50),
-        'pb_ratio': random.uniform(0.5, 10),
+        'name': f'{symbol}',
+        'price': round(base_price, 2),
+        'change': round(change, 2),
+        'change_pct': round((change / base_price) * 100, 2),
+        'volume': rng.randint(1000000, 50000000),
+        'market_cap': rng.randint(1000000000, 100000000000),
+        'pe_ratio': round(rng.uniform(10, 50), 2),
+        'pb_ratio': round(rng.uniform(0.5, 10), 2),
     }
 
 
 def generate_mock_history(symbol, days=30):
-    """生成模拟历史数据"""
+    """生成模拟历史数据 - 使用固定种子保证一致性"""
+    rng = random.Random(get_seed(symbol))
+    
     base_prices = {
         '510300': 3.85,
         '159919': 1.12,
@@ -55,18 +66,20 @@ def generate_mock_history(symbol, days=30):
         'MSFT': 420.00,
     }
     
-    base_price = base_prices.get(symbol, 100)    
+    base_price = base_prices.get(symbol, 100)
+    
     dates = pd.date_range(end=datetime.now(), periods=days, freq='D')
     data = []
     
     price = base_price
     for date in dates:
-        change_pct = random.uniform(-3, 3)
-        price = price * (1 + change_pct / 100)        
-        open_price = price * random.uniform(0.98, 1.02)
-        high_price = price * random.uniform(1.00, 1.05)
-        low_price = price * random.uniform(0.95, 1.00)
-        volume = random.randint(1000000, 50000000)
+        change_pct = rng.uniform(-3, 3)
+        price = price * (1 + change_pct / 100)
+        
+        open_price = price * rng.uniform(0.98, 1.02)
+        high_price = price * rng.uniform(1.00, 1.05)
+        low_price = price * rng.uniform(0.95, 1.00)
+        volume = rng.randint(1000000, 50000000)
         
         data.append({
             'Date': date.strftime('%Y-%m-%d'),
@@ -95,55 +108,57 @@ def generate_mock_history(symbol, days=30):
 
 
 def generate_mock_info(symbol):
-    """生成模拟详细信息"""
+    """生成模拟详细信息 - 使用固定种子保证一致性"""
+    rng = random.Random(get_seed(symbol))
+    
     return {
         'basic': {
             'symbol': symbol,
-            'name': f'股票{symbol}',
+            'name': f'{symbol}',
             'exchange': 'NASDAQ',
             'sector': 'Technology',
             'industry': 'Software',
         },
         'price': {
-            'current_price': random.uniform(10, 500),
-            'open': random.uniform(10, 500),
-            'previous_close': random.uniform(10, 500),
-            'day_high': random.uniform(10, 500),
-            'day_low': random.uniform(10, 500),
-            '52w_high': random.uniform(10, 500),
-            '52w_low': random.uniform(10, 500),
+            'current_price': round(rng.uniform(10, 500), 2),
+            'open': round(rng.uniform(10, 500), 2),
+            'previous_close': round(rng.uniform(10, 500), 2),
+            'day_high': round(rng.uniform(10, 500), 2),
+            'day_low': round(rng.uniform(10, 500), 2),
+            '52w_high': round(rng.uniform(10, 500), 2),
+            '52w_low': round(rng.uniform(10, 500), 2),
         },
         'market': {
-            'market_cap': random.randint(1000000000, 100000000000),
-            'enterprise_value': random.randint(1000000000, 100000000000),
-            'shares_outstanding': random.randint(100000000, 10000000000),
-            'float_shares': random.randint(100000000, 10000000000),
+            'market_cap': rng.randint(1000000000, 100000000000),
+            'enterprise_value': rng.randint(1000000000, 100000000000),
+            'shares_outstanding': rng.randint(100000000, 10000000000),
+            'float_shares': rng.randint(100000000, 10000000000),
         },
         'valuation': {
-            'pe_ratio': random.uniform(10, 50),
-            'forward_pe': random.uniform(10, 40),
-            'peg_ratio': random.uniform(0.5, 3),
-            'pb_ratio': random.uniform(0.5, 10),
-            'ps_ratio': random.uniform(1, 20),
+            'pe_ratio': round(rng.uniform(10, 50), 2),
+            'forward_pe': round(rng.uniform(10, 40), 2),
+            'peg_ratio': round(rng.uniform(0.5, 3), 2),
+            'pb_ratio': round(rng.uniform(0.5, 10), 2),
+            'ps_ratio': round(rng.uniform(1, 20), 2),
         },
         'finance': {
-            'eps': random.uniform(1, 20),
-            'forward_eps': random.uniform(1, 25),
-            'profit_margin': random.uniform(0.05, 0.30),
-            'operating_margin': random.uniform(0.10, 0.35),
-            'roe': random.uniform(0.10, 0.30),
-            'roa': random.uniform(0.05, 0.15),
-            'debt_to_equity': random.uniform(0, 100),
+            'eps': round(rng.uniform(1, 20), 2),
+            'forward_eps': round(rng.uniform(1, 25), 2),
+            'profit_margin': round(rng.uniform(0.05, 0.30), 4),
+            'operating_margin': round(rng.uniform(0.10, 0.35), 4),
+            'roe': round(rng.uniform(0.10, 0.30), 4),
+            'roa': round(rng.uniform(0.05, 0.15), 4),
+            'debt_to_equity': round(rng.uniform(0, 100), 2),
         },
         'dividend': {
-            'dividend_yield': random.uniform(0, 0.05),
-            'dividend_rate': random.uniform(0, 5),
-            'payout_ratio': random.uniform(0, 0.5),
+            'dividend_yield': round(rng.uniform(0, 0.05), 4),
+            'dividend_rate': round(rng.uniform(0, 5), 2),
+            'payout_ratio': round(rng.uniform(0, 0.5), 4),
         },
         'risk': {
-            'beta': random.uniform(0.5, 2),
-            'alpha': random.uniform(-0.2, 0.2),
-            'sharpe_ratio': random.uniform(0, 2),
+            'beta': round(rng.uniform(0.5, 2), 2),
+            'alpha': round(rng.uniform(-0.2, 0.2), 4),
+            'sharpe_ratio': round(rng.uniform(0, 2), 2),
         }
     }
 
