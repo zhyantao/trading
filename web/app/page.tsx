@@ -65,18 +65,18 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/symbols')
+    fetch('http://localhost:5001/api/symbols')
       .then(res => res.json())
       .then(data => { if (data.success) setSymbols(data.data); });
     
-    fetch('http://localhost:5000/api/params')
+    fetch('http://localhost:5001/api/params')
       .then(res => res.json())
       .then(data => setParams(data));
   }, []);
 
   const handleAnalyze = useCallback(() => {
     setLoading(true);
-    fetch('http://localhost:5000/api/analyze', {
+    fetch('http://localhost:5001/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ symbol: selectedSymbol }),
@@ -92,7 +92,7 @@ export default function Home() {
   }, [selectedSymbol]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/trades')
+    fetch('http://localhost:5001/api/trades')
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -103,7 +103,7 @@ export default function Home() {
   }, []);
 
   const handleSaveParams = () => {
-    fetch('http://localhost:5000/api/params', {
+    fetch('http://localhost:5001/api/params', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params),
@@ -115,7 +115,7 @@ export default function Home() {
 
   const handleAddTrade = (action: string) => {
     if (!signal) return;
-    fetch('http://localhost:5000/api/trades', {
+    fetch('http://localhost:5001/api/trades', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -126,7 +126,7 @@ export default function Home() {
         reasons: signal.reasons,
       }),
     }).then(() => {
-      fetch('http://localhost:5000/api/trades')
+      fetch('http://localhost:5001/api/trades')
         .then(res => res.json())
         .then(data => {
           if (data.success) {

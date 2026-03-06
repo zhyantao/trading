@@ -19,6 +19,10 @@ os.makedirs(DATA_DIR, exist_ok=True)
 from technical_analyzer import TechnicalAnalyzer
 from trading_strategy import TradingLogger, TradingStrategy, TradingSignal
 
+# 注册模拟交易API
+from simulation_api import sim_api
+app.register_blueprint(sim_api)
+
 # 全局实例
 analyzer = None
 logger = TradingLogger(log_file=os.path.join(DATA_DIR, 'trading_log.json'))
@@ -173,4 +177,4 @@ def get_symbols():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
