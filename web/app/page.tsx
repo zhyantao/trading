@@ -47,7 +47,8 @@ const DEFAULT_SYMBOLS = [
 ];
 
 export default function Home() {
-  const [page, setPage] = useState<'analyze' | 'simulation'>('analyze');
+  // 页面状态: analyze, simulation, stock
+  const [page, setPage] = useState<'analyze' | 'simulation' | 'stock'>('stock');
   const [symbols, setSymbols] = useState<Symbol[]>(DEFAULT_SYMBOLS);
   const [selectedSymbol, setSelectedSymbol] = useState('sh000001');
   const [signal, setSignal] = useState<any>(null);
@@ -169,6 +170,12 @@ export default function Home() {
             style={{ padding: '16px 0', border: 'none', background: 'none', cursor: 'pointer', borderBottom: page === 'analyze' ? '2px solid #2563eb' : '2px solid transparent', color: page === 'analyze' ? '#2563eb' : '#6b7280', fontWeight: 500 }}
           >
             📊 技术分析
+          </button>
+          <button
+            onClick={() => setPage('stock')}
+            style={{ padding: '16px 0', border: 'none', background: 'none', cursor: 'pointer', borderBottom: page === 'stock' ? '2px solid #2563eb' : '2px solid transparent', color: page === 'stock' ? '#2563eb' : '#6b7280', fontWeight: 500 }}
+          >
+            📈 数据查询
           </button>
           <button
             onClick={() => setPage('simulation')}

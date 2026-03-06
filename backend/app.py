@@ -19,6 +19,10 @@ os.makedirs(DATA_DIR, exist_ok=True)
 from technical_analyzer import TechnicalAnalyzer
 from trading_strategy import TradingLogger, TradingStrategy, TradingSignal
 
+# 注册股票数据API
+from stock_api import stock_api
+app.register_blueprint(stock_api)
+
 # 注册模拟交易API
 from simulation_api import sim_api
 app.register_blueprint(sim_api)
