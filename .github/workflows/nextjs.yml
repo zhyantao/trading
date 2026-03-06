@@ -27,24 +27,17 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: |
-          cd web
-          npm ci
-
-      - name: Install dependencies
-        run: |
-          cd web
-          npm ci
+        working-directory: ./web
+        run: npm ci
 
       - name: Build
-        run: |
-          cd web
-          npm run build
+        working-directory: ./web
+        run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: web/out
+          path: ./web/out
 
   deploy:
     needs: build
