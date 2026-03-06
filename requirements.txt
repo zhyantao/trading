@@ -1,29 +1,41 @@
-# wxPython # use dev/wxPython-4.2.0-cp38-cp38-linux_x86_64.whl
-pandas
-matplotlib
-backtrader
-git+https://github.com/quantopian/pyfolio
-backtrader_plotting
-scipy
-statsmodels
-quantstats
-requests
-loguru
-binance-connector
-# ta-lib   # use dev/TA_Lib-0.4.28-cp38-cp38-linux_x86_64.whl
-numpy
-pillow
-pykalman
-# tables
-IPython
-scikit-learn
-empyrical
-jupyter
-# gym[all]
-pyglet==1.5.0
-tensorboard
-tensortrade
-yfinance
-efinance
-akshare
-pandas_datareader
+# 量化交易系统依赖
+
+# 数据获取
+akshare>=1.12.0
+yfinance>=0.2.0
+efinance>=0.5.0
+pandas-datareader>=0.10.0
+
+# 数据处理
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Web 框架
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# 可选: 回测框架
+# backtrader>=1.9.78
+# pybacktrader_plotting>=1.1.0
+
+# 科学计算
+scipy>=1.10.0
+statsmodels>=0.14.0
+scikit-learn>=1.3.0
+
+# 可视化
+matplotlib>=3.7.0
+seaborn>=0.12.0
+plotly>=5.18.0
+
+# 报告
+quantstats>=0.0.38
+
+# 日志
+loguru>=0.7.0
+
+# API
+requests>=2.31.0
+
+# 加密货币 (可选)
+# binance-connector>=1.0.0
