@@ -71,7 +71,7 @@ export default function StockPage() {
       addLog('请输入股票代码', 'error');
       return;
     }
-    
+
     setLoading(true);
     clearLogs();
     addLog(`开始查询股票: ${symbol}`, 'info');
@@ -88,7 +88,7 @@ export default function StockPage() {
         body: JSON.stringify({ symbol }),
       });
       const quoteData = await quoteRes.json();
-      
+
       if (quoteData.success) {
         setStockInfo(quoteData.data);
         addLog(`✓ 实时报价获取成功: $${quoteData.data.price?.toFixed(2)}`, 'success');
@@ -104,7 +104,7 @@ export default function StockPage() {
         body: JSON.stringify({ symbol, period: '1mo' }),
       });
       const historyData = await historyRes.json();
-      
+
       if (historyData.success) {
         setHistory(historyData.data);
         addLog(`✓ 历史数据获取成功: ${historyData.data.length} 条记录`, 'success');
@@ -114,13 +114,13 @@ export default function StockPage() {
 
       // 获取详细信息
       addLog('正在获取详细信息...', 'loading');
-      const infoRes = await fetch('http://localhost:5001/api/stock/info', {
+      const infoRes = await fetch('http://localhost:5001/api/stock/overview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbol }),
       });
       const infoData = await infoRes.json();
-      
+
       if (infoData.success) {
         setStockDetail(infoData.data);
         addLog(`✓ 详细信息获取成功`, 'success');
@@ -182,7 +182,7 @@ export default function StockPage() {
               {loading ? '查询中...' : '🔍 查询'}
             </button>
           </div>
-          
+
           {/* 快捷选择 */}
           <div style={{ marginTop: '12px' }}>
             <span style={{ fontSize: '14px', color: '#6b7280', marginRight: '12px' }}>快速选择:</span>

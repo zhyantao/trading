@@ -106,11 +106,10 @@ def analyze():
         params = load_params()
         analyzer_obj = TechnicalAnalyzer(params)
         
-        df = analyzer_obj.get_stock_data(symbol, days)
+        # 获取并计算历史数据与技术指标
+        df = analyzer_obj.calculate_all(symbol, days=days)
         if df.empty:
             return jsonify({'success': False, 'error': '无法获取数据'})
-        
-        df = analyzer_obj.calculate_all(symbol)
         signals = analyzer_obj.get_latest_signals(df)
         history = df.tail(60).to_dict('records')
         
@@ -120,6 +119,115 @@ def analyze():
                 'signals': signals,
                 'history': history,
                 'params': params
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@app.route('/api/auto_trade', methods=['POST'])
+def auto_trade():
+    """根据最新推理值（技术分析评分）自动给出买卖及仓位建议，并可记录到交易日志。"""
+    data = request.json or {}
+    symbol = data.get('symbol', 'sh000001')
+    days = int(data.get('days', 250))
+    capital = float(data.get('capital', 100000))  # 可用资金
+
+    # 当前持仓信息（如果有）
+    position_shares = float(data.get('position_shares', 0))
+    entry_price = float(data.get('entry_price', 0))
+
+    try:
+        # 加载参数 & 构造分析器和策略
+        params = load_params()
+        analyzer_obj = TechnicalAnalyzer(params)
+
+        df = analyzer_obj.calculate_all(symbol, days=days)
+        if df.empty:
+            return jsonify({'success': False, 'error': '无法获取数据'})
+
+        signals = analyzer_obj.get_latest_signals(df)
+        if not signals:
+            return jsonify({'success': False, 'error': '历史数据不足，无法生成信号'})
+
+        latest_price = float(signals['close'])
+
+        # 构造交易信号对象（使用 overall_score 作为推理值）
+        trade_signal = TradingSignal()
+        trade_signal.from_analysis(signals)
+
+        # 构造交易策略（会自动兼容 *_pct 参数）
+        strategy_obj = TradingStrategy(params)
+
+        decision = 'hold'
+        trade_info = None
+
+        # 无持仓 -> 判断是否买入
+        if position_shares <= 0:
+            if strategy_obj.should_buy(trade_signal, current_position=0):
+                buy_amount = strategy_obj.calculate_position_size(trade_signal, total_capital=capital)
+                buy_amount = min(buy_amount, capital)
+
+                shares = int(buy_amount / latest_price / 100) * 100
+                if shares > 0:
+                    cost = shares * latest_price
+                    decision = 'buy'
+                    trade = {
+                        'symbol': symbol,
+                        'name': data.get('name', symbol),
+                        'action': 'buy',
+                        'shares': shares,
+                        'price': latest_price,
+                        'amount': cost,
+                        'capital_before': capital,
+                        'capital_after': capital - cost,
+                        'signal_score': trade_signal.score,
+                        'recommendation': trade_signal.recommendation,
+                        'reasons': signals.get('reasons', []),
+                    }
+                    # 生成原因并记录
+                    trade['reason'] = strategy_obj.generate_trade_reason(trade_signal, 'buy')
+                    logger.add_trade(trade)
+                    trade_info = trade
+        else:
+            # 有持仓 -> 判断是否卖出
+            profit_pct = 0.0
+            if entry_price > 0:
+                profit_pct = (latest_price - entry_price) / entry_price * 100
+
+            if strategy_obj.should_sell(trade_signal, profit_pct=profit_pct):
+                revenue = position_shares * latest_price
+                profit = revenue - position_shares * entry_price if entry_price > 0 else 0.0
+
+                decision = 'sell'
+                trade = {
+                    'symbol': symbol,
+                    'name': data.get('name', symbol),
+                    'action': 'sell',
+                    'shares': position_shares,
+                    'price': latest_price,
+                    'amount': revenue,
+                    'profit': profit,
+                    'profit_pct': profit_pct,
+                    'capital_before': capital,
+                    'capital_after': capital + revenue,
+                    'signal_score': trade_signal.score,
+                    'recommendation': trade_signal.recommendation,
+                    'reasons': signals.get('reasons', []),
+                }
+                trade['reason'] = strategy_obj.generate_trade_reason(trade_signal, 'sell')
+                logger.add_trade(trade)
+                trade_info = trade
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'decision': decision,
+                'price': latest_price,
+                'signal': trade_signal.to_dict(),
+                'signals_raw': signals,
+                'trade': trade_info,
+                'params': params,
             }
         })
     except Exception as e:

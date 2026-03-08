@@ -52,7 +52,6 @@ export default function Home() {
 
   // 股票查询相关状态
   const [stockSymbol, setStockSymbol] = useState('');
-  const [stockSource, setStockSource] = useState('yfinance');
   const [stockLoading, setStockLoading] = useState(false);
   const [stockLogs, setStockLogs] = useState<LogEntry[]>([]);
   const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
@@ -98,10 +97,10 @@ export default function Home() {
       addStockLog('请输入股票代码', 'error');
       return;
     }
-    
+
     setStockLoading(true);
     clearStockLogs();
-    addStockLog(`开始查询股票: ${stockSymbol} (数据源: ${stockSource})`, 'info');
+    addStockLog(`开始查询股票: ${stockSymbol}`, 'info');
     setStockInfo(null);
     setStockHistory([]);
     setStockDetail(null);
@@ -111,10 +110,10 @@ export default function Home() {
       const quoteRes = await fetch('http://localhost:5001/api/stock/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: stockSymbol, source: stockSource }),
+        body: JSON.stringify({ symbol: stockSymbol }),
       });
       const quoteData = await quoteRes.json();
-      
+
       if (quoteData.success) {
         setStockInfo(quoteData.data);
         addStockLog(`✓ 实时报价获取成功: $${quoteData.data.price?.toFixed(2)}`, 'success');
@@ -129,10 +128,10 @@ export default function Home() {
       const historyRes = await fetch('http://localhost:5001/api/stock/history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: stockSymbol, period: '1mo', source: stockSource }),
+        body: JSON.stringify({ symbol: stockSymbol, period: '1mo' }),
       });
       const historyData = await historyRes.json();
-      
+
       if (historyData.success) {
         setStockHistory(historyData.data);
         addStockLog(`✓ 历史数据获取成功: ${historyData.data.length} 条记录`, 'success');
@@ -144,13 +143,13 @@ export default function Home() {
       }
 
       addStockLog('正在获取详细信息...', 'loading');
-      const infoRes = await fetch('http://localhost:5001/api/stock/info', {
+      const infoRes = await fetch('http://localhost:5001/api/stock/overview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: stockSymbol, source: stockSource }),
+        body: JSON.stringify({ symbol: stockSymbol }),
       });
       const infoData = await infoRes.json();
-      
+
       if (infoData.success) {
         setStockDetail(infoData.data);
         addStockLog(`✓ 详细信息获取成功`, 'success');
@@ -431,15 +430,6 @@ export default function Home() {
             {/* 搜索框 */}
             <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '20px', marginBottom: '24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
               <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' }}>
-                <select
-                  value={stockSource}
-                  onChange={(e) => setStockSource(e.target.value)}
-                  style={{ padding: '12px 16px', border: '1px solid #d1d5db', borderRadius: '6px', fontSize: '16px', backgroundColor: 'white', minWidth: '160px' }}
-                >
-                  <option value="yfinance">Yahoo Finance</option>
-                  <option value="akshare">Akshare (A股)</option>
-                  <option value="tushare">Tushare</option>
-                </select>
                 <input
                   type="text"
                   value={stockSymbol}
@@ -456,7 +446,7 @@ export default function Home() {
                   {stockLoading ? '查询中...' : '🔍 查询'}
                 </button>
               </div>
-              
+
               {/* 快捷选择 */}
               <div style={{ marginTop: '8px' }}>
                 <span style={{ fontSize: '14px', color: '#6b7280', marginRight: '12px' }}>快速选择:</span>
@@ -649,13 +639,8 @@ export default function Home() {
             <div style={{ backgroundColor: '#fef3c7', borderRadius: '8px', padding: '24px', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px', color: '#92400e' }}>⚠️ 说明</h3>
               <p style={{ color: '#92400e', fontSize: '14px' }}>
-                由于当前网络环境无法访问股票数据接口（akshare 需要连接东方财富网），模拟交易功能需要以下条件才能运行：
+                模拟交易功能需要能访问东方财富接口。请确保网络畅通。
               </p>
-              <ul style={{ marginTop: '12px', color: '#92400e', fontSize: '14px', paddingLeft: '20px' }}>
-                <li>1. 需要能够访问国内股票数据接口</li>
-                <li>2. 或使用 VPN/代理连接网络</li>
-                <li>3. 或修改代码使用其他数据源（如 yfinance）</li>
-              </ul>
             </div>
           </>
         )}
