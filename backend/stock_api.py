@@ -5,8 +5,13 @@
 from flask import Blueprint, jsonify, request
 import requests
 import json
+import logging
 from datetime import datetime, timedelta
 import pandas as pd
+
+# 配置日志
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 stock_api = Blueprint('stock', __name__)
 
@@ -17,8 +22,17 @@ BASE_URL = "https://push2his.eastmoney.com"
 def get_headers():
     return {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
-        'Referer': 'https://quote.eastmoney.com/'
+        'Referer': 'https://quote.eastmoney.com/',
+        'Origin': 'https://quote.eastmoney.com'
     }
+
+
+def get_session():
+    """创建禁用代理的requests会话"""
+    session = requests.Session()
+    session.trust_env = False  # 禁用环境变量代理
+    # 禁用连接复用可能导致问题，保持默认
+    return session
 
 
 def get_stock_code(symbol):
@@ -58,44 +72,64 @@ def get_quote():
     url = f"{BASE_URL}/api/qt/stock/get"
     params = {
         'ut': '7eea3edcaed734bea9cbfc24409ed989',
-        'fields1': 'f1,f2,f3,f4,f5,f6',
-        'fields2': 'f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61',
-        'secid': secid,
-        '_': int(datetime.now().timestamp() * 1000)
+        'secid': secid
     }
 
+    full_url = ""
     try:
-        r = requests.get(url, params=params, headers=get_headers(), timeout=10)
+        full_url = f"{url}?{'&'.join([f'{k}={v}' for k,v in params.items()])}"
+        logger.info(f"[Quote] URL: {full_url}")
+
+        r = get_session().get(url, params=params, headers=get_headers(), timeout=10)
         data = r.json()
 
         if data.get('data') is None:
             return jsonify({'success': False, 'error': f'未找到股票 {symbol}'})
 
         d = data['data']
+
+        def get_val(key, default: float = 0.0, scale: float = 1.0):
+            """
+            从返回数据中安全读取数值字段。
+            - 如果为 '-' 或 None，则返回 default
+            - 自动转为 float
+            - 可通过 scale 进行缩放（例如东方财富价格通常放大100倍）
+            """
+            val = d.get(key, None)
+            if val in ('-', None, ''):
+                return default
+            try:
+                v = float(val)
+            except (TypeError, ValueError):
+                return default
+            return v / scale
+
         result = {
             'symbol': symbol,
-            'name': d.get('name', symbol),
-            'price': d.get('f2'),
-            'change': d.get('f4'),
-            'change_pct': d.get('f3'),
-            'open': d.get('f17'),
-            'high': d.get('f15'),
-            'low': d.get('f16'),
-            'close': d.get('f2'),
-            'volume': d.get('f5'),
-            'amount': d.get('f6'),
-            'turnover': d.get('f8'),
-            'pe': d.get('f12'),
-            'pb': d.get('f13'),
-            'high_52w': d.get('f33'),
-            'low_52w': d.get('f34'),
-            'market_cap': d.get('f20'),
-            'float_cap': d.get('f21'),
+            'name': d.get('f58', symbol),
+            # f43 为最新价，东方财富通常放大100倍，缩放回真实价格
+            'price': get_val('f43', default=0.0, scale=100.0),
+            'change': get_val('f4', default=0.0, scale=100.0),
+            'change_pct': get_val('f3', default=0.0),  # 已是百分比
+            'open': get_val('f17', default=0.0, scale=100.0),
+            'high': get_val('f15', default=0.0, scale=100.0),
+            'low': get_val('f16', default=0.0, scale=100.0),
+            'close': get_val('f2', default=0.0, scale=100.0),
+            'volume': get_val('f5', default=0.0),
+            'amount': get_val('f6', default=0.0),
+            'turnover': get_val('f8', default=0.0),
+            'pe': get_val('f12', default=0.0),
+            'pb': get_val('f13', default=0.0),
+            'high_52w': get_val('f33', default=0.0, scale=100.0),
+            'low_52w': get_val('f34', default=0.0, scale=100.0),
+            'market_cap': get_val('f20', default=0.0),
+            'float_cap': get_val('f21', default=0.0),
         }
 
-        return jsonify({'success': True, 'data': result})
+        return jsonify({'success': True, 'data': result, 'debug_url': full_url})
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        # full_url 可能在请求前就抛异常，这里做保护
+        return jsonify({'success': False, 'error': str(e), 'debug_url': full_url if 'full_url' in locals() else ''})
 
 
 @stock_api.route('/api/stock/history', methods=['POST'])
@@ -128,12 +162,15 @@ def get_history():
         'fqt': 1,  # 1:前复权, 0:不复权, 2:后复权
         'secid': secid,
         'beg': start,
-        'end': end,
-        '_': int(datetime.now().timestamp() * 1000)
+        'end': end
     }
 
+    full_url = ""
     try:
-        r = requests.get(url, params=params, headers=get_headers(), timeout=10)
+        full_url = f"{url}?{'&'.join([f'{k}={v}' for k,v in params.items()])}"
+        logger.info(f"[History] URL: {full_url}")
+
+        r = get_session().get(url, params=params, headers=get_headers(), timeout=10)
         data = r.json()
 
         if not data.get('data') or not data['data'].get('klines'):
@@ -159,11 +196,13 @@ def get_history():
         return jsonify({
             'success': True,
             'symbol': symbol,
+            'name': data['data'].get('name', symbol),
             'period': period,
-            'data': records
+            'data': records,
+            'debug_url': full_url
         })
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        return jsonify({'success': False, 'error': str(e), 'debug_url': full_url if 'full_url' in locals() else ''})
 
 
 @stock_api.route('/api/stock/overview', methods=['POST'])
@@ -176,14 +215,15 @@ def get_overview():
     url = f"{BASE_URL}/api/qt/stock/get"
     params = {
         'ut': '7eea3edcaed734bea9cbfc24409ed989',
-        'fields1': 'f57,f58,f59,f60,f84,f85,f116,f117,f127,f128,f163,f164,f167,f168,f169,f170,f171,f172,f173,f174,f175,f176,f177,f178,f179,f180,f181,f182,f183,f184,f185,f186,f187,f188,f189,f190,f191,f192,f193,f194,f195,f196,f197,f198,f199,f200,f201,f202,f203,f204,f205,f206,f207,f208,f209,f210,f211,f212,f213,f214,f215,f216,f217,f218,f219,f220,f221,f222,f223,f224,f225,f226,f227,f228,f229,f230,f231,f232,f233,f234,f235,f236,f237,f238,f239,f240,f241,f242,f243,f244,f245,f246,f247,f248,f249,f250,f251,f252,f253,f254,f255,f256,f257,f258,f259,f260,f261,f262,f263,f264,f265,f266,f267,f268,f269,f270,f271,f272,f273,f274,f275,f276,f277,f278,f279,f280,f281,f282,f283,f284,f285,f286,f287,f288,f289,f290,f291,f292,f293,f294,f295,f296,f297,f298,f299,f300',
-        'fields2': '',
-        'secid': secid,
-        '_': int(datetime.now().timestamp() * 1000)
+        'secid': secid
     }
 
+    full_url = ""
     try:
-        r = requests.get(url, params=params, headers=get_headers(), timeout=10)
+        full_url = f"{url}?{'&'.join([f'{k}={v}' for k,v in params.items()])}"
+        logger.info(f"[Info] URL: {full_url}")
+
+        r = get_session().get(url, params=params, headers=get_headers(), timeout=10)
         data = r.json()
 
         if data.get('data') is None:
@@ -207,9 +247,9 @@ def get_overview():
             'circ_mv': d.get('f171'),
         }
 
-        return jsonify({'success': True, 'data': result})
+        return jsonify({'success': True, 'data': result, 'debug_url': full_url})
     except Exception as e:
-        return jsonify({'success': False, 'error': str(e)})
+        return jsonify({'success': False, 'error': str(e), 'debug_url': full_url if 'full_url' in locals() else ''})
 
 
 # 股票名称映射
