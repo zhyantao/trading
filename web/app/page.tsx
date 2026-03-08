@@ -117,8 +117,14 @@ export default function Home() {
       if (quoteData.success) {
         setStockInfo(quoteData.data);
         addStockLog(`✓ 实时报价获取成功: $${quoteData.data.price?.toFixed(2)}`, 'success');
+        if (quoteData.debug_url) {
+          addStockLog(`${quoteData.debug_url}`, 'info');
+        }
       } else {
         addStockLog(`✗ 实时报价失败: ${quoteData.error}`, 'error');
+        if (quoteData.debug_url) {
+          addStockLog(`${quoteData.debug_url}`, 'info');
+        }
         if (quoteData.suggestion) {
           addStockLog(`💡 建议: ${quoteData.suggestion}`, 'info');
         }
@@ -135,8 +141,14 @@ export default function Home() {
       if (historyData.success) {
         setStockHistory(historyData.data);
         addStockLog(`✓ 历史数据获取成功: ${historyData.data.length} 条记录`, 'success');
+        if (historyData.debug_url) {
+          addStockLog(`${historyData.debug_url}`, 'info');
+        }
       } else {
         addStockLog(`✗ 历史数据失败: ${historyData.error}`, 'error');
+        if (historyData.debug_url) {
+          addStockLog(`${historyData.debug_url}`, 'info');
+        }
         if (historyData.suggestion) {
           addStockLog(`💡 建议: ${historyData.suggestion}`, 'info');
         }
@@ -153,8 +165,14 @@ export default function Home() {
       if (infoData.success) {
         setStockDetail(infoData.data);
         addStockLog(`✓ 详细信息获取成功`, 'success');
+        if (infoData.debug_url) {
+          addStockLog(`${infoData.debug_url}`, 'info');
+        }
       } else {
         addStockLog(`✗ 详细信息失败: ${infoData.error}`, 'error');
+        if (infoData.debug_url) {
+          addStockLog(`${infoData.debug_url}`, 'info');
+        }
         if (infoData.suggestion) {
           addStockLog(`💡 建议: ${infoData.suggestion}`, 'info');
         }
