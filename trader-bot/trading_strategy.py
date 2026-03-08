@@ -103,9 +103,9 @@ class TradingStrategy:
     
     def __init__(self, params: Optional[Dict] = None):
         # 默认策略参数
-        self.params = params or {
+        default_params: Dict = {
             # 仓位管理
-            'max_position': 100,      # 最大持仓比例 (%)
+            'max_position': 100,       # 最大持仓比例 (%)
             'single_position': 30,     # 单只股票最大持仓 (%)
             
             # 买入条件
@@ -113,14 +113,26 @@ class TradingStrategy:
             'strong_buy_score': 3,     # 强买评分
             
             # 卖出条件
-            'sell_score_threshold': -1, # 卖出评分阈值
-            'stop_loss': 5,             # 止损比例 (%)
-            'take_profit': 15,         # 止盈比例 (%)
+            'sell_score_threshold': -1,  # 卖出评分阈值
+            'stop_loss': 5,              # 止损比例 (%)
+            'take_profit': 15,           # 止盈比例 (%)
             
             # 趋势过滤
-            'require_uptrend': True,    # 只在上涨趋势买入
+            'require_uptrend': True,   # 只在上涨趋势买入
             'avoid_downtrend': True,   # 下跌趋势不买入
         }
+
+        # 合并外部参数并兼容 *_pct 命名
+        self.params = default_params.copy()
+        if params:
+            for key, value in params.items():
+                if key in self.params:
+                    self.params[key] = value
+
+            if 'stop_loss_pct' in params:
+                self.params['stop_loss'] = params['stop_loss_pct']
+            if 'take_profit_pct' in params:
+                self.params['take_profit'] = params['take_profit_pct']
         
     def should_buy(self, signal: TradingSignal, current_position: float = 0) -> bool:
         """判断是否应该买入"""

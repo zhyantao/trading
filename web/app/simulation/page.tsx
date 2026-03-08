@@ -141,7 +141,7 @@ export default function Home() {
 
         {/* 说明 */}
         <div style={{ marginTop: '24px', padding: '16px', backgroundColor: '#fef3c7', borderRadius: '8px', fontSize: '14px', color: '#92400e' }}>
-          <strong>说明：</strong> 由于网络原因无法获取实时股票数据，当前展示为模拟数据演示。实际使用时需要安装 akshare 并确保网络畅通。
+          <strong>说明：</strong> 使用东方财富接口获取数据，请确保网络畅通。
         </div>
       </main>
 
