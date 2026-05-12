@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}流水线控制 - 量化交易研究{% endblock %}
+
+{% block content %}
+<h1 class="page-title">流水线控制</h1>
+
+<div class="card">
+    <div class="card-header">
+        一键全流程
+        <button class="btn btn-primary" onclick="runStep('all')" style="float:right;" id="btn-all">运行全流程</button>
+    </div>
+    <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">
+        等同于 <code>python3 src/daily_run.py</code>，按依赖顺序依次执行所有步骤
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">分步执行</div>
+    <div class="pipeline-steps">
+        {% set steps = [
+            ('build_manager_fund_returns', '1', '基金经理-基金收益率明细', '拉取全市场基金经理+基金收益率字段'),
+            ('rank_fund_managers', '2', '基金经理排名', '按近1年收益率+多基金简单平均排名'),
+            ('rank_all_funds_by_annualized_return', '3', '基金年化收益率排序', '计算成立来复合年化并排序'),
+            ('link_fund_annualized_and_manager_rank', '4', '基金-经理关联表', '关联基金年化与经理排名，过滤新基金'),
+            ('pick_elite_managers_targets', '5', '绩优经理筛选+投资标的', '筛选绩优经理，抓取基金Top3和股票Top10'),
+            ('optimize_holdings', '6', '优化持仓', '自动生成优化后的持仓配置'),
+            ('daily_rebalance_signal', '7', '每日调仓信号', '抓取基金重大变动，对照持仓输出信号'),
+        ] %}
+        {% for step_id, num, name, desc in steps %}
+        <div class="pipeline-step">
+            <div class="step-num">{{ num }}</div>
+            <div class="step-info">
+                <div class="step-name">{{ name }}</div>
+                <div class="step-desc">{{ desc }}</div>
+            </div>
+            <div class="step-actions">
+                <button class="btn btn-sm btn-outline" onclick="runStep('{{ step_id }}')" id="btn-{{ step_id }}">运行</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 运行日志 -->
+<div class="card" id="log-card">
+    <div class="card-header">
+        运行日志
+        <span id="log-status" style="float:right; font-size:13px; font-weight:400;"></span>
+    </div>
+    <div class="log-box" id="log-box">
+        点击上方按钮开始运行...
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const logBox = document.getElementById('log-box');
+const logStatus = document.getElementById('log-status');
+
+async function runStep(stepId) {
+    // 禁用按钮
+    const btnId = stepId === 'all' ? 'btn-all' : 'btn-' + stepId;
+    const btn = document.getElementById(btnId);
+    if (btn) { btn.disabled = true; btn.textContent = '运行中...'; }
+
+    logStatus.textContent = '运行中...';
+    logBox.textContent = '启动中...\n';
+
+    let endpoint = stepId === 'all' ? '/api/run/all' : '/api/run/step/' + stepId;
+    let method = 'POST';
+    // 优化持仓需要参数
+    let body = null;
+    if (stepId === 'optimize_holdings') {
+        body = new URLSearchParams({total_n: 5, stock_pct: 30, fund_pct: 70});
+    }
+
+    try {
+        const resp = await fetch(endpoint, { method, body, headers: body ? {'Content-Type': 'application/x-www-form-urlencoded'} : {} });
+        if (!resp.ok) {
+            logBox.textContent = '请求失败: ' + resp.status;
+            if (btn) { btn.disabled = false; btn.textContent = '运行'; }
+            logStatus.textContent = '';
+            return;
+        }
+        const data = await resp.json();
+        const taskId = data.task_id;
+
+        const poll = setInterval(async () => {
+            const r = await fetch('/api/run/status/' + taskId);
+            const t = await r.json();
+            logBox.textContent = t.log_lines.join('\n');
+            if (t.status === 'done') {
+                clearInterval(poll);
+                logBox.textContent += '\n\n===== 完成 (rc=' + t.rc + ') =====';
+                logStatus.textContent = '完成 ' + t.end;
+                if (btn) { btn.disabled = false; btn.textContent = '运行'; }
+            } else if (t.status === 'failed') {
+                clearInterval(poll);
+                logBox.textContent += '\n\n===== 失败 (rc=' + t.rc + ') =====';
+                logStatus.textContent = '失败 ' + t.end;
+                if (btn) { btn.disabled = false; btn.textContent = '运行'; }
+            }
+        }, 500);
+    } catch (err) {
+        logBox.textContent = '错误: ' + err.message;
+        if (btn) { btn.disabled = false; btn.textContent = '运行'; }
+        logStatus.textContent = '';
+    }
+}
+</script>
+{% endblock %}
