@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}每日调仓信号 - 量化交易研究{% endblock %}
+
+{% block content %}
+<h1 class="page-title">每日调仓信号</h1>
+
+{% if not has_data %}
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-text">信号数据尚未生成</div>
+        <div class="empty-hint">请先 <a href="/pipeline">运行流水线</a> 生成每日调仓信号</div>
+        <a href="/pipeline" class="btn btn-primary">前往运行</a>
+    </div>
+</div>
+{% else %}
+
+<div class="card">
+    <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <a href="/signals" class="btn btn-sm {{ 'btn-primary' if not filter_type else 'btn-outline' }}">全部</a>
+        <a href="/signals?type=关注买入" class="btn btn-sm {{ 'btn-primary' if filter_type == '关注买入' else 'btn-outline' }}">关注买入</a>
+        <a href="/signals?type=关注卖出" class="btn btn-sm {{ 'btn-primary' if filter_type == '关注卖出' else 'btn-outline' }}">关注卖出</a>
+        <a href="/signals?type=继续关注" class="btn btn-sm {{ 'btn-primary' if filter_type == '继续关注' else 'btn-outline' }}">继续关注</a>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>资产类型</th><th>代码</th><th>名称</th><th>是否持有</th>
+                <th>建议标签</th><th>净强度</th><th>买入强度</th><th>卖出强度</th>
+                <th>关联经理</th>
+            </tr></thead>
+            <tbody>
+            {% for s in signals %}
+            {% set tag = s.get('建议标签(非投资建议)', '') %}
+            {% set tag_class = 'tag-buy' if '买入' in tag else ('tag-sell' if '卖出' in tag else ('tag-hold' if '继续' in tag else 'tag-nosig')) %}
+            <tr>
+                <td><span class="tag {{ 'tag-stock' if s.get('资产类型') == '股票' else 'tag-fund' }}">{{ s.get('资产类型', '') }}</span></td>
+                <td>{{ s.get('代码', '') }}</td>
+                <td>{{ s.get('名称', '') }}</td>
+                <td>{{ s.get('是否持有', '') }}</td>
+                <td><span class="tag {{ tag_class }}">{{ tag }}</span></td>
+                <td style="color:{{ 'var(--green)' if s.get('净强度')|float > 0 else 'var(--red)' }}; font-weight:600;">{{ s.get('净强度', '')|num2 }}</td>
+                <td>{{ s.get('买入强度', '')|num2 }}</td>
+                <td>{{ s.get('卖出强度', '')|num2 }}</td>
+                <td style="font-size:11px; max-width:250px;">{{ s.get('关联经理Top3(净强度)', '') }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}

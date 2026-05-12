@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}基金年化排名 - 量化交易研究{% endblock %}
+
+{% block content %}
+<h1 class="page-title">基金年化收益率排名</h1>
+
+<div class="card">
+    <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
+        <span style="font-size:13px; color:var(--text-secondary);">成立天数 >=</span>
+        <a href="/funds?min_days=90" class="btn btn-sm {{ 'btn-primary' if min_days == 90 else 'btn-outline' }}">90 天</a>
+        <a href="/funds?min_days=180" class="btn btn-sm {{ 'btn-primary' if min_days == 180 else 'btn-outline' }}">180 天</a>
+        <a href="/funds?min_days=365" class="btn btn-sm {{ 'btn-primary' if min_days == 365 else 'btn-outline' }}">1 年</a>
+        <a href="/funds?min_days=730" class="btn btn-sm {{ 'btn-primary' if min_days == 730 else 'btn-outline' }}">2 年</a>
+        <a href="/funds?min_days=1095" class="btn btn-sm {{ 'btn-primary' if min_days == 1095 else 'btn-outline' }}">3 年</a>
+        <span style="font-size:13px; color:var(--text-secondary); margin-left:16px;">共 {{ total }} 只基金</span>
+    </div>
+
+    {% if funds %}
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>排名</th>
+                <th>基金代码</th>
+                <th>基金简称</th>
+                <th>成立来年化</th>
+                <th>成立来</th>
+                <th>成立天数</th>
+                <th>近1年</th>
+                <th>近2年</th>
+                <th>近3年</th>
+                <th>今年来</th>
+            </tr></thead>
+            <tbody>
+            {% for f in funds %}
+            <tr>
+                <td style="font-weight:600;">{{ f.get('排名', '') }}</td>
+                <td>{{ f.get('基金代码', '') }}</td>
+                <td>{{ f.get('基金简称', '') }}</td>
+                <td style="color:{{ 'var(--green)' if f.get('成立来年化')|float > 0 else 'var(--red)' }}; font-weight:600;">{{ f.get('成立来年化', '')|num2 }}</td>
+                <td>{{ f.get('成立来', '')|num2 }}</td>
+                <td>{{ f.get('成立天数', '')|num2 }}</td>
+                <td style="color:{{ 'var(--green)' if f.get('近1年')|float > 0 else 'var(--red)' }};">{{ f.get('近1年', '')|num2 }}</td>
+                <td>{{ f.get('近2年', '')|num2 }}</td>
+                <td>{{ f.get('近3年', '')|num2 }}</td>
+                <td>{{ f.get('今年来', '')|num2 }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+        {% if page > 1 %}
+        <a href="/funds?page={{ page - 1 }}&min_days={{ min_days }}" class="btn btn-sm btn-outline">上一页</a>
+        {% endif %}
+        <span style="padding:5px 12px; font-size:13px;">{{ page }} / {{ total_pages }}</span>
+        {% if page < total_pages %}
+        <a href="/funds?page={{ page + 1 }}&min_days={{ min_days }}" class="btn btn-sm btn-outline">下一页</a>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state"><div class="empty-text">暂无符合条件的数据</div></div>
+    {% endif %}
+</div>
+{% endblock %}

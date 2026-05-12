@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}绩优经理标的 - 量化交易研究{% endblock %}
+
+{% block head %}
+<style>
+    .elite-table td { font-size: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">绩优基金经理投资标的</h1>
+
+<div class="card">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('funds')">基金 Top3</button>
+        <button class="tab-btn" onclick="switchTab('stocks')">股票 Top10</button>
+    </div>
+
+    <!-- 基金 Top3 -->
+    <div id="tab-funds" class="tab-panel active">
+        {% if elite_funds %}
+        <div class="table-wrap">
+            <table class="elite-table">
+                <thead><tr>
+                    <th>经理排名</th><th>姓名</th><th>所属公司</th>
+                    <th>基金代码</th><th>基金简称</th><th>成立来年化</th><th>成立来</th><th>近1年</th>
+                </tr></thead>
+                <tbody>
+                {% for f in elite_funds %}
+                <tr>
+                    <td>{{ f.get('经理排名', '') }}</td>
+                    <td>{{ f.get('姓名', '') }}</td>
+                    <td>{{ f.get('所属公司', '') }}</td>
+                    <td>{{ f.get('基金代码', '') }}</td>
+                    <td>{{ f.get('基金简称', '') }}</td>
+                    <td style="color:{{ 'var(--green)' if f.get('成立来年化')|float > 0 else 'var(--red)' }}; font-weight:600;">{{ f.get('成立来年化', '')|num2 }}</td>
+                    <td>{{ f.get('成立来', '')|num2 }}</td>
+                    <td>{{ f.get('近1年', '')|num2 }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优基金数据</div><div class="empty-hint">请先 <a href="/pipeline">运行流水线</a> 生成绩优经理标的</div></div>
+        {% endif %}
+    </div>
+
+    <!-- 股票 Top10 -->
+    <div id="tab-stocks" class="tab-panel">
+        {% if elite_stocks %}
+        <div class="table-wrap">
+            <table class="elite-table">
+                <thead><tr>
+                    <th>经理排名</th><th>姓名</th><th>所属公司</th>
+                    <th>股票代码</th><th>股票名称</th><th>汇总占净值比例</th><th>出现基金数</th><th>最新季度</th>
+                </tr></thead>
+                <tbody>
+                {% for s in elite_stocks %}
+                <tr>
+                    <td>{{ s.get('经理排名', '') }}</td>
+                    <td>{{ s.get('姓名', '') }}</td>
+                    <td>{{ s.get('所属公司', '') }}</td>
+                    <td>{{ s.get('股票代码', '') }}</td>
+                    <td>{{ s.get('股票名称', '') }}</td>
+                    <td style="font-weight:600;">{{ s.get('汇总占净值比例', '')|num2 }}</td>
+                    <td>{{ s.get('出现基金数', '')|num2 }}</td>
+                    <td>{{ s.get('最新季度', '') }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优股票数据</div><div class="empty-hint">请先 <a href="/pipeline">运行流水线</a> 生成绩优经理标的</div></div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach((b,i) => {
+        b.classList.toggle('active', (name === 'funds' && i === 0) || (name === 'stocks' && i === 1));
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}我的持仓 - 量化交易研究{% endblock %}
+
+{% block content %}
+<h1 class="page-title">我的持仓</h1>
+
+{% if holdings %}
+<div class="card">
+    <div class="card-header">
+        当前持仓配置
+        <button class="btn btn-sm btn-outline" onclick="reOptimize()" style="float:right;">重新优化</button>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>比例柱</th>
+            </tr></thead>
+            <tbody>
+            {% set max_pct = holdings | map(attribute='比例(%)') | map('float') | max | default(1) %}
+            {% for h in holdings %}
+            {% set pct = h.get('比例(%)', 0)|float %}
+            <tr>
+                <td><span class="tag {{ 'tag-stock' if h.get('类型') == '股票' else 'tag-fund' }}">{{ h.get('类型', '') }}</span></td>
+                <td>{{ h.get('代码', '') }}</td>
+                <td>{{ h.get('名称', '') }}</td>
+                <td style="font-weight:600;">{{ pct|num2 }}%</td>
+                <td style="width:120px;">
+                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
+                        <div style="height:100%; width:{{ (pct / max_pct * 100) if max_pct > 0 else 0 }}%; background:{{ 'var(--accent)' if h.get('类型') == '股票' else 'var(--green)' }}; border-radius:4px;"></div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 优化表单 -->
+<div class="card" style="display:none;" id="optimize-form">
+    <div class="card-header">持仓优化参数</div>
+    <form onsubmit="runOptimize(event)" style="display:flex; gap:12px; align-items:end; flex-wrap:wrap;">
+        <div>
+            <label style="font-size:13px; color:var(--text-secondary);">目标总数</label>
+            <input type="number" name="total_n" value="5" min="1" max="20" class="btn-outline" style="width:80px; padding:8px; border-radius:6px;">
+        </div>
+        <div>
+            <label style="font-size:13px; color:var(--text-secondary);">股票比例(%)</label>
+            <input type="number" name="stock_pct" value="30" min="0" max="100" step="1" class="btn-outline" style="width:80px; padding:8px; border-radius:6px;">
+        </div>
+        <div>
+            <label style="font-size:13px; color:var(--text-secondary);">基金比例(%)</label>
+            <input type="number" name="fund_pct" value="70" min="0" max="100" step="1" class="btn-outline" style="width:80px; padding:8px; border-radius:6px;">
+        </div>
+        <button type="submit" class="btn btn-primary">开始优化</button>
+    </form>
+    <div id="optimize-log" class="log-box" style="margin-top:12px; display:none;"></div>
+</div>
+
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-text">暂无持仓数据</div>
+        <div class="empty-hint">运行优化持仓脚本自动生成，或手动创建 out/我的持仓.csv</div>
+        <button class="btn btn-primary" onclick="reOptimize()">生成持仓</button>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function reOptimize() {
+    document.getElementById('optimize-form').style.display = 'block';
+}
+async function runOptimize(e) {
+    e.preventDefault();
+    const logEl = document.getElementById('optimize-log');
+    logEl.style.display = 'block';
+    logEl.textContent = '运行中...\n';
+    const form = e.target;
+    const body = new FormData(form);
+    const resp = await fetch('/api/run/optimize', { method: 'POST', body });
+    const data = await resp.json();
+    const taskId = data.task_id;
+    const poll = setInterval(async () => {
+        const r = await fetch(`/api/run/status/${taskId}`);
+        const t = await r.json();
+        logEl.textContent = t.log_lines.join('\n');
+        if (t.status === 'done' || t.status === 'failed') {
+            clearInterval(poll);
+            if (t.status === 'done') location.reload();
+        }
+    }, 500);
+}
+</script>
+{% endblock %}

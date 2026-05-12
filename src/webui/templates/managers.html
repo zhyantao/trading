@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}基金经理排名 - 量化交易研究{% endblock %}
+
+{% block content %}
+<h1 class="page-title">基金经理业绩排名</h1>
+
+{% if managers %}
+<div class="card">
+    <div style="margin-bottom:12px; color:var(--text-secondary); font-size:13px;">
+        共 {{ total }} 位经理，第 {{ page }}/{{ total_pages }} 页
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>排名</th>
+                <th>姓名</th>
+                <th>所属公司</th>
+                <th>管理基金数</th>
+                <th>有效基金数</th>
+                <th>平均收益率</th>
+                <th>中位数收益率</th>
+                <th>最佳收益率</th>
+                <th>最差收益率</th>
+            </tr></thead>
+            <tbody>
+            {% for m in managers %}
+            <tr>
+                <td style="font-weight:600;">{{ m.get('排名', '') }}</td>
+                <td>{{ m.get('姓名', '') }}</td>
+                <td>{{ m.get('所属公司', '') }}</td>
+                <td>{{ m.get('管理基金数', '')|num2 }}</td>
+                <td>{{ m.get('有效基金数', '')|num2 }}</td>
+                <td style="color:{{ 'var(--green)' if m.get('平均收益率')|float > 0 else 'var(--red)' }}; font-weight:600;">{{ m.get('平均收益率', '')|num2 }}</td>
+                <td>{{ m.get('中位数收益率', '')|num2 }}</td>
+                <td style="color:var(--green);">{{ m.get('最佳收益率', '')|num2 }}</td>
+                <td style="color:var(--red);">{{ m.get('最差收益率', '')|num2 }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+        {% if page > 1 %}
+        <a href="/managers?page={{ page - 1 }}" class="btn btn-sm btn-outline">上一页</a>
+        {% endif %}
+        <span style="padding:5px 12px; font-size:13px;">{{ page }} / {{ total_pages }}</span>
+        {% if page < total_pages %}
+        <a href="/managers?page={{ page + 1 }}" class="btn btn-sm btn-outline">下一页</a>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-icon">🏆</div>
+        <div class="empty-text">暂无排名数据</div>
+        <div class="empty-hint">请先 <a href="/pipeline">运行流水线</a> 生成基金经理排名</div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
