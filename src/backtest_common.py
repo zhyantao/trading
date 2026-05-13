@@ -231,10 +231,17 @@ def fetch_benchmark(
     if cache_dir is not None:
         cache_dir.mkdir(parents=True, exist_ok=True)
         fp = cache_dir / f"benchmark_{symbol}_{_yyyymmdd(start)}_{_yyyymmdd(end)}.csv"
-        if fp.exists():
+        if fp.exists() and fp.stat().st_size > 0:
             df = pd.read_csv(fp)
-            df["日期"] = pd.to_datetime(df["日期"]).dt.date
-            return pd.Series(df["收盘"].values, index=df["日期"].values, name=symbol)
+            if not df.empty and "日期" in df.columns and "收盘" in df.columns:
+                df["日期"] = pd.to_datetime(df["日期"]).dt.date
+                s = pd.Series(df["收盘"].values, index=df["日期"].values, name=symbol)
+                if not s.empty:
+                    return s
+        if fp.exists():
+            fp.unlink()
+
+    import akshare as ak
 
     last_exc: Exception | None = None
     for _ in range(3):
@@ -250,11 +257,11 @@ def fetch_benchmark(
     if df is None or df.empty:
         s = pd.Series(dtype="float64", name=symbol)
     else:
-        df["date"] = pd.to_datetime(df["date"]).dt.date
+        df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.date
         df = df[(df["date"] >= start) & (df["date"] <= end)]
         s = pd.Series(df["close"].values, index=df["date"].values, name=symbol)
 
-    if cache_dir is not None:
+    if cache_dir is not None and not s.empty:
         pd.DataFrame({"日期": list(s.index), "收盘": list(s.values)}).to_csv(fp, index=False, encoding="utf-8")
 
     return s

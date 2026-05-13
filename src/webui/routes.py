@@ -292,10 +292,52 @@ async def api_run_step(step_id: str) -> Any:
     return JSONResponse({"task_id": task_id, "step": step["name"]})
 
 
+def _run_all_steps(task_id: str) -> None:
+    """后台线程：按顺序执行所有流水线步骤，更新进度。"""
+    task = _task_store.get(task_id)
+    if not task:
+        return
+    task["status"] = "running"
+    task["start"] = datetime.now().strftime("%H:%M:%S")
+    task["log_lines"] = []
+    total = len(PIPELINE_STEPS)
+
+    for i, step in enumerate(PIPELINE_STEPS):
+        task["progress"] = {"current": i + 1, "total": total, "name": step["name"]}
+        task["log_lines"].append(f"\n{'='*50}")
+        task["log_lines"].append(f"[{i+1}/{total}] {step['name']}")
+        task["log_lines"].append(f"{'='*50}")
+
+        args = step.get("args", [])
+        proc = _run_script(step["script"], *args)
+        for line in proc.stdout:
+            task["log_lines"].append(line.rstrip())
+        proc.wait()
+
+        if proc.returncode != 0:
+            task["status"] = "failed"
+            task["end"] = datetime.now().strftime("%H:%M:%S")
+            task["rc"] = proc.returncode
+            task["log_lines"].append(f"\n===== 第{i+1}步失败 (rc={proc.returncode})，流水线中止 =====")
+            return
+
+    task["status"] = "done"
+    task["end"] = datetime.now().strftime("%H:%M:%S")
+    task["rc"] = 0
+    task["log_lines"].append("\n===== 全流程完成 =====")
+
+
 @router.post("/api/run/all")
 async def api_run_all() -> Any:
-    """一键运行全流程（等同于 daily_run.py）。"""
-    task_id = _start_task("daily_run.py")
+    """一键运行全流程，按步执行并报告进度。"""
+    task_id = uuid.uuid4().hex[:8]
+    _task_store[task_id] = {
+        "status": "pending", "start": "", "end": "", "log_lines": [],
+        "rc": -1, "script": "全流程",
+        "progress": {"current": 0, "total": len(PIPELINE_STEPS), "name": ""},
+    }
+    t = threading.Thread(target=_run_all_steps, args=(task_id,), daemon=True)
+    t.start()
     return JSONResponse({"task_id": task_id, "step": "全流程"})
 
 

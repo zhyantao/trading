@@ -141,10 +141,16 @@ def fetch_stock_prices(
     if cache_dir is not None:
         cache_dir.mkdir(parents=True, exist_ok=True)
         fp = cache_dir / f"{code}_{adjust}_{_to_yyyymmdd(start)}_{_to_yyyymmdd(end)}.csv"
-        if fp.exists():
+        if fp.exists() and fp.stat().st_size > 0:
             df = pd.read_csv(fp)
-            df["日期"] = pd.to_datetime(df["日期"]).dt.date
-            return pd.Series(df["收盘"].values, index=df["日期"].values, name=code)
+            if not df.empty and "日期" in df.columns and "收盘" in df.columns:
+                df["日期"] = pd.to_datetime(df["日期"]).dt.date
+                s = pd.Series(df["收盘"].values, index=df["日期"].values, name=code)
+                if not s.empty:
+                    return s
+        # 缓存无效则删除，重新下载
+        if fp.exists():
+            fp.unlink()
 
     import akshare as ak
 
@@ -168,13 +174,12 @@ def fetch_stock_prices(
     if df is None or df.empty:
         s = pd.Series(dtype="float64", name=code)
     else:
-        df = df.rename(columns={"日期": "日期", "收盘": "收盘"})
-        df["日期"] = pd.to_datetime(df["日期"]).dt.date
+        df["日期"] = pd.to_datetime(df["日期"], errors="coerce").dt.date
         df["收盘"] = pd.to_numeric(df["收盘"], errors="coerce")
         df = df.dropna(subset=["收盘"])
         s = pd.Series(df["收盘"].values, index=df["日期"].values, name=code)
 
-    if cache_dir is not None:
+    if cache_dir is not None and not s.empty:
         pd.DataFrame({"日期": list(s.index), "收盘": list(s.values)}).to_csv(fp, index=False, encoding="utf-8")
     return s
 
