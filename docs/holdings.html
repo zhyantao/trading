@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的持仓 - 量化交易研究</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <span class="brand">量化信号</span>
+        <a href="index.html" class="">总览</a>
+        <a href="signals.html" class="">每日信号</a>
+        <a href="holdings.html" class="active">我的持仓</a>
+        <a href="managers.html" class="">经理排名</a>
+        <a href="funds.html" class="">基金排名</a>
+        <a href="elite.html" class="">绩优标的</a>
+        <a href="backtest.html" class="">回测</a>
+        <a href="pipeline.html" class="">流水线</a>
+    </div>
+</nav>
+
+<div class="container">
+    
+<h1 class="page-title">我的持仓</h1>
+
+
+<div class="card">
+    <div class="card-header">
+        当前持仓配置
+        
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>比例柱</th>
+            </tr></thead>
+            <tbody>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>300502</td>
+                <td>新易盛</td>
+                <td style="font-weight:600;">15.37%</td>
+                <td style="width:120px;">
+                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
+                        <div style="height:100%; width:58.06573479410654%; background:var(--accent); border-radius:4px;"></div>
+                    </div>
+                </td>
+            </tr>
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>300308</td>
+                <td>中际旭创</td>
+                <td style="font-weight:600;">14.63%</td>
+                <td style="width:120px;">
+                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
+                        <div style="height:100%; width:55.270117113713646%; background:var(--accent); border-radius:4px;"></div>
+                    </div>
+                </td>
+            </tr>
+            
+            
+            <tr>
+                <td><span class="tag tag-fund">基金</span></td>
+                <td>024459</td>
+                <td>华商致远回报混合A</td>
+                <td style="font-weight:600;">26.47%</td>
+                <td style="width:120px;">
+                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
+                        <div style="height:100%; width:100.0%; background:var(--green); border-radius:4px;"></div>
+                    </div>
+                </td>
+            </tr>
+            
+            
+            <tr>
+                <td><span class="tag tag-fund">基金</span></td>
+                <td>024460</td>
+                <td>华商致远回报混合C</td>
+                <td style="font-weight:600;">26.28%</td>
+                <td style="width:120px;">
+                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
+                        <div style="height:100%; width:99.28220627125049%; background:var(--green); border-radius:4px;"></div>
+                    </div>
+                </td>
+            </tr>
+            
+            
+            <tr>
+                <td><span class="tag tag-fund">基金</span></td>
+                <td>022364</td>
+                <td>永赢科技智选混合发起A</td>
+                <td style="font-weight:600;">17.25%</td>
+                <td style="width:120px;">
+                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
+                        <div style="height:100%; width:65.1681148469966%; background:var(--green); border-radius:4px;"></div>
+                    </div>
+                </td>
+            </tr>
+            
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+
+
+</div>
+
+
+<script>
+async function reOptimize() {
+    document.getElementById('optimize-form').style.display = 'block';
+}
+async function runOptimize(e) {
+    e.preventDefault();
+    const logEl = document.getElementById('optimize-log');
+    logEl.style.display = 'block';
+    logEl.textContent = '运行中...\n';
+    const form = e.target;
+    const body = new FormData(form);
+    const resp = await fetch('/api/run/optimize', { method: 'POST', body });
+    const data = await resp.json();
+    const taskId = data.task_id;
+    const poll = setInterval(async () => {
+        const r = await fetch(`/api/run/status/${taskId}`);
+        const t = await r.json();
+        logEl.textContent = t.log_lines.join('\n');
+        if (t.status === 'done' || t.status === 'failed') {
+            clearInterval(poll);
+            if (t.status === 'done') location.reload();
+        }
+    }, 500);
+}
+</script>
+
+</body>
+</html>
