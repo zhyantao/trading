@@ -183,7 +183,7 @@ class DataService:
                 # 日期戳是最后8位数字
                 parts = stem.split("_")
                 stamp = parts[-1] if len(parts[-1]) == 8 and parts[-1].isdigit() else ""
-                gid = f"{'stock' if '基金' not in key else 'fund'}_{stamp}"
+                gid = f"{'fund' if key.startswith('fund') else 'stock'}_{stamp}"
                 if gid not in groups:
                     groups[gid] = {"id": gid, "stamp": stamp, "type": "stock" if "stock" in gid else "fund"}
                 groups[gid][key.split("_", 1)[1]] = str(fp.name)
