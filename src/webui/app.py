@@ -14,11 +14,18 @@ WebUI 入口：FastAPI 应用 + APScheduler 每日定时任务。
 
 from __future__ import annotations
 
+import os
 import sys
 import subprocess
 import logging
 from datetime import datetime
 from pathlib import Path
+
+# 绕过 macOS 系统代理（SystemConfiguration 代理未运行时 DNS 返回假 IP 导致所有 API 调用失败）
+import urllib.request as _ur
+_ur.getproxies = lambda: {}
+os.environ["no_proxy"] = "*"
+os.environ["NO_PROXY"] = "*"
 
 # 确保 src/ 在 path 中（必须在导入 webui 之前）
 _src_dir = str(Path(__file__).resolve().parent.parent)

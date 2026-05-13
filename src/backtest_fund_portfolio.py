@@ -69,6 +69,7 @@ def fetch_fund_nav(
     带缓存到 cache_dir/nav_{fund_code}_*.csv。
     """
     import akshare as ak
+    import requests
 
     if cache_dir is not None:
         cache_dir.mkdir(parents=True, exist_ok=True)
@@ -94,6 +95,8 @@ def fetch_fund_nav(
             df = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
             if df is not None and not df.empty:
                 break
+        except requests.exceptions.ConnectionError as e:
+            raise RuntimeError(f"网络连接失败（远端关闭连接），基金 {fund_code} 净值下载中止") from e
         except Exception as e:
             last_exc = e
             time.sleep(max(1.0, sleep_s) * 2)
