@@ -24,7 +24,7 @@
 </div>
 
 <!-- 信号摘要 + 持仓概览 -->
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+<div class="dashboard-grid">
 
     {% if signal_stats.total > 0 %}<a href="/signals" style="text-decoration:none; color:inherit;">{% endif %}
     <div class="card {{ 'card-clickable' if signal_stats.total > 0 else '' }}">
