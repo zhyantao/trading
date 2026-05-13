@@ -349,13 +349,15 @@ tr:hover { background: #f8f9ff; }
    ================================================================ */
 
 .backtest-chart { max-width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); }
-.md-content { font-size: 14px; line-height: 1.8; min-width: 0; }
+.md-content { font-size: 14px; line-height: 1.8; min-width: 0; overflow-wrap: break-word; }
 .md-content h1 { font-size: 22px; margin-bottom: 12px; }
 .md-content h2 { margin-top: 20px; font-size: 18px; }
 .md-content h3 { margin-top: 14px; font-size: 15px; }
+.md-content li { overflow-wrap: break-word; }
 .md-content table { margin: 12px 0; }
 .md-content td { padding: 6px 12px; }
 .md-content .table-wrap { margin: 12px 0; }
+.md-content p { overflow-wrap: break-word; }
 
 .md-content {
     transition: max-height 0.3s ease;
@@ -439,7 +441,10 @@ tr:hover { background: #f8f9ff; }
 
 @media (max-width: 1024px) {
     .backtest-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .backtest-layout > * {
+        min-width: 0;
     }
 
     .container {
@@ -539,8 +544,11 @@ tr:hover { background: #f8f9ff; }
     }
 
     .backtest-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 14px;
+    }
+    .backtest-layout > * {
+        min-width: 0;
     }
 
     /* Donut chart */
