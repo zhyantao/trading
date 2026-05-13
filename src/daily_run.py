@@ -14,9 +14,16 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
+
+# 绕过 macOS 系统代理
+import urllib.request as _ur
+_ur.getproxies = lambda: {}
+os.environ["no_proxy"] = "*"
+os.environ["NO_PROXY"] = "*"
 
 
 def run(cmd: list[str]) -> None:

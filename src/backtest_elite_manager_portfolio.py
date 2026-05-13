@@ -154,6 +154,8 @@ def fetch_stock_prices(
 
     import akshare as ak
 
+    import requests as _requests
+
     df = None
     last_exc: Exception | None = None
     for _ in range(3):
@@ -167,6 +169,9 @@ def fetch_stock_prices(
             )
             last_exc = None
             break
+        except _requests.exceptions.ConnectionError as e:
+            # 远端关闭连接，不重试
+            raise RuntimeError(f"网络连接失败（远端关闭连接），股票 {code} 数据下载中止") from e
         except Exception as e:
             last_exc = e
             time.sleep(max(1.0, sleep_s) * 2)

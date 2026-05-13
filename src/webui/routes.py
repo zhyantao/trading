@@ -49,7 +49,7 @@ def _run_script(script_name: str, *args: str) -> subprocess.Popen[str]:
     """在子进程中运行 src/ 脚本，实时捕获输出行。"""
     root = _project_root()
     cmd = [sys.executable, "-u", str(root / "src" / script_name), *args]
-    env = {**__import__("os").environ, "PYTHONUNBUFFERED": "1"}
+    env = {**__import__("os").environ, "PYTHONUNBUFFERED": "1", "no_proxy": "*", "NO_PROXY": "*"}
     return subprocess.Popen(
         cmd,
         cwd=str(root),

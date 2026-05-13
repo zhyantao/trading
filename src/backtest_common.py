@@ -9,11 +9,18 @@
 from __future__ import annotations
 
 import math
+import os
 import time
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
+
+# 绕过 macOS 系统代理
+import urllib.request as _ur
+_ur.getproxies = lambda: {}
+os.environ["no_proxy"] = "*"
+os.environ["NO_PROXY"] = "*"
 
 import pandas as pd
 
@@ -242,6 +249,7 @@ def fetch_benchmark(
             fp.unlink()
 
     import akshare as ak
+    import requests as _requests
 
     last_exc: Exception | None = None
     for _ in range(3):
@@ -249,6 +257,8 @@ def fetch_benchmark(
             df = ak.stock_zh_index_daily(symbol=symbol)
             if df is not None and not df.empty:
                 break
+        except _requests.exceptions.ConnectionError as e:
+            raise RuntimeError(f"网络连接失败（远端关闭连接），基准指数 {symbol} 数据下载中止") from e
         except Exception as e:
             last_exc = e
             time.sleep(max(1.0, sleep_s) * 2)
