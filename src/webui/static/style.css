@@ -349,10 +349,13 @@ tr:hover { background: #f8f9ff; }
    ================================================================ */
 
 .backtest-chart { max-width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); }
-.md-content { font-size: 14px; line-height: 1.8; }
+.md-content { font-size: 14px; line-height: 1.8; min-width: 0; }
+.md-content h1 { font-size: 22px; margin-bottom: 12px; }
 .md-content h2 { margin-top: 20px; font-size: 18px; }
+.md-content h3 { margin-top: 14px; font-size: 15px; }
 .md-content table { margin: 12px 0; }
 .md-content td { padding: 6px 12px; }
+.md-content .table-wrap { margin: 12px 0; }
 
 .md-content {
     transition: max-height 0.3s ease;
@@ -602,6 +605,9 @@ tr:hover { background: #f8f9ff; }
     .md-content { font-size: 13px; }
     .md-content h1 { font-size: 20px; }
     .md-content h2 { font-size: 16px; }
+    .md-content h3 { font-size: 14px; }
+    .md-content td { padding: 4px 8px; font-size: 11px; }
+    .md-content .table-wrap { margin: 8px -14px; width: calc(100% + 28px); }
 
     /* Pipeline log */
     .log-box {
