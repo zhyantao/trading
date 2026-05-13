@@ -12,14 +12,20 @@
 <nav>
     <div class="nav-inner">
         <span class="brand">量化信号</span>
-        <a href="index.html" class="{{ 'active' if active_page == 'dashboard' }}">总览</a>
-        <a href="signals.html" class="{{ 'active' if active_page == 'signals' }}">每日信号</a>
-        <a href="holdings.html" class="{{ 'active' if active_page == 'holdings' }}">我的持仓</a>
-        <a href="managers.html" class="{{ 'active' if active_page == 'managers' }}">经理排名</a>
-        <a href="funds.html" class="{{ 'active' if active_page == 'funds' }}">基金排名</a>
-        <a href="elite.html" class="{{ 'active' if active_page == 'elite' }}">绩优标的</a>
-        <a href="backtest.html" class="{{ 'active' if active_page == 'backtest' }}">回测</a>
-        <a href="pipeline.html" class="{{ 'active' if active_page == 'pipeline' }}">流水线</a>
+        <input type="checkbox" id="nav-toggle">
+        <label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单">
+            <span></span><span></span><span></span>
+        </label>
+        <div class="nav-links">
+            <a href="index.html" class="{{ 'active' if active_page == 'dashboard' }}">总览</a>
+            <a href="signals.html" class="{{ 'active' if active_page == 'signals' }}">每日信号</a>
+            <a href="holdings.html" class="{{ 'active' if active_page == 'holdings' }}">我的持仓</a>
+            <a href="managers.html" class="{{ 'active' if active_page == 'managers' }}">经理排名</a>
+            <a href="funds.html" class="{{ 'active' if active_page == 'funds' }}">基金排名</a>
+            <a href="elite.html" class="{{ 'active' if active_page == 'elite' }}">绩优标的</a>
+            <a href="backtest.html" class="{{ 'active' if active_page == 'backtest' }}">回测</a>
+            <a href="pipeline.html" class="{{ 'active' if active_page == 'pipeline' }}">流水线</a>
+        </div>
     </div>
 </nav>
 

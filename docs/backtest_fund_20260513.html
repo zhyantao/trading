@@ -12,14 +12,20 @@
 <nav>
     <div class="nav-inner">
         <span class="brand">量化信号</span>
-        <a href="index.html" class="">总览</a>
-        <a href="signals.html" class="">每日信号</a>
-        <a href="holdings.html" class="">我的持仓</a>
-        <a href="managers.html" class="">经理排名</a>
-        <a href="funds.html" class="">基金排名</a>
-        <a href="elite.html" class="">绩优标的</a>
-        <a href="backtest.html" class="active">回测</a>
-        <a href="pipeline.html" class="">流水线</a>
+        <input type="checkbox" id="nav-toggle">
+        <label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单">
+            <span></span><span></span><span></span>
+        </label>
+        <div class="nav-links">
+            <a href="index.html" class="">总览</a>
+            <a href="signals.html" class="">每日信号</a>
+            <a href="holdings.html" class="">我的持仓</a>
+            <a href="managers.html" class="">经理排名</a>
+            <a href="funds.html" class="">基金排名</a>
+            <a href="elite.html" class="">绩优标的</a>
+            <a href="backtest.html" class="active">回测</a>
+            <a href="pipeline.html" class="">流水线</a>
+        </div>
     </div>
 </nav>
 
@@ -28,7 +34,7 @@
 <h1 class="page-title">回测结果</h1>
 
 
-<div style="display:grid; grid-template-columns:280px 1fr; gap:20px;">
+<div class="backtest-layout">
     <!-- 左侧回测列表 -->
     <div class="card" style="height:fit-content;">
         <div class="card-header">回测记录</div>
