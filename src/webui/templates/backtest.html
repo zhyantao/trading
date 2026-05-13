@@ -18,10 +18,10 @@
     <div class="card" style="height:fit-content;">
         <div class="card-header">回测记录</div>
         {% for r in results %}
-        <a href="/backtest?view={{ r.id }}" style="display:block; padding:10px; text-decoration:none; color:var(--text); border-radius:6px; margin-bottom:4px; {{ 'background:#e8f0fe;font-weight:600;' if view_id == r.id else '' }}">
-            <div style="font-size:13px;">{{ '基金回测' if 'fund' in r.type else '股票回测' }}</div>
-            <div style="font-size:11px; color:var(--text-secondary);">{{ r.stamp }}</div>
-            {% if 'chart' in r %}<div style="font-size:11px; color:var(--green);">含图表</div>{% endif %}
+        <a href="/backtest?view={{ r.id }}" style="display:flex; align-items:center; gap:10px; padding:10px; text-decoration:none; color:var(--text); border-radius:6px; margin-bottom:4px; {{ 'background:#e8f0fe;font-weight:600;' if view_id == r.id else '' }}">
+            <span style="font-size:13px;">{{ '基金回测' if 'fund' in r.type else '股票回测' }}</span>
+            <span style="font-size:11px; color:var(--text-secondary);">{{ r.stamp }}</span>
+            {% if 'chart' in r %}<span style="font-size:11px; color:var(--green);">含图表</span>{% endif %}
         </a>
         {% endfor %}
     </div>
