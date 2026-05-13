@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -70,11 +71,11 @@ def fetch_latest_change_one_fund(
             if "本期累计卖出金额" in df.columns:
                 df["本期累计卖出金额"] = pd.to_numeric(df["本期累计卖出金额"], errors="coerce")
             return df.reset_index(drop=True)
-        except Exception as e:
-            last_exc = e
+        except Exception:
+            last_exc = sys.exc_info()
             continue
     if last_exc:
-        raise last_exc
+        raise last_exc[1].with_traceback(last_exc[2])
     return pd.DataFrame()
 
 
@@ -136,7 +137,8 @@ def main() -> None:
 
     # 聚合：按经理 + 股票 计算买入/卖出强度（占比求和）
     key_cols = ["经理排名", "姓名", "所属公司", "股票代码", "股票名称"]
-    change["占比"] = pd.to_numeric(change.get("占期初基金资产净值比例"), errors="coerce")
+    pct_col = change.get("占期初基金资产净值比例")
+    change["占比"] = pd.to_numeric(pct_col, errors="coerce") if pct_col is not None else 0.0
     change["占比"] = change["占比"].fillna(0.0)
 
     buy = change[change["方向"] == "累计买入"].groupby(key_cols, dropna=False)["占比"].sum().reset_index(name="买入强度")

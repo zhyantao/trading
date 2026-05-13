@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -70,11 +71,11 @@ def fetch_latest_stock_holding(fund_code: str, years_back: int = 6, sleep_s: flo
             df["占净值比例"] = pd.to_numeric(df["占净值比例"], errors="coerce")
             df = df.dropna(subset=["占净值比例"])
             return df[["股票代码", "股票名称", "占净值比例", "季度"]].reset_index(drop=True)
-        except Exception as e:
-            last_exc = e
+        except Exception:
+            last_exc = sys.exc_info()
             continue
     if last_exc:
-        raise last_exc
+        raise last_exc[1].with_traceback(last_exc[2])
     return pd.DataFrame(columns=["股票代码", "股票名称", "占净值比例", "季度"])
 
 
