@@ -7,7 +7,7 @@
 <!-- 数据状态卡片 -->
 <div class="card-grid">
     {% for name, s in status.items() %}
-    {% set link = status_links.get(name, '') %}
+    {% set link = status_links[name] if status_links is defined and name in status_links else '' %}
     {% if s.exists and link %}<a href="{{ link }}" style="text-decoration:none; color:inherit;">{% endif %}
     <div class="stat-card {{ 'stat-card-clickable' if s.exists and link else '' }}">
         <div class="stat-label">{{ name }}</div>
