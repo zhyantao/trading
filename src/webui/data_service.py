@@ -132,6 +132,8 @@ class DataService:
                 df[c] = pd.to_numeric(df[c], errors="coerce")
         if "成立天数" in df.columns:
             df = df[df["成立天数"].fillna(-1) >= min_days].copy()
+        if "排名" in df.columns:
+            df["排名"] = range(1, len(df) + 1)
         return df
 
     # ------------------------------------------------------------------
