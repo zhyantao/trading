@@ -53,7 +53,26 @@ Python 3.10+，安装依赖：
 pip install -r requirements.txt
 ```
 
-依赖：`akshare` `pandas` `requests` `demjson3`
+依赖：`akshare` `pandas` `requests` `demjson3` `fastapi` `uvicorn` `jinja2` `apscheduler` `matplotlib`
+
+> **中文图表字体**：回测图表需要系统中文字体，否则中文会显示为方框/乱码。
+>
+> **macOS** 自带中文字体，无需额外安装。
+>
+> **Windows** 自带微软雅黑/宋体，无需额外安装。
+>
+> **Linux (含 WSL2)**：
+> ```bash
+> # 方式一：安装系统字体（需要 sudo）
+> sudo apt install fonts-wqy-microhei -y
+>
+> # 方式二：用户级安装（无需 sudo）
+> mkdir -p ~/.fonts
+> wget -O ~/.fonts/NotoSansSC-Regular.ttf \
+>   https://github.com/google/fonts/raw/main/ofl/notosanssc/NotoSansSC%5Bwght%5D.ttf
+> rm -rf ~/.cache/matplotlib  # 清除字体缓存
+> ```
+> 安装后重新运行回测脚本即可正常显示中文。
 
 ---
 
