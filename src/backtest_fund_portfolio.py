@@ -232,6 +232,7 @@ def main() -> None:
         .copy()
     )
     fund_codes = sorted(selected_funds["基金代码"].unique().tolist())
+    fund_name_map = dict(zip(fund_top3["基金代码"], fund_top3["基金简称"]))
     n_managers = selected_funds[["经理排名", "姓名", "所属公司"]].drop_duplicates().shape[0]
     print(f"选中 {len(fund_codes)} 只基金，来自 {n_managers} 位经理")
 
@@ -324,7 +325,8 @@ def main() -> None:
                         pos.pop(fc, None)
                     trades.append({
                         "日期": d0, "方向": "卖出", "代码": fc,
-                        "价格": px, "份额": round(sell_sh, 4), "成交额": amount, "手续费": fee,
+                        "名称": fund_name_map.get(fc, ""),
+                        "价格": round(px, 4), "份额": round(sell_sh, 4), "成交额": round(amount, 2), "手续费": round(fee, 2),
                     })
                 # 后买
                 for fc, tgt_sh in sorted(target_pos.items(), key=lambda kv: active_w.get(kv[0], 0), reverse=True):
@@ -340,7 +342,8 @@ def main() -> None:
                         pos[fc] = cur_sh + delta
                         trades.append({
                             "日期": d0, "方向": "买入", "代码": fc,
-                            "价格": px, "份额": round(delta, 4), "成交额": amount, "手续费": fee,
+                            "名称": fund_name_map.get(fc, ""),
+                            "价格": round(px, 4), "份额": round(delta, 4), "成交额": round(amount, 2), "手续费": round(fee, 2),
                         })
 
         hold_value = 0.0
@@ -408,7 +411,7 @@ def main() -> None:
         "权重": "经理等权 + 基金等权",
         "基准": args.benchmark if args.benchmark else "无",
     }
-    md_text = format_summary_md(metrics, cfg, out_files, extra_info)
+    md_text = format_summary_md(metrics, cfg, out_files, extra_info, trades_df=pd.DataFrame(trades))
     md_text += "\n## 局限/注意\n"
     md_text += "- 回测使用基金单位净值，未计入分红（分红通常反映在净值中）。\n"
     md_text += "- 基金申赎存在确认延迟（T+1/T+2），本回测按当日净值即时成交，偏乐观。\n"

@@ -306,6 +306,15 @@ def main() -> None:
     for fc in fund_codes:
         fund_holdings[fc] = fetch_fund_quarter_holdings(fc, start_year=start_year, end_year=end_year, sleep_s=args.sleep)
 
+    # 收集股票名称映射
+    code_to_name: dict[str, str] = {}
+    for holdings in fund_holdings.values():
+        for h in holdings.values():
+            if h is None or h.empty:
+                continue
+            for r in h.itertuples(index=False):
+                code_to_name[str(r.股票代码).zfill(6)] = r.股票名称
+
     # 计算每期目标权重
     print(f"[3/6] 计算每期目标权重（经理等权；按基金占比聚合）... 调仓点={len(rebalance_points)}")
     weights_by_date: dict[date, dict[str, float]] = {}
@@ -417,7 +426,8 @@ def main() -> None:
                         pos.pop(code, None)
                     trades.append({
                         "日期": d0, "方向": "卖出", "代码": code,
-                        "价格": px, "股数": sell_sh, "成交额": amount, "手续费": fee,
+                        "名称": code_to_name.get(code, ""),
+                        "价格": round(px, 2), "股数": sell_sh, "成交额": round(amount, 2), "手续费": round(fee, 2),
                     })
                 # 后买
                 for code, tgt_sh in sorted(target_pos.items(), key=lambda kv: w.get(kv[0], 0.0), reverse=True):
@@ -433,7 +443,8 @@ def main() -> None:
                         pos[code] = cur_sh + delta
                         trades.append({
                             "日期": d0, "方向": "买入", "代码": code,
-                            "价格": px, "股数": delta, "成交额": amount, "手续费": fee,
+                            "名称": code_to_name.get(code, ""),
+                            "价格": round(px, 2), "股数": delta, "成交额": round(amount, 2), "手续费": round(fee, 2),
                         })
 
         hold_value = 0.0
@@ -504,7 +515,7 @@ def main() -> None:
         "标的": f"选定绩优基金经理 Top10 重仓股集合（股票数 {len(universe)}）",
         "基准": args.benchmark if args.benchmark else "无",
     }
-    md_text = format_summary_md(metrics, cfg, out_files, extra_info)
+    md_text = format_summary_md(metrics, cfg, out_files, extra_info, trades_df=pd.DataFrame(trades))
     # 追加局限说明
     md_text += "\n## 局限/注意\n"
     md_text += "- 基金持仓披露为季度口径，真实披露存在滞后；本回测按「季度末后首个交易日」立即调仓，偏乐观。\n"
