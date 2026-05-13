@@ -280,6 +280,20 @@ tr:hover { background: #f8f9ff; }
     display: flex; align-items: center; justify-content: center;
     font-weight: 700; font-size: 14px;
     flex-shrink: 0;
+    transition: background 0.3s;
+}
+
+.pipeline-step.step-done { background: #e6f9f0; border-color: #b2e4cc; }
+.pipeline-step.step-done .step-num,
+.step-num-done { background: var(--green); }
+
+.pipeline-step.step-running { background: #e8f0fe; border-color: #b0cff5; }
+.pipeline-step.step-running .step-num,
+.step-num-running { background: var(--accent); animation: pulse 0.8s ease-in-out infinite; }
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 .pipeline-step .step-info { flex: 1; }
 .pipeline-step .step-name { font-weight: 600; font-size: 14px; }
