@@ -74,6 +74,15 @@ const progressNum = document.getElementById('progress-num');
 const progressBar = document.getElementById('progress-bar');
 
 const TOTAL_STEPS = 7;
+const STEP_IDS = [
+    'build_manager_fund_returns',
+    'rank_fund_managers',
+    'rank_all_funds_by_annualized_return',
+    'link_fund_annualized_and_manager_rank',
+    'pick_elite_managers_targets',
+    'optimize_holdings',
+    'daily_rebalance_signal',
+];
 
 function setStepStyle(current) {
     // current: 1-based (0 = none started, >=TOTAL_STEPS = all done)
@@ -81,23 +90,26 @@ function setStepStyle(current) {
     for (let i = 0; i < TOTAL_STEPS; i++) {
         const stepEl = document.getElementById('step-' + i);
         const numEl = document.getElementById('step-num-' + i);
+        const btnEl = document.getElementById('btn-' + STEP_IDS[i]);
         if (!stepEl || !numEl) continue;
         stepEl.classList.remove('step-done', 'step-running');
         numEl.classList.remove('step-num-done', 'step-num-running');
         if (allDone || (current > 0 && i < current - 1)) {
             stepEl.classList.add('step-done');
             numEl.classList.add('step-num-done');
+            if (btnEl) { btnEl.textContent = '已完成'; btnEl.disabled = true; }
         } else if (current > 0 && i === current - 1) {
             stepEl.classList.add('step-running');
             numEl.classList.add('step-num-running');
+            if (btnEl) { btnEl.textContent = '运行中...'; btnEl.disabled = true; }
         }
     }
 }
 
 function setAllBtnsDisabled(disabled) {
-    document.querySelectorAll('.step-btn').forEach(b => { b.disabled = disabled; });
+    document.querySelectorAll('.step-btn').forEach(b => { b.disabled = disabled; b.textContent = '运行'; });
     const btnAll = document.getElementById('btn-all');
-    if (btnAll) btnAll.disabled = disabled;
+    if (btnAll) { btnAll.disabled = disabled; btnAll.textContent = '运行全流程'; }
 }
 
 async function runStep(stepId) {
