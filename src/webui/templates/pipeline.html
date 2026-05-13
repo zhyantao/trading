@@ -114,9 +114,9 @@ async function runStep(stepId) {
             logBox.scrollTop = logBox.scrollHeight;
 
             // 更新进度条
-            if (t.progress) {
+            if (t.progress && t.progress.current > 0) {
                 const pct = Math.round(t.progress.current / t.progress.total * 100);
-                progressText.textContent = t.progress.name || '';
+                progressText.textContent = t.progress.name;
                 progressNum.textContent = t.progress.current + '/' + t.progress.total;
                 progressBar.style.width = pct + '%';
             }
