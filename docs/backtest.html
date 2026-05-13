@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回测结果 - 量化交易研究</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <span class="brand">量化信号</span>
+        <a href="index.html" class="">总览</a>
+        <a href="signals.html" class="">每日信号</a>
+        <a href="holdings.html" class="">我的持仓</a>
+        <a href="managers.html" class="">经理排名</a>
+        <a href="funds.html" class="">基金排名</a>
+        <a href="elite.html" class="">绩优标的</a>
+        <a href="backtest.html" class="active">回测</a>
+        <a href="pipeline.html" class="">流水线</a>
+    </div>
+</nav>
+
+<div class="container">
+    
+<h1 class="page-title">回测结果</h1>
+
+
+<div style="display:grid; grid-template-columns:280px 1fr; gap:20px;">
+    <!-- 左侧回测列表 -->
+    <div class="card" style="height:fit-content;">
+        <div class="card-header">回测记录</div>
+        
+        <a href="backtest_fund_20260513.html" style="display:flex; align-items:center; gap:10px; padding:10px; text-decoration:none; color:var(--text); border-radius:6px; margin-bottom:4px; ">
+            <span style="font-size:13px;">基金回测</span>
+            <span style="font-size:11px; color:var(--text-secondary);">20260513</span>
+            <span style="font-size:11px; color:var(--green);">含图表</span>
+        </a>
+        
+    </div>
+
+    <!-- 右侧回测详情 -->
+    <div>
+        
+        
+    </div>
+</div>
+
+
+
+
+</div>
+
+
+<script>
+
+
+function toggleSummary() {
+    const content = document.getElementById('summary-content');
+    const btn = document.getElementById('toggle-summary-btn');
+    if (!content || !btn) return;
+    const collapsed = content.classList.toggle('summary-collapsed');
+    btn.textContent = collapsed ? '展开' : '收缩';
+}
+</script>
+
+</body>
+</html>

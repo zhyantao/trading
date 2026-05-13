@@ -49,6 +49,7 @@
 </div>
 {% endif %}
 
+{% if not is_static %}
 <!-- 触发回测 -->
 <div class="card" style="margin-top:20px;">
     <div class="card-header">运行新回测</div>
@@ -77,10 +78,12 @@
         </form>
     </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
+{% if not is_static %}
 async function runBacktest(e, type) {
     e.preventDefault();
     const form = e.target;
@@ -127,6 +130,7 @@ async function runBacktest(e, type) {
         logEl.textContent = '请求异常: ' + e.message;
     }
 }
+{% endif %}
 
 function toggleSummary() {
     const content = document.getElementById('summary-content');

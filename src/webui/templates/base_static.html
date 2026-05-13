@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}量化交易研究{% endblock %}</title>
+    <link rel="stylesheet" href="style.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <span class="brand">量化信号</span>
+        <a href="index.html" class="{{ 'active' if active_page == 'dashboard' }}">总览</a>
+        <a href="signals.html" class="{{ 'active' if active_page == 'signals' }}">每日信号</a>
+        <a href="holdings.html" class="{{ 'active' if active_page == 'holdings' }}">我的持仓</a>
+        <a href="managers.html" class="{{ 'active' if active_page == 'managers' }}">经理排名</a>
+        <a href="funds.html" class="{{ 'active' if active_page == 'funds' }}">基金排名</a>
+        <a href="elite.html" class="{{ 'active' if active_page == 'elite' }}">绩优标的</a>
+        <a href="backtest.html" class="{{ 'active' if active_page == 'backtest' }}">回测</a>
+        <a href="pipeline.html" class="{{ 'active' if active_page == 'pipeline' }}">流水线</a>
+    </div>
+</nav>
+
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

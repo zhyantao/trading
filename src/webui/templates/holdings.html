@@ -8,7 +8,7 @@
 <div class="card">
     <div class="card-header">
         当前持仓配置
-        <button class="btn btn-sm btn-outline" onclick="reOptimize()" style="float:right;">重新优化</button>
+        {% if not is_static %}<button class="btn btn-sm btn-outline" onclick="reOptimize()" style="float:right;">重新优化</button>{% endif %}
     </div>
     <div class="table-wrap">
         <table>
@@ -36,6 +36,7 @@
     </div>
 </div>
 
+{% if not is_static %}
 <!-- 优化表单 -->
 <div class="card" style="display:none;" id="optimize-form">
     <div class="card-header">持仓优化参数</div>
@@ -56,6 +57,7 @@
     </form>
     <div id="optimize-log" class="log-box" style="margin-top:12px; display:none;"></div>
 </div>
+{% endif %}
 
 {% else %}
 <div class="card">
@@ -63,13 +65,14 @@
         <div class="empty-icon">📋</div>
         <div class="empty-text">暂无持仓数据</div>
         <div class="empty-hint">运行优化持仓脚本自动生成，或手动创建 out/我的持仓.csv</div>
-        <button class="btn btn-primary" onclick="reOptimize()">生成持仓</button>
+        {% if not is_static %}<button class="btn btn-primary" onclick="reOptimize()">生成持仓</button>{% endif %}
     </div>
 </div>
 {% endif %}
 
 {% endblock %}
 
+{% if not is_static %}
 {% block scripts %}
 <script>
 async function reOptimize() {
@@ -97,3 +100,4 @@ async function runOptimize(e) {
 }
 </script>
 {% endblock %}
+{% endif %}

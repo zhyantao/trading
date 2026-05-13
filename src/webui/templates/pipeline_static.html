@@ -1,0 +1,64 @@
+{% extends "base_static.html" %}
+{% block title %}流水线 - 量化交易研究{% endblock %}
+
+{% block content %}
+<h1 class="page-title">数据处理流水线</h1>
+
+<div class="card">
+    <div class="card-header">流水线步骤（共 7 步）</div>
+    <div style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+        请<a href="https://github.com/zhyantao/trading-bot">本地运行</a>生成最新数据。
+    </div>
+    <div class="pipeline-steps">
+        <div class="pipeline-step">
+            <div class="step-num">1</div>
+            <div class="step-info">
+                <div class="step-name">基金经理-基金收益率明细</div>
+                <div class="step-desc">拉取全市场基金经理+基金收益率字段</div>
+            </div>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-num">2</div>
+            <div class="step-info">
+                <div class="step-name">基金经理排名</div>
+                <div class="step-desc">按近1年收益率+多基金简单平均排名</div>
+            </div>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-num">3</div>
+            <div class="step-info">
+                <div class="step-name">基金年化收益率排序</div>
+                <div class="step-desc">计算成立来复合年化并排序</div>
+            </div>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-num">4</div>
+            <div class="step-info">
+                <div class="step-name">基金-经理关联表</div>
+                <div class="step-desc">关联基金年化与经理排名，过滤新基金</div>
+            </div>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-num">5</div>
+            <div class="step-info">
+                <div class="step-name">绩优经理筛选+投资标的</div>
+                <div class="step-desc">筛选绩优经理，抓取基金Top3和股票Top10</div>
+            </div>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-num">6</div>
+            <div class="step-info">
+                <div class="step-name">优化持仓</div>
+                <div class="step-desc">自动生成优化后的持仓配置</div>
+            </div>
+        </div>
+        <div class="pipeline-step">
+            <div class="step-num">7</div>
+            <div class="step-info">
+                <div class="step-name">每日调仓信号</div>
+                <div class="step-desc">抓取基金重大变动，对照持仓输出信号</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
