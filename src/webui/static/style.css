@@ -349,32 +349,58 @@ tr:hover { background: #f8f9ff; }
    ================================================================ */
 
 .backtest-chart { max-width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); }
-.md-content { font-size: 14px; line-height: 1.8; min-width: 0; overflow-wrap: break-word; }
+
+.md-content {
+    font-size: 14px;
+    line-height: 1.8;
+    min-width: 0;
+    overflow-wrap: break-word;
+    position: relative;
+    transition: max-height 0.35s ease;
+}
+
 .md-content h1 { font-size: 22px; margin-bottom: 12px; }
-.md-content h2 { margin-top: 20px; font-size: 18px; }
+.md-content h2 { margin-top: 20px; margin-bottom: 8px; font-size: 18px; }
 .md-content h3 { margin-top: 14px; font-size: 15px; }
 .md-content .md-list { padding: 0 0 0 1.2em; margin: 8px 0; list-style-position: outside; }
 .md-content .md-list li { padding: 2px 0; overflow-wrap: break-word; }
 .md-content table { margin: 12px 0; }
 .md-content .table-wrap { margin: 12px 0; }
-.md-content p { overflow-wrap: break-word; }
+.md-content p { overflow-wrap: break-word; margin: 4px 0; }
 
-.md-content {
-    transition: max-height 0.3s ease;
-}
 .md-content.summary-collapsed {
-    max-height: 200px !important;
+    max-height: 280px !important;
     overflow: hidden;
-    position: relative;
 }
+
 .md-content.summary-collapsed::after {
-    content: '';
+    content: '展开阅读 ▼';
     position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 50px;
-    background: linear-gradient(transparent, #fff);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    padding-top: 48px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--accent);
+    background: linear-gradient(transparent 0%, var(--card-bg) 55%);
     pointer-events: none;
 }
+
+/* 回测记录项 hover */
+.backtest-record {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    text-decoration: none;
+    color: var(--text);
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+.backtest-record:hover { background: #f0f0f5; }
+.backtest-record.active { background: #e8f0fe; font-weight: 600; }
 
 .backtest-layout {
     display: grid;
