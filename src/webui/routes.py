@@ -15,6 +15,8 @@ from typing import Any
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 
+import pandas as pd
+
 from jinja2 import Environment, FileSystemLoader
 
 from .data_service import DataService
@@ -372,7 +374,3 @@ def _md_to_html(md: str) -> str:
     if in_table:
         html_lines.append("</tbody></table>")
     return "\n".join(html_lines)
-
-
-# 延迟导入避免循环
-import pandas as pd

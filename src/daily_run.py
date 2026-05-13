@@ -36,6 +36,7 @@ def main() -> None:
     run([py, str(root / "src" / "rank_all_funds_by_annualized_return.py")])
     run([py, str(root / "src" / "link_fund_annualized_and_manager_rank.py"), "--min-days", "180"])
     run([py, str(root / "src" / "pick_elite_managers_targets.py"), "--top-n", "20", "--min-days", "180"])
+    run([py, str(root / "src" / "optimize_holdings.py")])
     run([py, str(root / "src" / "daily_rebalance_signal.py"), "--holdings", "out/我的持仓.csv"])
 
 

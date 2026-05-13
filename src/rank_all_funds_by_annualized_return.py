@@ -77,7 +77,10 @@ def fetch_open_fund_rank_raw(symbol: str = "全部", pn: int = 30000) -> pd.Data
     text = r.text
 
     # 返回内容形如：var rankData = {...}; 取 {...} 部分
-    j = demjson.decode(text[text.find("{") : -1])
+    idx = text.find("{")
+    if idx == -1:
+        raise ValueError(f"API 返回格式异常，未找到 JSON 起始位置")
+    j = demjson.decode(text[idx: -1])
     temp_df = pd.DataFrame(j["datas"])
     split_df = temp_df.iloc[:, 0].str.split(",", expand=True)
 
