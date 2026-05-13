@@ -306,30 +306,52 @@ def _run_all_steps(task_id: str) -> None:
     total = len(PIPELINE_STEPS)
 
     for i, step in enumerate(PIPELINE_STEPS):
+        step_start = datetime.now().timestamp()
         task["progress"] = {"current": i + 1, "total": total, "name": step["name"]}
         task["log_lines"].append(f"\n{'='*50}")
         task["log_lines"].append(f"[{i+1}/{total}] {step['name']}")
+        task["log_lines"].append(f"脚本: src/{step['script']}")
+        args = step.get("args", [])
+        if args:
+            task["log_lines"].append(f"参数: {' '.join(args)}")
         task["log_lines"].append(f"{'='*50}")
 
         args = step.get("args", [])
         proc = _run_script(step["script"], *args)
+        line_count = 0
         for line in proc.stdout:
+            line_count += 1
             task["log_lines"].append(line.rstrip())
         proc.wait()
 
+        step_elapsed = datetime.now().timestamp() - step_start
         if proc.returncode != 0:
             task["status"] = "failed"
             task["end"] = datetime.now().strftime("%H:%M:%S")
             task["end_ts"] = datetime.now().timestamp()
             task["rc"] = proc.returncode
-            task["log_lines"].append(f"\n===== 第{i+1}步失败 (rc={proc.returncode})，流水线中止 =====")
+            task["log_lines"].append(f"\n===== 第{i+1}步失败 (rc={proc.returncode}) 耗时 {step_elapsed:.1f}s，流水线中止 =====")
             return
+
+        # 步骤完成摘要
+        task["log_lines"].append(f"\n--- 第{i+1}步完成 (耗时 {step_elapsed:.1f}s, 输出 {line_count} 行) ---")
+
+        # 列出该步骤生成的输出文件
+        out_dir = _project_root() / "out"
+        step_out_files = sorted(out_dir.glob("*.csv"), key=lambda f: f.stat().st_mtime, reverse=True)
+        newest = [f for f in step_out_files[:3] if f.stat().st_mtime >= step_start - 5]
+        if newest:
+            task["log_lines"].append("输出文件:")
+            for f in newest:
+                size_kb = f.stat().st_size / 1024
+                task["log_lines"].append(f"  {f.name} ({size_kb:.1f} KB)")
 
     task["status"] = "done"
     task["end"] = datetime.now().strftime("%H:%M:%S")
     task["end_ts"] = datetime.now().timestamp()
     task["rc"] = 0
-    task["log_lines"].append("\n===== 全流程完成 =====")
+    total_elapsed = task["end_ts"] - task["start_ts"]
+    task["log_lines"].append(f"\n===== 全流程完成 (总耗时 {total_elapsed:.1f}s) =====")
 
 
 @router.post("/api/run/all")
