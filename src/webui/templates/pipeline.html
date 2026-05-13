@@ -97,7 +97,7 @@ function fmtDuration(startTs, endTs) {
 }
 
 function setStepStyle(current) {
-    // current: 1-based (0 = none started, >=TOTAL_STEPS = all done)
+    // current: 1-based (0 = reset all, >=TOTAL_STEPS = all done)
     const allDone = current >= TOTAL_STEPS;
     for (let i = 0; i < TOTAL_STEPS; i++) {
         const stepEl = document.getElementById('step-' + i);
@@ -106,11 +106,13 @@ function setStepStyle(current) {
         if (!stepEl || !numEl) continue;
         stepEl.classList.remove('step-done', 'step-running');
         numEl.classList.remove('step-num-done', 'step-num-running');
-        if (allDone || (current > 0 && i < current - 1)) {
+        if (current === 0) {
+            if (btnEl) { btnEl.textContent = '运行'; btnEl.disabled = false; }
+        } else if (allDone || i < current - 1) {
             stepEl.classList.add('step-done');
             numEl.classList.add('step-num-done');
             if (btnEl) { btnEl.textContent = '已完成'; btnEl.disabled = true; }
-        } else if (current > 0 && i === current - 1) {
+        } else if (i === current - 1) {
             stepEl.classList.add('step-running');
             numEl.classList.add('step-num-running');
             if (btnEl) { btnEl.textContent = '运行中...'; btnEl.disabled = true; }
@@ -133,15 +135,21 @@ async function runStep(stepId) {
     logBox.textContent = '启动中...\n';
     const runStartTs = Date.now() / 1000;
 
-    // 全流程：显示进度条，禁用所有按钮，重置步骤样式
+    // 重置步骤样式和按钮状态
+    setStepStyle(0);
+
+    // 全流程：显示进度条，禁用所有按钮
     if (stepId === 'all') {
         progressWrap.style.display = 'block';
         progressText.textContent = '准备中...';
         progressNum.textContent = '0/' + TOTAL_STEPS;
         progressBar.style.width = '0%';
         progressBar.style.background = 'var(--accent)';
-        setStepStyle(0);
         setAllBtnsDisabled(true);
+    } else {
+        // 单步执行：高亮当前步骤
+        const idx = STEP_IDS.indexOf(stepId);
+        if (idx >= 0) setStepStyle(idx + 1);
     }
 
     let endpoint = stepId === 'all' ? '/api/run/all' : '/api/run/step/' + stepId;
@@ -188,11 +196,10 @@ async function runStep(stepId) {
                 logBox.textContent += '\n\n===== 完成 (rc=' + t.rc + ') 耗时 ' + dur + ' =====';
                 logStatus.textContent = '完成 耗时' + dur;
                 if (btn) { btn.disabled = false; btn.textContent = '运行'; }
+                setStepStyle(0);
                 if (stepId === 'all') {
                     progressText.textContent = '全部完成';
                     progressBar.style.background = 'var(--green)';
-                    setStepStyle(TOTAL_STEPS);
-                    setAllBtnsDisabled(false);
                 }
             } else if (t.status === 'failed') {
                 clearInterval(poll);
@@ -200,8 +207,8 @@ async function runStep(stepId) {
                 logBox.textContent += '\n\n===== 失败 (rc=' + t.rc + ') 耗时 ' + dur + ' =====';
                 logStatus.textContent = '失败 耗时' + dur;
                 if (btn) { btn.disabled = false; btn.textContent = '运行'; }
+                setStepStyle(0);
                 progressBar.style.background = 'var(--red)';
-                if (stepId === 'all') setAllBtnsDisabled(false);
             }
         }, 500);
     } catch (err) {
