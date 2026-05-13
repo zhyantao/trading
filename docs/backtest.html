@@ -39,7 +39,7 @@
     <div class="card" style="height:fit-content;">
         <div class="card-header">回测记录</div>
         
-        <a href="backtest_fund_20260513.html" style="display:flex; align-items:center; gap:10px; padding:10px; text-decoration:none; color:var(--text); border-radius:6px; margin-bottom:4px; ">
+        <a href="backtest_fund_20260513.html" class="backtest-record ">
             <span style="font-size:13px;">基金回测</span>
             <span style="font-size:11px; color:var(--text-secondary);">20260513</span>
             <span style="font-size:11px; color:var(--green);">含图表</span>
@@ -68,7 +68,7 @@ function toggleSummary() {
     const btn = document.getElementById('toggle-summary-btn');
     if (!content || !btn) return;
     const collapsed = content.classList.toggle('summary-collapsed');
-    btn.textContent = collapsed ? '展开' : '收缩';
+    btn.textContent = collapsed ? '展开 ▼' : '收起 ▲';
 }
 </script>
 
