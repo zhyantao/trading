@@ -391,6 +391,7 @@ def _setup_chinese_font() -> None:
     import matplotlib.pyplot as plt
 
     candidates = [
+        # macOS / iOS
         "PingFang HK",
         "Heiti TC",
         "STHeiti",
@@ -398,9 +399,20 @@ def _setup_chinese_font() -> None:
         "Lantinghei SC",
         "Arial Unicode MS",
         "Songti SC",
+        # Windows
         "Microsoft YaHei",
         "SimHei",
+        "SimSun",
+        "KaiTi",
+        "FangSong",
+        # Linux
         "Noto Sans CJK SC",
+        "Noto Sans SC",
+        "WenQuanYi Micro Hei",
+        "WenQuanYi Zen Hei",
+        "WenQuanYi Bitmap Song",
+        "AR PL UMing CN",
+        "AR PL UKai CN",
     ]
     import matplotlib.font_manager as fm
     available = {f.name for f in fm.fontManager.ttflist}

@@ -419,14 +419,27 @@ def _md_to_html(md: str) -> str:
     lines = md.split("\n")
     html_lines = []
     in_table = False
+    in_list = False
     for line in lines:
         if line.startswith("# ") and not line.startswith("## "):
+            if in_list:
+                html_lines.append("</ul>")
+                in_list = False
             html_lines.append(f"<h1>{line[2:]}</h1>")
         elif line.startswith("## "):
+            if in_list:
+                html_lines.append("</ul>")
+                in_list = False
             html_lines.append(f"<h2>{line[3:]}</h2>")
         elif line.startswith("- "):
+            if not in_list:
+                html_lines.append('<ul class="md-list">')
+                in_list = True
             html_lines.append(f"<li>{line[2:]}</li>")
         elif line.startswith("|"):
+            if in_list:
+                html_lines.append("</ul>")
+                in_list = False
             cells = [c.strip() for c in line.split("|")[1:-1]]
             if all(c.startswith("---") for c in cells if c):
                 # 分隔行，跳过
@@ -450,10 +463,21 @@ def _md_to_html(md: str) -> str:
             if in_table:
                 html_lines.append("</tbody></table></div>")
                 in_table = False
+            if in_list:
+                html_lines.append("</ul>")
+                in_list = False
         elif line.startswith(">"):
+            if in_list:
+                html_lines.append("</ul>")
+                in_list = False
             html_lines.append(f"<blockquote>{line[1:].strip()}</blockquote>")
         else:
+            if in_list:
+                html_lines.append("</ul>")
+                in_list = False
             html_lines.append(f"<p>{line}</p>")
     if in_table:
         html_lines.append("</tbody></table></div>")
+    if in_list:
+        html_lines.append("</ul>")
     return "\n".join(html_lines)
