@@ -2,6 +2,15 @@
 {% block title %}流水线控制 - 量化交易研究{% endblock %}
 
 {% block content %}
+{% set steps = [
+    ('build_manager_fund_returns', '1', '基金经理-基金收益率明细', '拉取全市场基金经理+基金收益率字段'),
+    ('rank_fund_managers', '2', '基金经理排名', '按近1年收益率+多基金简单平均排名'),
+    ('rank_all_funds_by_annualized_return', '3', '基金年化收益率排序', '计算成立来复合年化并排序'),
+    ('link_fund_annualized_and_manager_rank', '4', '基金-经理关联表', '关联基金年化与经理排名，过滤新基金'),
+    ('pick_elite_managers_targets', '5', '绩优经理筛选+投资标的', '筛选绩优经理，抓取基金Top3和股票Top10'),
+    ('optimize_holdings', '6', '优化持仓', '自动生成优化后的持仓配置'),
+    ('daily_rebalance_signal', '7', '每日调仓信号', '抓取基金重大变动，对照持仓输出信号'),
+] %}
 <h1 class="page-title">流水线控制</h1>
 
 <div class="card">
@@ -26,15 +35,6 @@
 <div class="card">
     <div class="card-header">分步执行</div>
     <div class="pipeline-steps" id="pipeline-steps">
-        {% set steps = [
-            ('build_manager_fund_returns', '1', '基金经理-基金收益率明细', '拉取全市场基金经理+基金收益率字段'),
-            ('rank_fund_managers', '2', '基金经理排名', '按近1年收益率+多基金简单平均排名'),
-            ('rank_all_funds_by_annualized_return', '3', '基金年化收益率排序', '计算成立来复合年化并排序'),
-            ('link_fund_annualized_and_manager_rank', '4', '基金-经理关联表', '关联基金年化与经理排名，过滤新基金'),
-            ('pick_elite_managers_targets', '5', '绩优经理筛选+投资标的', '筛选绩优经理，抓取基金Top3和股票Top10'),
-            ('optimize_holdings', '6', '优化持仓', '自动生成优化后的持仓配置'),
-            ('daily_rebalance_signal', '7', '每日调仓信号', '抓取基金重大变动，对照持仓输出信号'),
-        ] %}
         {% for step_id, num, name, desc in steps %}
         <div class="pipeline-step" id="step-{{ loop.index0 }}">
             <div class="step-num" id="step-num-{{ loop.index0 }}">{{ num }}</div>
@@ -76,14 +76,15 @@ const progressBar = document.getElementById('progress-bar');
 const TOTAL_STEPS = 7;
 
 function setStepStyle(current) {
-    // current: 1-based (0 = none started)
+    // current: 1-based (0 = none started, >=TOTAL_STEPS = all done)
+    const allDone = current >= TOTAL_STEPS;
     for (let i = 0; i < TOTAL_STEPS; i++) {
         const stepEl = document.getElementById('step-' + i);
         const numEl = document.getElementById('step-num-' + i);
         if (!stepEl || !numEl) continue;
         stepEl.classList.remove('step-done', 'step-running');
         numEl.classList.remove('step-num-done', 'step-num-running');
-        if (current > 0 && i < current - 1) {
+        if (allDone || (current > 0 && i < current - 1)) {
             stepEl.classList.add('step-done');
             numEl.classList.add('step-num-done');
         } else if (current > 0 && i === current - 1) {
