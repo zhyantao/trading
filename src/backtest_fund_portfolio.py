@@ -73,15 +73,19 @@ def fetch_fund_nav(
     if cache_dir is not None:
         cache_dir.mkdir(parents=True, exist_ok=True)
         fp = cache_dir / f"nav_{fund_code}_{_to_yyyymmdd(start) if start else 'all'}_{_to_yyyymmdd(end) if end else 'all'}.csv"
-        if fp.exists():
+        if fp.exists() and fp.stat().st_size > 0:
             df = pd.read_csv(fp)
-            df["日期"] = pd.to_datetime(df["日期"]).dt.date
-            s = pd.Series(df["单位净值"].values, index=df["日期"].values, name=fund_code)
-            if start:
-                s = s[s.index >= start]
-            if end:
-                s = s[s.index <= end]
-            return s
+            if not df.empty and "日期" in df.columns and "单位净值" in df.columns:
+                df["日期"] = pd.to_datetime(df["日期"]).dt.date
+                s = pd.Series(df["单位净值"].values, index=df["日期"].values, name=fund_code)
+                if not s.empty:
+                    if start:
+                        s = s[s.index >= start]
+                    if end:
+                        s = s[s.index <= end]
+                    return s
+        if fp.exists():
+            fp.unlink()
 
     last_exc: Exception | None = None
     df = None
@@ -102,12 +106,12 @@ def fetch_fund_nav(
     date_col = next((c for c in df.columns if "日期" in str(c)), df.columns[0])
     nav_col = next((c for c in df.columns if "单位净值" in str(c)), df.columns[1])
     df = df.rename(columns={date_col: "日期", nav_col: "单位净值"})
-    df["日期"] = pd.to_datetime(df["日期"]).dt.date
+    df["日期"] = pd.to_datetime(df["日期"], errors="coerce").dt.date
     df["单位净值"] = pd.to_numeric(df["单位净值"], errors="coerce")
     df = df.dropna(subset=["单位净值"])
     df = df.sort_values("日期")
 
-    if cache_dir is not None:
+    if cache_dir is not None and not df.empty:
         df[["日期", "单位净值"]].to_csv(fp, index=False, encoding="utf-8")
 
     s = pd.Series(df["单位净值"].values, index=df["日期"].values, name=fund_code)

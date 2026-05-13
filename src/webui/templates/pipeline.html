@@ -10,7 +10,16 @@
         <button class="btn btn-primary" onclick="runStep('all')" style="float:right;" id="btn-all">运行全流程</button>
     </div>
     <div style="font-size:13px; color:var(--text-secondary); margin-bottom:8px;">
-        等同于 <code>python3 src/daily_run.py</code>，按依赖顺序依次执行所有步骤
+        按依赖顺序依次执行 {{ steps|length }} 个步骤
+    </div>
+    <div id="progress-wrap" style="display:none; margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-secondary); margin-bottom:4px;">
+            <span id="progress-text">准备中...</span>
+            <span id="progress-num">0/{{ steps|length }}</span>
+        </div>
+        <div style="height:6px; background:#e0e0e0; border-radius:3px; overflow:hidden;">
+            <div id="progress-bar" style="height:100%; width:0%; background:var(--accent); border-radius:3px; transition: width 0.3s;"></div>
+        </div>
     </div>
 </div>
 
@@ -59,8 +68,12 @@
 const logBox = document.getElementById('log-box');
 const logStatus = document.getElementById('log-status');
 
+const progressWrap = document.getElementById('progress-wrap');
+const progressText = document.getElementById('progress-text');
+const progressNum = document.getElementById('progress-num');
+const progressBar = document.getElementById('progress-bar');
+
 async function runStep(stepId) {
-    // 禁用按钮
     const btnId = stepId === 'all' ? 'btn-all' : 'btn-' + stepId;
     const btn = document.getElementById(btnId);
     if (btn) { btn.disabled = true; btn.textContent = '运行中...'; }
@@ -68,9 +81,16 @@ async function runStep(stepId) {
     logStatus.textContent = '运行中...';
     logBox.textContent = '启动中...\n';
 
+    // 全流程显示进度条
+    if (stepId === 'all') {
+        progressWrap.style.display = 'block';
+        progressText.textContent = '准备中...';
+        progressNum.textContent = '0/7';
+        progressBar.style.width = '0%';
+    }
+
     let endpoint = stepId === 'all' ? '/api/run/all' : '/api/run/step/' + stepId;
     let method = 'POST';
-    // 优化持仓需要参数
     let body = null;
     if (stepId === 'optimize_holdings') {
         body = new URLSearchParams({total_n: 5, stock_pct: 30, fund_pct: 70});
@@ -91,16 +111,31 @@ async function runStep(stepId) {
             const r = await fetch('/api/run/status/' + taskId);
             const t = await r.json();
             logBox.textContent = t.log_lines.join('\n');
+            logBox.scrollTop = logBox.scrollHeight;
+
+            // 更新进度条
+            if (t.progress) {
+                const pct = Math.round(t.progress.current / t.progress.total * 100);
+                progressText.textContent = t.progress.name || '';
+                progressNum.textContent = t.progress.current + '/' + t.progress.total;
+                progressBar.style.width = pct + '%';
+            }
+
             if (t.status === 'done') {
                 clearInterval(poll);
                 logBox.textContent += '\n\n===== 完成 (rc=' + t.rc + ') =====';
                 logStatus.textContent = '完成 ' + t.end;
                 if (btn) { btn.disabled = false; btn.textContent = '运行'; }
+                if (stepId === 'all') {
+                    progressText.textContent = '全部完成';
+                    progressBar.style.background = 'var(--green)';
+                }
             } else if (t.status === 'failed') {
                 clearInterval(poll);
                 logBox.textContent += '\n\n===== 失败 (rc=' + t.rc + ') =====';
                 logStatus.textContent = '失败 ' + t.end;
                 if (btn) { btn.disabled = false; btn.textContent = '运行'; }
+                progressBar.style.background = 'var(--red)';
             }
         }, 500);
     } catch (err) {
