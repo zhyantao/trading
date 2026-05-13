@@ -413,6 +413,7 @@ def format_summary_md(
     config: BacktestConfig,
     out_files: list[Path],
     extra_info: dict[str, Any] | None = None,
+    trades_df: pd.DataFrame | None = None,
 ) -> str:
     """生成回测摘要 Markdown 文本。"""
     now = datetime.now().strftime("%Y%m%d")
@@ -465,6 +466,31 @@ def format_summary_md(
         lines += ["", "## 年度收益", "", "| 年份 | 收益率 |", "|------|--------|"]
         for yr in sorted(metrics.yearly_returns.keys()):
             lines.append(f"| {yr} | {metrics.yearly_returns[yr]*100:.2f}% |")
+
+    # 交易明细摘要
+    if trades_df is not None and not trades_df.empty:
+        lines += ["", "## 交易明细", ""]
+        lines.append(f"共 {len(trades_df)} 笔交易")
+        lines.append("")
+        lines.append("| 日期 | 方向 | 代码 | 名称 | 价格 | 股数/份额 | 成交额 | 手续费 |")
+        lines.append("|------|------|------|------|------|-----------|--------|--------|")
+        for _, t in trades_df.iterrows():
+            lines.append(
+                f"| {t.get('日期', '')} | {t.get('方向', '')} | {t.get('代码', '')} "
+                f"| {t.get('名称', '')} | {t.get('价格', '')} | {t.get('股数', t.get('份额', ''))} "
+                f"| {t.get('成交额', '')} | {t.get('手续费', '')} |"
+            )
+
+        # 按标的汇总
+        lines += ["", "## 标的交易汇总", ""]
+        lines.append("| 代码 | 名称 | 买入次数 | 卖出次数 |")
+        lines.append("|------|------|----------|----------|")
+        for code in sorted(trades_df["代码"].unique()):
+            sub = trades_df[trades_df["代码"] == code]
+            name = sub["名称"].iloc[0] if "名称" in sub.columns else ""
+            buys = int((sub["方向"] == "买入").sum())
+            sells = int((sub["方向"] == "卖出").sum())
+            lines.append(f"| {code} | {name} | {buys} | {sells} |")
 
     lines += ["", "## 输出文件"]
     for fp in out_files:
