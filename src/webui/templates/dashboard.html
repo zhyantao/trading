@@ -26,8 +26,9 @@
 <!-- 信号摘要 + 持仓概览 -->
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
 
-    <div class="card">
-        <div class="card-header">今日信号摘要</div>
+    {% if signal_stats.total > 0 %}<a href="/signals" style="text-decoration:none; color:inherit;">{% endif %}
+    <div class="card {{ 'card-clickable' if signal_stats.total > 0 else '' }}">
+        <div class="card-header">今日信号摘要{% if signal_stats.total > 0 %} <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span>{% endif %}</div>
         {% if signal_stats.total > 0 %}
         <div style="display:flex; gap:16px; text-align:center;">
             <div style="flex:1; padding:12px; background:#e6f9f0; border-radius:8px;">
@@ -47,6 +48,7 @@
         <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline">运行流水线</a> 生成每日调仓信号</div></div>
         {% endif %}
     </div>
+    {% if signal_stats.total > 0 %}</a>{% endif %}
 
     <div class="card">
         <div class="card-header">持仓配置</div>
@@ -66,8 +68,7 @@
                     stroke-dasharray="{{ (360 - stock_angle) * 3.1416 * 60 / 180 }} {{ stock_angle * 3.1416 * 60 / 180 }}"
                     stroke-dashoffset="{{ -stock_angle * 3.1416 * 60 / 180 }}" transform="rotate(-90 80 80)"/>
                 {% endif %}
-                <text x="80" y="76" text-anchor="middle" font-size="13" fill="var(--text-secondary)">配置比例</text>
-                <text x="80" y="96" text-anchor="middle" font-size="16" font-weight="700">{{ "%.2f" % stock_sum }}% / {{ "%.2f" % fund_sum }}%</text>
+                <text x="80" y="84" text-anchor="middle" font-size="13" fill="var(--text-secondary)">配置比例</text>
             </svg>
             <div class="donut-legend">
                 <div><span class="donut-dot" style="background:var(--accent);"></span>股票 {{ "%.2f" % stock_sum }}%</div>
