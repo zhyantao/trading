@@ -97,8 +97,8 @@ function fmtDuration(startTs, endTs) {
 }
 
 function setStepStyle(current) {
-    // current: 1-based (0 = reset all, >=TOTAL_STEPS = all done)
-    const allDone = current >= TOTAL_STEPS;
+    // current: 1-based = currently running step, 0 = reset, >TOTAL_STEPS = all done
+    const allDone = current > TOTAL_STEPS;
     for (let i = 0; i < TOTAL_STEPS; i++) {
         const stepEl = document.getElementById('step-' + i);
         const numEl = document.getElementById('step-num-' + i);
@@ -196,10 +196,12 @@ async function runStep(stepId) {
                 logBox.textContent += '\n\n===== 完成 (rc=' + t.rc + ') 耗时 ' + dur + ' =====';
                 logStatus.textContent = '完成 耗时' + dur;
                 if (btn) { btn.disabled = false; btn.textContent = '运行'; }
-                setStepStyle(0);
                 if (stepId === 'all') {
                     progressText.textContent = '全部完成';
                     progressBar.style.background = 'var(--green)';
+                    setStepStyle(TOTAL_STEPS + 1);
+                } else {
+                    setStepStyle(0);
                 }
             } else if (t.status === 'failed') {
                 clearInterval(poll);
@@ -207,8 +209,8 @@ async function runStep(stepId) {
                 logBox.textContent += '\n\n===== 失败 (rc=' + t.rc + ') 耗时 ' + dur + ' =====';
                 logStatus.textContent = '失败 耗时' + dur;
                 if (btn) { btn.disabled = false; btn.textContent = '运行'; }
-                setStepStyle(0);
                 progressBar.style.background = 'var(--red)';
+                setStepStyle(0);
             }
         }, 500);
     } catch (err) {
