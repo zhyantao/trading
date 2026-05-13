@@ -67,12 +67,14 @@ def _run_in_background(task_id: str, script_name: str, *args: str) -> None:
         return
     task["status"] = "running"
     task["start"] = datetime.now().strftime("%H:%M:%S")
+    task["start_ts"] = datetime.now().timestamp()
     proc = _run_script(script_name, *args)
     for line in proc.stdout:
         task["log_lines"].append(line.rstrip())
     proc.wait()
     task["status"] = "done" if proc.returncode == 0 else "failed"
     task["end"] = datetime.now().strftime("%H:%M:%S")
+    task["end_ts"] = datetime.now().timestamp()
     task["rc"] = proc.returncode
 
 
@@ -299,6 +301,7 @@ def _run_all_steps(task_id: str) -> None:
         return
     task["status"] = "running"
     task["start"] = datetime.now().strftime("%H:%M:%S")
+    task["start_ts"] = datetime.now().timestamp()
     task["log_lines"] = []
     total = len(PIPELINE_STEPS)
 
@@ -317,12 +320,14 @@ def _run_all_steps(task_id: str) -> None:
         if proc.returncode != 0:
             task["status"] = "failed"
             task["end"] = datetime.now().strftime("%H:%M:%S")
+            task["end_ts"] = datetime.now().timestamp()
             task["rc"] = proc.returncode
             task["log_lines"].append(f"\n===== 第{i+1}步失败 (rc={proc.returncode})，流水线中止 =====")
             return
 
     task["status"] = "done"
     task["end"] = datetime.now().strftime("%H:%M:%S")
+    task["end_ts"] = datetime.now().timestamp()
     task["rc"] = 0
     task["log_lines"].append("\n===== 全流程完成 =====")
 

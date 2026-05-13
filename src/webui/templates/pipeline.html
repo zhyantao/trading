@@ -84,6 +84,18 @@ const STEP_IDS = [
     'daily_rebalance_signal',
 ];
 
+function fmtDuration(startTs, endTs) {
+    if (!startTs || !endTs) return '';
+    const sec = Math.round(endTs - startTs);
+    if (sec < 60) return sec + '秒';
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    if (m < 60) return m + '分' + s + '秒';
+    const h = Math.floor(m / 60);
+    const rm = m % 60;
+    return h + '时' + rm + '分' + s + '秒';
+}
+
 function setStepStyle(current) {
     // current: 1-based (0 = none started, >=TOTAL_STEPS = all done)
     const allDone = current >= TOTAL_STEPS;
@@ -119,6 +131,7 @@ async function runStep(stepId) {
 
     logStatus.textContent = '运行中...';
     logBox.textContent = '启动中...\n';
+    const runStartTs = Date.now() / 1000;
 
     // 全流程：显示进度条，禁用所有按钮，重置步骤样式
     if (stepId === 'all') {
@@ -156,6 +169,10 @@ async function runStep(stepId) {
             logBox.textContent = t.log_lines.join('\n');
             logBox.scrollTop = logBox.scrollHeight;
 
+            // 更新运行耗时
+            const elapsed = fmtDuration(runStartTs, Date.now() / 1000);
+            logStatus.textContent = '运行中 ' + elapsed;
+
             // 更新进度条和步骤样式
             if (t.progress && t.progress.current > 0) {
                 const pct = Math.round(t.progress.current / t.progress.total * 100);
@@ -167,19 +184,21 @@ async function runStep(stepId) {
 
             if (t.status === 'done') {
                 clearInterval(poll);
-                logBox.textContent += '\n\n===== 完成 (rc=' + t.rc + ') =====';
-                logStatus.textContent = '完成 ' + t.end;
+                const dur = fmtDuration(t.start_ts, t.end_ts);
+                logBox.textContent += '\n\n===== 完成 (rc=' + t.rc + ') 耗时 ' + dur + ' =====';
+                logStatus.textContent = '完成 耗时' + dur;
                 if (btn) { btn.disabled = false; btn.textContent = '运行'; }
                 if (stepId === 'all') {
                     progressText.textContent = '全部完成';
                     progressBar.style.background = 'var(--green)';
-                    setStepStyle(TOTAL_STEPS); // all green
+                    setStepStyle(TOTAL_STEPS);
                     setAllBtnsDisabled(false);
                 }
             } else if (t.status === 'failed') {
                 clearInterval(poll);
-                logBox.textContent += '\n\n===== 失败 (rc=' + t.rc + ') =====';
-                logStatus.textContent = '失败 ' + t.end;
+                const dur = fmtDuration(t.start_ts, t.end_ts);
+                logBox.textContent += '\n\n===== 失败 (rc=' + t.rc + ') 耗时 ' + dur + ' =====';
+                logStatus.textContent = '失败 耗时' + dur;
                 if (btn) { btn.disabled = false; btn.textContent = '运行'; }
                 progressBar.style.background = 'var(--red)';
                 if (stepId === 'all') setAllBtnsDisabled(false);
