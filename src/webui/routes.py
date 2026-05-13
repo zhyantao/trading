@@ -431,11 +431,11 @@ def _md_to_html(md: str) -> str:
             if all(c.startswith("---") for c in cells if c):
                 # 分隔行，跳过
                 if not in_table:
-                    html_lines.append("<table>")
+                    html_lines.append('<div class="table-wrap"><table>')
                     in_table = True
                 continue
             if in_table:
-                is_header = not html_lines or html_lines[-1] == "<table>" or html_lines[-1].startswith("</thead>")
+                is_header = not html_lines or html_lines[-1].endswith("<table>") or html_lines[-1].startswith("</thead>")
                 cell_tag = "th" if is_header else "td"
                 row = "".join(f"<{cell_tag}>{c}</{cell_tag}>" for c in cells)
                 if is_header:
@@ -443,17 +443,17 @@ def _md_to_html(md: str) -> str:
                 else:
                     html_lines.append(f"<tr>{row}</tr>")
             else:
-                html_lines.append("<table>")
+                html_lines.append('<div class="table-wrap"><table>')
                 in_table = True
                 html_lines.append(f"<tr>{''.join(f'<th>{c}</th>' for c in cells)}</tr>")
         elif line.strip() == "":
             if in_table:
-                html_lines.append("</tbody></table>")
+                html_lines.append("</tbody></table></div>")
                 in_table = False
         elif line.startswith(">"):
             html_lines.append(f"<blockquote>{line[1:].strip()}</blockquote>")
         else:
             html_lines.append(f"<p>{line}</p>")
     if in_table:
-        html_lines.append("</tbody></table>")
+        html_lines.append("</tbody></table></div>")
     return "\n".join(html_lines)
