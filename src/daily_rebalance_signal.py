@@ -97,6 +97,10 @@ def main() -> None:
     holdings_path = Path(args.holdings)
     if not holdings_path.is_absolute():
         holdings_path = (project_root / holdings_path).resolve()
+    if not holdings_path.exists():
+        holdings_path.parent.mkdir(parents=True, exist_ok=True)
+        holdings_path.write_text("日期,类型,代码,名称,数量,比例(%)\n", encoding="utf-8")
+        print(f"[init] 创建默认持仓文件: {holdings_path}")
 
     stamp = datetime.now().strftime("%Y%m%d")
     out_csv = out_dir / f"每日调仓信号_{stamp}.csv"
