@@ -25,7 +25,7 @@
 
 <div class="card">
     <div class="card-header">分步执行</div>
-    <div class="pipeline-steps">
+    <div class="pipeline-steps" id="pipeline-steps">
         {% set steps = [
             ('build_manager_fund_returns', '1', '基金经理-基金收益率明细', '拉取全市场基金经理+基金收益率字段'),
             ('rank_fund_managers', '2', '基金经理排名', '按近1年收益率+多基金简单平均排名'),
@@ -36,14 +36,14 @@
             ('daily_rebalance_signal', '7', '每日调仓信号', '抓取基金重大变动，对照持仓输出信号'),
         ] %}
         {% for step_id, num, name, desc in steps %}
-        <div class="pipeline-step">
-            <div class="step-num">{{ num }}</div>
+        <div class="pipeline-step" id="step-{{ loop.index0 }}">
+            <div class="step-num" id="step-num-{{ loop.index0 }}">{{ num }}</div>
             <div class="step-info">
                 <div class="step-name">{{ name }}</div>
                 <div class="step-desc">{{ desc }}</div>
             </div>
             <div class="step-actions">
-                <button class="btn btn-sm btn-outline" onclick="runStep('{{ step_id }}')" id="btn-{{ step_id }}">运行</button>
+                <button class="btn btn-sm btn-outline step-btn" onclick="runStep('{{ step_id }}')" id="btn-{{ step_id }}">运行</button>
             </div>
         </div>
         {% endfor %}
@@ -73,6 +73,32 @@ const progressText = document.getElementById('progress-text');
 const progressNum = document.getElementById('progress-num');
 const progressBar = document.getElementById('progress-bar');
 
+const TOTAL_STEPS = 7;
+
+function setStepStyle(current) {
+    // current: 1-based (0 = none started)
+    for (let i = 0; i < TOTAL_STEPS; i++) {
+        const stepEl = document.getElementById('step-' + i);
+        const numEl = document.getElementById('step-num-' + i);
+        if (!stepEl || !numEl) continue;
+        stepEl.classList.remove('step-done', 'step-running');
+        numEl.classList.remove('step-num-done', 'step-num-running');
+        if (current > 0 && i < current - 1) {
+            stepEl.classList.add('step-done');
+            numEl.classList.add('step-num-done');
+        } else if (current > 0 && i === current - 1) {
+            stepEl.classList.add('step-running');
+            numEl.classList.add('step-num-running');
+        }
+    }
+}
+
+function setAllBtnsDisabled(disabled) {
+    document.querySelectorAll('.step-btn').forEach(b => { b.disabled = disabled; });
+    const btnAll = document.getElementById('btn-all');
+    if (btnAll) btnAll.disabled = disabled;
+}
+
 async function runStep(stepId) {
     const btnId = stepId === 'all' ? 'btn-all' : 'btn-' + stepId;
     const btn = document.getElementById(btnId);
@@ -81,12 +107,15 @@ async function runStep(stepId) {
     logStatus.textContent = '运行中...';
     logBox.textContent = '启动中...\n';
 
-    // 全流程显示进度条
+    // 全流程：显示进度条，禁用所有按钮，重置步骤样式
     if (stepId === 'all') {
         progressWrap.style.display = 'block';
         progressText.textContent = '准备中...';
-        progressNum.textContent = '0/7';
+        progressNum.textContent = '0/' + TOTAL_STEPS;
         progressBar.style.width = '0%';
+        progressBar.style.background = 'var(--accent)';
+        setStepStyle(0);
+        setAllBtnsDisabled(true);
     }
 
     let endpoint = stepId === 'all' ? '/api/run/all' : '/api/run/step/' + stepId;
@@ -102,6 +131,7 @@ async function runStep(stepId) {
             logBox.textContent = '请求失败: ' + resp.status;
             if (btn) { btn.disabled = false; btn.textContent = '运行'; }
             logStatus.textContent = '';
+            if (stepId === 'all') setAllBtnsDisabled(false);
             return;
         }
         const data = await resp.json();
@@ -113,12 +143,13 @@ async function runStep(stepId) {
             logBox.textContent = t.log_lines.join('\n');
             logBox.scrollTop = logBox.scrollHeight;
 
-            // 更新进度条
+            // 更新进度条和步骤样式
             if (t.progress && t.progress.current > 0) {
                 const pct = Math.round(t.progress.current / t.progress.total * 100);
                 progressText.textContent = t.progress.name;
                 progressNum.textContent = t.progress.current + '/' + t.progress.total;
                 progressBar.style.width = pct + '%';
+                if (stepId === 'all') setStepStyle(t.progress.current);
             }
 
             if (t.status === 'done') {
@@ -129,6 +160,8 @@ async function runStep(stepId) {
                 if (stepId === 'all') {
                     progressText.textContent = '全部完成';
                     progressBar.style.background = 'var(--green)';
+                    setStepStyle(TOTAL_STEPS); // all green
+                    setAllBtnsDisabled(false);
                 }
             } else if (t.status === 'failed') {
                 clearInterval(poll);
@@ -136,12 +169,14 @@ async function runStep(stepId) {
                 logStatus.textContent = '失败 ' + t.end;
                 if (btn) { btn.disabled = false; btn.textContent = '运行'; }
                 progressBar.style.background = 'var(--red)';
+                if (stepId === 'all') setAllBtnsDisabled(false);
             }
         }, 500);
     } catch (err) {
         logBox.textContent = '错误: ' + err.message;
         if (btn) { btn.disabled = false; btn.textContent = '运行'; }
         logStatus.textContent = '';
+        if (stepId === 'all') setAllBtnsDisabled(false);
     }
 }
 </script>
