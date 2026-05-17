@@ -430,6 +430,14 @@ def _setup_chinese_font() -> None:
 # ---------------------------------------------------------------------------
 
 
+def _fmt2(v):
+    """将数值格式化为保留 2 位小数的字符串，非数值原样返回。"""
+    try:
+        return f"{float(v):.2f}"
+    except (ValueError, TypeError):
+        return str(v)
+
+
 def format_summary_md(
     metrics: BacktestResult,
     config: BacktestConfig,
@@ -499,8 +507,8 @@ def format_summary_md(
         for _, t in trades_df.iterrows():
             lines.append(
                 f"| {t.get('日期', '')} | {t.get('方向', '')} | {t.get('代码', '')} "
-                f"| {t.get('名称', '')} | {t.get('价格', '')} | {t.get('股数', t.get('份额', ''))} "
-                f"| {t.get('成交额', '')} | {t.get('手续费', '')} |"
+                f"| {t.get('名称', '')} | {_fmt2(t.get('价格', ''))} | {_fmt2(t.get('股数', t.get('份额', '')))} "
+                f"| {_fmt2(t.get('成交额', ''))} | {_fmt2(t.get('手续费', ''))} |"
             )
 
         # 按标的汇总
