@@ -329,7 +329,7 @@ def main() -> None:
                     trades.append({
                         "日期": d0, "方向": "卖出", "代码": fc,
                         "名称": fund_name_map.get(fc, ""),
-                        "价格": round(px, 4), "份额": round(sell_sh, 4), "成交额": round(amount, 2), "手续费": round(fee, 2),
+                        "价格": round(px, 2), "份额": round(sell_sh, 2), "成交额": round(amount, 2), "手续费": round(fee, 2),
                     })
                 # 后买
                 for fc, tgt_sh in sorted(target_pos.items(), key=lambda kv: active_w.get(kv[0], 0), reverse=True):
@@ -346,7 +346,7 @@ def main() -> None:
                         trades.append({
                             "日期": d0, "方向": "买入", "代码": fc,
                             "名称": fund_name_map.get(fc, ""),
-                            "价格": round(px, 4), "份额": round(delta, 4), "成交额": round(amount, 2), "手续费": round(fee, 2),
+                            "价格": round(px, 2), "份额": round(delta, 2), "成交额": round(amount, 2), "手续费": round(fee, 2),
                         })
 
         hold_value = 0.0
