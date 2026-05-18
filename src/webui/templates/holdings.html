@@ -39,7 +39,7 @@
 {% if not is_static %}
 <!-- 优化表单 -->
 <div class="card" style="display:none;" id="optimize-form">
-    <div class="card-header">持仓优化参数</div>
+    <div class="card-header">持仓优化参数（Dalio 多因子框架）</div>
     <form onsubmit="runOptimize(event)" style="display:flex; gap:12px; align-items:end; flex-wrap:wrap;">
         <div>
             <label style="font-size:13px; color:var(--text-secondary);">目标总数</label>
@@ -52,6 +52,20 @@
         <div>
             <label style="font-size:13px; color:var(--text-secondary);">基金比例(%)</label>
             <input type="number" name="fund_pct" value="70" min="0" max="100" step="1" class="btn-outline" style="width:80px; padding:8px; border-radius:6px;">
+        </div>
+        <div>
+            <label style="font-size:13px; color:var(--text-secondary);">单仓上限(%)</label>
+            <input type="number" name="max_position" value="25" min="5" max="100" step="1" class="btn-outline" style="width:80px; padding:8px; border-radius:6px;">
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <label style="font-size:13px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" name="composite" value="true" checked style="width:16px; height:16px;">
+                复合评分
+            </label>
+            <label style="font-size:13px; display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" name="risk_parity" value="true" checked style="width:16px; height:16px;">
+                风险平价
+            </label>
         </div>
         <button type="submit" class="btn btn-primary">开始优化</button>
     </form>
