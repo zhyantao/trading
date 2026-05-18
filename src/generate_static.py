@@ -25,6 +25,13 @@ from jinja2 import Environment, FileSystemLoader, Template
 from webui.data_service import DataService
 from webui.routes import _md_to_html
 
+# 周期检测（可选，失败则降级）
+try:
+    from economic_cycle import detect_cycle_phase
+    _HAS_CYCLE = True
+except Exception:
+    _HAS_CYCLE = False
+
 import pandas as pd
 
 # ------------------------------------------------------------------
@@ -189,6 +196,28 @@ def generate_index() -> None:
         "回测-净值曲线(基金)": "backtest.html",
     }
 
+    # 经济周期检测
+    cycle_info = None
+    if _HAS_CYCLE:
+        try:
+            ca = detect_cycle_phase()
+            cycle_info = {
+                "phase": ca.phase.value,
+                "phase_label": {
+                    "early_expansion": "早期扩张",
+                    "late_expansion": "后期扩张",
+                    "overheating": "过热",
+                    "contraction": "收缩",
+                    "deleveraging": "去杠杆",
+                    "unknown": "无法判断",
+                }.get(ca.phase.value, ca.phase.value),
+                "confidence": f"{ca.confidence:.0%}",
+                "description": ca.description,
+                "weights": ca.adjusted_weights,
+            }
+        except Exception:
+            cycle_info = None
+
     html = _render("dashboard.html", {
         "active_page": "dashboard",
         "status": status,
@@ -198,6 +227,7 @@ def generate_index() -> None:
         "stock_sum": stock_sum,
         "fund_sum": fund_sum,
         "top_managers": top_managers,
+        "cycle_info": cycle_info,
     })
     _write("index.html", html)
 

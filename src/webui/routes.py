@@ -21,6 +21,13 @@ from jinja2 import Environment, FileSystemLoader
 
 from .data_service import DataService
 
+# 周期检测（可选，失败则降级）
+try:
+    from economic_cycle import detect_cycle_phase, CyclePhase
+    _HAS_CYCLE = True
+except Exception:
+    _HAS_CYCLE = False
+
 # ------------------------------------------------------------------
 # 初始化
 # ------------------------------------------------------------------
@@ -117,6 +124,28 @@ async def dashboard(request: Request) -> Any:
 
     top_managers = managers.head(5).to_dict("records") if not managers.empty else []
 
+    # 经济周期检测
+    cycle_info = None
+    if _HAS_CYCLE:
+        try:
+            ca = detect_cycle_phase()
+            cycle_info = {
+                "phase": ca.phase.value,
+                "phase_label": {
+                    "early_expansion": "早期扩张",
+                    "late_expansion": "后期扩张",
+                    "overheating": "过热",
+                    "contraction": "收缩",
+                    "deleveraging": "去杠杆",
+                    "unknown": "无法判断",
+                }.get(ca.phase.value, ca.phase.value),
+                "confidence": f"{ca.confidence:.0%}",
+                "description": ca.description,
+                "weights": ca.adjusted_weights,
+            }
+        except Exception:
+            cycle_info = None
+
     # 数据状态卡片 → 详情页链接
     status_links = {
         "每日调仓信号": "/signals",
@@ -140,6 +169,7 @@ async def dashboard(request: Request) -> Any:
         "stock_sum": stock_sum,
         "fund_sum": fund_sum,
         "top_managers": top_managers,
+        "cycle_info": cycle_info,
     })
 
 
@@ -275,11 +305,11 @@ async def api_task_status(task_id: str) -> Any:
 # pipeline 步骤定义
 PIPELINE_STEPS = [
     {"id": "build_manager_fund_returns", "name": "基金经理-基金收益率明细", "script": "build_manager_fund_returns.py"},
-    {"id": "rank_fund_managers", "name": "基金经理排名", "script": "rank_fund_managers.py"},
-    {"id": "rank_all_funds_by_annualized_return", "name": "基金年化收益率排序", "script": "rank_all_funds_by_annualized_return.py"},
+    {"id": "rank_fund_managers", "name": "基金经理排名（复合评分）", "script": "rank_fund_managers.py", "args": ["--composite"]},
+    {"id": "rank_all_funds_by_annualized_return", "name": "基金年化收益率排序（复合评分）", "script": "rank_all_funds_by_annualized_return.py", "args": ["--composite"]},
     {"id": "link_fund_annualized_and_manager_rank", "name": "基金-经理关联表", "script": "link_fund_annualized_and_manager_rank.py", "args": ["--min-days", "180"]},
     {"id": "pick_elite_managers_targets", "name": "绩优经理筛选+投资标的", "script": "pick_elite_managers_targets.py", "args": ["--top-n", "20", "--min-days", "180"]},
-    {"id": "optimize_holdings", "name": "优化持仓", "script": "optimize_holdings.py"},
+    {"id": "optimize_holdings", "name": "优化持仓（Dalio 多因子+风险平价）", "script": "optimize_holdings.py", "args": ["--composite", "--risk-parity", "--max-position", "25"]},
     {"id": "daily_rebalance_signal", "name": "每日调仓信号", "script": "daily_rebalance_signal.py", "args": ["--holdings", "out/我的持仓.csv"]},
 ]
 
@@ -373,8 +403,16 @@ async def api_run_optimize(
     total_n: int = Form(5),
     stock_pct: float = Form(30),
     fund_pct: float = Form(70),
+    composite: bool = Form(False),
+    risk_parity: bool = Form(False),
+    max_position: float = Form(25),
 ) -> Any:
     args = ["--total-n", str(total_n), "--stock-pct", str(stock_pct), "--fund-pct", str(fund_pct)]
+    if composite:
+        args.append("--composite")
+    if risk_parity:
+        args.append("--risk-parity")
+    args += ["--max-position", str(max_position)]
     task_id = _start_task("optimize_holdings.py", *args)
     return JSONResponse({"task_id": task_id, "step": "优化持仓"})
 
@@ -385,8 +423,11 @@ async def api_run_backtest(
     manager_topn: int = Form(20),
     fee: float = Form(0.001),
     benchmark: str = Form("sh000300"),
+    max_position: float = Form(0),
 ) -> Any:
     args = ["--years", str(years), "--manager-topn", str(manager_topn), "--fee", str(fee), "--benchmark", benchmark]
+    if max_position > 0:
+        args += ["--max-position", str(max_position)]
     task_id = _start_task("backtest_elite_manager_portfolio.py", *args)
     return JSONResponse({"task_id": task_id, "step": "股票回测"})
 
@@ -396,8 +437,11 @@ async def api_run_backtest_fund(
     years: int = Form(3),
     manager_topn: int = Form(10),
     rebalance: str = Form("M"),
+    max_position: float = Form(0),
 ) -> Any:
     args = ["--years", str(years), "--manager-topn", str(manager_topn), "--rebalance", rebalance]
+    if max_position > 0:
+        args += ["--max-position", str(max_position)]
     task_id = _start_task("backtest_fund_portfolio.py", *args)
     return JSONResponse({"task_id": task_id, "step": "基金回测"})
 
