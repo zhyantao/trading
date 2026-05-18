@@ -191,6 +191,7 @@ def main() -> None:
     parser.add_argument("--benchmark", default="sh000300", help="基准指数代码，默认 sh000300；设为空串跳过")
     parser.add_argument("--no-plot", action="store_true", help="跳过图表生成")
     parser.add_argument("--fund-top3", default="", help="基金Top3文件；不填则 out/ 下自动取最新")
+    parser.add_argument("--max-position", type=float, default=0.0, help="单一基金仓位上限（比例），0=不限制，默认 0")
     args = parser.parse_args()
 
     cfg = BacktestConfig(initial_cash=args.initial, fee_rate=args.fee, benchmark=args.benchmark)
@@ -276,6 +277,24 @@ def main() -> None:
     # 归一
     sw = sum(fund_weights.values())
     fund_weights = {k: v / sw for k, v in fund_weights.items()}
+
+    # 单一仓位上限截断
+    if args.max_position > 0:
+        cap = args.max_position / 100.0
+        for _ in range(10):  # 最多迭代 10 次
+            overflow = {k: v - cap for k, v in fund_weights.items() if v > cap}
+            if not overflow:
+                break
+            excess = sum(overflow.values())
+            for k in overflow:
+                fund_weights[k] = cap
+            under = {k: v for k, v in fund_weights.items() if v < cap}
+            if under:
+                us = sum(under.values())
+                for k in under:
+                    fund_weights[k] += excess * (under[k] / us)
+        sw2 = sum(fund_weights.values())
+        fund_weights = {k: v / sw2 for k, v in fund_weights.items()}
 
     # 生成再平衡日期
     rebalance_dates = generate_rebalance_dates(trade_days, start_d, end_d, freq=args.rebalance)

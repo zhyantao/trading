@@ -217,6 +217,7 @@ def main() -> None:
     parser.add_argument("--stock-top10", default="", help="股票Top10文件；不填则 out/ 下自动取最新")
     parser.add_argument("--benchmark", default="sh000300", help="基准指数代码，默认 sh000300（沪深300）；设为空串跳过基准")
     parser.add_argument("--no-plot", action="store_true", help="跳过图表生成")
+    parser.add_argument("--max-position", type=float, default=0.0, help="单一股票仓位上限（比例），0=不限制，默认 0")
     args = parser.parse_args()
 
     cfg = BacktestConfig(initial_cash=args.initial, fee_rate=args.fee, benchmark=args.benchmark)
@@ -364,6 +365,25 @@ def main() -> None:
             combined = dict(top_items)
             s3 = sum(combined.values())
             combined = {k: v / s3 for k, v in combined.items()}
+
+        # 单一仓位上限截断
+        if args.max_position > 0:
+            cap = args.max_position / 100.0
+            for _ in range(10):
+                overflow = {k: v - cap for k, v in combined.items() if v > cap}
+                if not overflow:
+                    break
+                excess = sum(overflow.values())
+                for k in overflow:
+                    combined[k] = cap
+                under = {k: v for k, v in combined.items() if v < cap}
+                if under:
+                    us = sum(under.values())
+                    for k in under:
+                        combined[k] += excess * (under[k] / us)
+            s3 = sum(combined.values())
+            combined = {k: v / s3 for k, v in combined.items()}
+
         weights_by_date[rd] = combined
 
     if not weights_by_date:

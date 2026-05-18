@@ -40,6 +40,11 @@ def main() -> None:
         help="用于排名的收益率列名，默认 近1年",
     )
     parser.add_argument(
+        "--composite",
+        action="store_true",
+        help="使用多因子复合评分（Dalio 框架）替代单一指标排名",
+    )
+    parser.add_argument(
         "--out",
         default="",
         help="输出排名 CSV 路径；不填则写入 out/基金经理业绩排名_YYYYMMDD.csv",
@@ -85,11 +90,20 @@ def main() -> None:
 
     # 只对至少有 1 只有效基金的经理排名
     ranked = agg[agg["有效基金数"] > 0].copy()
-    ranked = ranked.sort_values(["平均收益率", "有效基金数", "管理基金数"], ascending=[False, False, False])
-    ranked.insert(0, "排名", range(1, len(ranked) + 1))
 
-    ranked.insert(0, "数据生成时间", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    ranked.insert(1, "排名指标", metric)
+    if args.composite:
+        from factor_scoring import compute_manager_composite_score
+        ranked["_composite"] = compute_manager_composite_score(ranked)
+        ranked = ranked.sort_values("_composite", ascending=False)
+        ranked.insert(0, "排名", range(1, len(ranked) + 1))
+        ranked.insert(0, "数据生成时间", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        ranked.insert(1, "排名指标", "复合得分(Dalio多因子)")
+        ranked = ranked.drop(columns=["_composite"])
+    else:
+        ranked = ranked.sort_values(["平均收益率", "有效基金数", "管理基金数"], ascending=[False, False, False])
+        ranked.insert(0, "排名", range(1, len(ranked) + 1))
+        ranked.insert(0, "数据生成时间", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        ranked.insert(1, "排名指标", metric)
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     ranked.to_csv(out_path, index=False, encoding="utf-8-sig")
