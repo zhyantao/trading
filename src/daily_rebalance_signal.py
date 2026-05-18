@@ -259,6 +259,12 @@ def main() -> None:
             code = str(rr.股票代码).zfill(6)
             if code in held_codes:
                 continue
+            top3 = (
+                contrib[contrib["股票代码"] == code]
+                .sort_values("净强度", ascending=False)
+                .head(3)[["姓名", "所属公司", "净强度"]]
+            )
+            mgr_text = "; ".join([f"{x.姓名}({x.所属公司}):{x.净强度:.2f}" for x in top3.itertuples(index=False)])
             signal_rows.append(
                 {
                     "数据生成时间": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -270,7 +276,7 @@ def main() -> None:
                     "买入强度": round(float(rr.买入强度), 4),
                     "卖出强度": round(float(rr.卖出强度), 4),
                     "净强度": round(float(rr.净强度), 4),
-                    "关联经理Top3(净强度)": "",
+                    "关联经理Top3(净强度)": mgr_text,
                 }
             )
 

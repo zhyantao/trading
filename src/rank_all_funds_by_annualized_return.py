@@ -167,6 +167,11 @@ def main() -> None:
         default="",
         help="输出 CSV 路径；不填则写入 out/基金年化收益率排序_YYYYMMDD.csv",
     )
+    parser.add_argument(
+        "--composite",
+        action="store_true",
+        help="使用多因子复合评分（Dalio 框架）替代成立来年化排名",
+    )
     args = parser.parse_args()
 
     project_root = Path(__file__).resolve().parent.parent
@@ -187,10 +192,20 @@ def main() -> None:
     df["成立来年化"] = calc_annualized_since_inception(df)
 
     ranked = df[df["成立来年化"].notna()].copy()
-    ranked = ranked.sort_values(["成立来年化", "成立来"], ascending=[False, False])
-    ranked.insert(0, "排名", range(1, len(ranked) + 1))
-    ranked.insert(0, "数据生成时间", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-    ranked.insert(1, "排名指标", "成立来年化")
+
+    if args.composite:
+        from factor_scoring import compute_fund_composite_score
+        ranked["_composite"] = compute_fund_composite_score(ranked)
+        ranked = ranked.sort_values("_composite", ascending=False)
+        ranked.insert(0, "排名", range(1, len(ranked) + 1))
+        ranked.insert(0, "数据生成时间", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        ranked.insert(1, "排名指标", "复合得分(Dalio多因子)")
+        ranked = ranked.drop(columns=["_composite"])
+    else:
+        ranked = ranked.sort_values(["成立来年化", "成立来"], ascending=[False, False])
+        ranked.insert(0, "排名", range(1, len(ranked) + 1))
+        ranked.insert(0, "数据生成时间", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        ranked.insert(1, "排名指标", "成立来年化")
 
     ranked.to_csv(out_path, index=False, encoding="utf-8-sig")
     print(f"完成：{out_path}  行数={len(ranked):,}  列数={len(ranked.columns)}")

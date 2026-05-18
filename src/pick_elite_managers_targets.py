@@ -38,6 +38,26 @@ def _latest(out_dir: Path, pattern: str) -> Path:
     return files[-1]
 
 
+def _fund_base_name(name: str) -> str:
+    """去掉末尾份额后缀（A/B/C/D/E/I/Y 等），避免 ETF/LOF/FOF 误判。"""
+    name = str(name).strip()
+    # 多字母英文缩写结尾的不处理（如 ETF、LOF、FOF）
+    if re.search(r"[A-Z]{2,}$", name):
+        return name
+    m = re.match(r"^(.+?)(?:类)?[A-Z]$", name)
+    return m.group(1) if m else name
+
+
+def _pick_best_share(df: pd.DataFrame) -> pd.DataFrame:
+    """同一基础名称只保留一只：优先 A 类（费率低适合长期），否则取成立来年化最高。"""
+    df = df.copy()
+    df["_base"] = df["基金简称"].apply(_fund_base_name)
+    df["_is_a"] = df["基金简称"].str.endswith("A")
+    df = df.sort_values(["_is_a", "成立来年化"], ascending=[False, False])
+    df = df.drop_duplicates(subset=["_base"], keep="first")
+    return df.drop(columns=["_base", "_is_a"])
+
+
 def _quarter_key(s: str) -> tuple[int, int]:
     """
     解析类似 '2025年1季度股票投资明细' -> (2025, 1)
@@ -160,8 +180,9 @@ def main() -> None:
         for c, v in zip(mgr_cols, mgr_key):
             sub = sub[sub[c] == v]
 
-        # 候选基金：按成立来年化降序
+        # 候选基金：按成立来年化降序，同一基金不同份额只保留最优
         sub = sub.drop_duplicates(subset=["基金代码"])
+        sub = _pick_best_share(sub)
         sub = sub.sort_values(["成立来年化", "基金年化排名"], ascending=[False, True])
 
         chosen_funds = []
