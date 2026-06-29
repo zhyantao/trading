@@ -23,66 +23,87 @@
     {% endfor %}
 </div>
 
-<!-- 经济周期状态 -->
-{% if cycle_info %}
-<div class="card" style="margin-bottom:20px;">
-    <div class="card-header">市场周期定位（Dalio 框架）</div>
-    <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
-        <div style="text-align:center;">
-            <div style="font-size:14px; color:var(--text-secondary); margin-bottom:4px;">当前阶段</div>
-            <div style="font-size:22px; font-weight:700; color:var(--accent);">{{ cycle_info.phase_label }}</div>
+<!-- 今日信号摘要 -->
+{% if signal_stats.total > 0 %}<a href="/signals" style="text-decoration:none; color:inherit;">{% endif %}
+<div class="card {{ 'card-clickable' if signal_stats.total > 0 else '' }}" style="margin-bottom:20px;">
+    <div class="card-header">今日信号摘要{% if signal_stats.total > 0 %} <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span>{% endif %}</div>
+    {% if signal_stats.total > 0 %}
+    <div style="display:flex; gap:16px; text-align:center;">
+        <div style="flex:1; padding:12px; background:#e6f9f0; border-radius:8px;">
+            <div style="font-size:24px; font-weight:700; color:var(--green);">{{ signal_stats.buy }}</div>
+            <div style="font-size:13px; color:var(--text-secondary);">关注买入</div>
         </div>
-        <div style="text-align:center;">
-            <div style="font-size:14px; color:var(--text-secondary); margin-bottom:4px;">置信度</div>
-            <div style="font-size:22px; font-weight:700;">{{ cycle_info.confidence }}</div>
+        <div style="flex:1; padding:12px; background:#fef9e7; border-radius:8px;">
+            <div style="font-size:24px; font-weight:700; color:#b7950b;">{{ signal_stats.hold }}</div>
+            <div style="font-size:13px; color:var(--text-secondary);">继续关注</div>
         </div>
-        <div style="flex:1; min-width:200px;">
-            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:6px;">因子权重分配</div>
-            <div style="display:flex; gap:4px; height:20px; border-radius:4px; overflow:hidden;">
-                {% set w = cycle_info.weights %}
-                <div title="长期回报 {{ (w.return*100)|int }}%" style="width:{{ (w.return*100)|int }}%; background:var(--green);"></div>
-                <div title="风险调整 {{ (w.risk*100)|int }}%" style="width:{{ (w.risk*100)|int }}%; background:var(--red);"></div>
-                <div title="稳定性 {{ (w.stability*100)|int }}%" style="width:{{ (w.stability*100)|int }}%; background:var(--accent);"></div>
-                <div title="质量 {{ (w.quality*100)|int }}%" style="width:{{ (w.quality*100)|int }}%; background:#b7950b;"></div>
-            </div>
-            <div style="display:flex; gap:12px; font-size:11px; color:var(--text-secondary); margin-top:4px;">
-                <span style="color:var(--green);">■ 回报 {{ (w.return*100)|int }}%</span>
-                <span style="color:var(--red);">■ 风险 {{ (w.risk*100)|int }}%</span>
-                <span style="color:var(--accent);">■ 稳定 {{ (w.stability*100)|int }}%</span>
-                <span style="color:#b7950b;">■ 质量 {{ (w.quality*100)|int }}%</span>
-            </div>
+        <div style="flex:1; padding:12px; background:#fde8e8; border-radius:8px;">
+            <div style="font-size:24px; font-weight:700; color:var(--red);">{{ signal_stats.sell }}</div>
+            <div style="font-size:13px; color:var(--text-secondary);">关注卖出</div>
         </div>
     </div>
-    <div class="stat-sub" style="margin-top:8px;">{{ cycle_info.description }}</div>
+    {% else %}
+    <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline">运行流水线</a> 生成每日调仓信号</div></div>
+    {% endif %}
 </div>
-{% endif %}
+{% if signal_stats.total > 0 %}</a>{% endif %}
 
-<!-- 信号摘要 + 持仓概览 -->
+<!-- 经济周期 + 持仓配置 -->
 <div class="dashboard-grid">
-
-    {% if signal_stats.total > 0 %}<a href="/signals" style="text-decoration:none; color:inherit;">{% endif %}
-    <div class="card {{ 'card-clickable' if signal_stats.total > 0 else '' }}">
-        <div class="card-header">今日信号摘要{% if signal_stats.total > 0 %} <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span>{% endif %}</div>
-        {% if signal_stats.total > 0 %}
-        <div style="display:flex; gap:16px; text-align:center;">
-            <div style="flex:1; padding:12px; background:#e6f9f0; border-radius:8px;">
-                <div style="font-size:24px; font-weight:700; color:var(--green);">{{ signal_stats.buy }}</div>
-                <div style="font-size:13px; color:var(--text-secondary);">关注买入</div>
+    {% if cycle_info %}
+    <div class="card">
+        <div class="card-header">市场周期定位（Dalio 框架）</div>
+        <div style="display:flex; gap:16px; margin-bottom:20px; text-align:center;">
+            <div style="flex:1; padding:10px; background:#f0f4ff; border-radius:8px;">
+                <div style="font-size:13px; color:var(--text-secondary);">当前阶段</div>
+                <div style="font-size:16px; font-weight:700; color:var(--accent);">{{ cycle_info.phase_label }}</div>
             </div>
-            <div style="flex:1; padding:12px; background:#fef9e7; border-radius:8px;">
-                <div style="font-size:24px; font-weight:700; color:#b7950b;">{{ signal_stats.hold }}</div>
-                <div style="font-size:13px; color:var(--text-secondary);">继续关注</div>
-            </div>
-            <div style="flex:1; padding:12px; background:#fde8e8; border-radius:8px;">
-                <div style="font-size:24px; font-weight:700; color:var(--red);">{{ signal_stats.sell }}</div>
-                <div style="font-size:13px; color:var(--text-secondary);">关注卖出</div>
+            <div style="flex:1; padding:10px; background:#f0f4ff; border-radius:8px;">
+                <div style="font-size:13px; color:var(--text-secondary);">置信度</div>
+                <div style="font-size:16px; font-weight:700;">{{ cycle_info.confidence }}</div>
             </div>
         </div>
-        {% else %}
-        <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline">运行流水线</a> 生成每日调仓信号</div></div>
-        {% endif %}
+        {% set w = cycle_info.weights %}
+        <div class="donut-wrap">
+            <svg width="160" height="160" viewBox="0 0 160 160">
+                {% set circum = 2 * 3.1416 * 60 %}
+                {% set r_dash = w.return * circum %}
+                {% set risk_dash = w.risk * circum %}
+                {% set s_dash = w.stability * circum %}
+                {% set q_dash = w.quality * circum %}
+                <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
+                {% if w.return > 0 %}
+                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24"
+                    stroke-dasharray="{{ r_dash }} {{ circum - r_dash }}"
+                    stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
+                {% endif %}
+                {% if w.risk > 0 %}
+                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24"
+                    stroke-dasharray="{{ risk_dash }} {{ circum - risk_dash }}"
+                    stroke-dashoffset="{{ -r_dash }}" transform="rotate(-90 80 80)"/>
+                {% endif %}
+                {% if w.stability > 0 %}
+                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24"
+                    stroke-dasharray="{{ s_dash }} {{ circum - s_dash }}"
+                    stroke-dashoffset="{{ -(r_dash + risk_dash) }}" transform="rotate(-90 80 80)"/>
+                {% endif %}
+                {% if w.quality > 0 %}
+                <circle cx="80" cy="80" r="60" fill="none" stroke="#b7950b" stroke-width="24"
+                    stroke-dasharray="{{ q_dash }} {{ circum - q_dash }}"
+                    stroke-dashoffset="{{ -(r_dash + risk_dash + s_dash) }}" transform="rotate(-90 80 80)"/>
+                {% endif %}
+                <text x="80" y="84" text-anchor="middle" font-size="13" fill="var(--text-secondary)">因子权重</text>
+            </svg>
+            <div class="donut-legend">
+                <div><span class="donut-dot" style="background:var(--green);"></span>长期回报 {{ (w.return*100)|int }}%</div>
+                <div><span class="donut-dot" style="background:var(--red);"></span>风险调整 {{ (w.risk*100)|int }}%</div>
+                <div><span class="donut-dot" style="background:var(--accent);"></span>稳定性 {{ (w.stability*100)|int }}%</div>
+                <div><span class="donut-dot" style="background:#b7950b;"></span>质量 {{ (w.quality*100)|int }}%</div>
+            </div>
+        </div>
+        <div style="margin-top:12px; font-size:12px; color:var(--text-secondary); line-height:1.6;">{{ cycle_info.description }}</div>
     </div>
-    {% if signal_stats.total > 0 %}</a>{% endif %}
+    {% endif %}
 
     <div class="card">
         <div class="card-header">持仓配置</div>

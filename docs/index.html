@@ -137,64 +137,85 @@
     
 </div>
 
-<!-- 经济周期状态 -->
-
-<div class="card" style="margin-bottom:20px;">
-    <div class="card-header">市场周期定位（Dalio 框架）</div>
-    <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
-        <div style="text-align:center;">
-            <div style="font-size:14px; color:var(--text-secondary); margin-bottom:4px;">当前阶段</div>
-            <div style="font-size:22px; font-weight:700; color:var(--accent);">后期扩张</div>
+<!-- 今日信号摘要 -->
+<a href="signals.html" style="text-decoration:none; color:inherit;">
+<div class="card card-clickable" style="margin-bottom:20px;">
+    <div class="card-header">今日信号摘要 <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span></div>
+    
+    <div style="display:flex; gap:16px; text-align:center;">
+        <div style="flex:1; padding:12px; background:#e6f9f0; border-radius:8px;">
+            <div style="font-size:24px; font-weight:700; color:var(--green);">30</div>
+            <div style="font-size:13px; color:var(--text-secondary);">关注买入</div>
         </div>
-        <div style="text-align:center;">
-            <div style="font-size:14px; color:var(--text-secondary); margin-bottom:4px;">置信度</div>
-            <div style="font-size:22px; font-weight:700;">60%</div>
+        <div style="flex:1; padding:12px; background:#fef9e7; border-radius:8px;">
+            <div style="font-size:24px; font-weight:700; color:#b7950b;">3</div>
+            <div style="font-size:13px; color:var(--text-secondary);">继续关注</div>
         </div>
-        <div style="flex:1; min-width:200px;">
-            <div style="font-size:13px; color:var(--text-secondary); margin-bottom:6px;">因子权重分配</div>
-            <div style="display:flex; gap:4px; height:20px; border-radius:4px; overflow:hidden;">
-                
-                <div title="长期回报 30%" style="width:30%; background:var(--green);"></div>
-                <div title="风险调整 25%" style="width:25%; background:var(--red);"></div>
-                <div title="稳定性 20%" style="width:20%; background:var(--accent);"></div>
-                <div title="质量 25%" style="width:25%; background:#b7950b;"></div>
-            </div>
-            <div style="display:flex; gap:12px; font-size:11px; color:var(--text-secondary); margin-top:4px;">
-                <span style="color:var(--green);">■ 回报 30%</span>
-                <span style="color:var(--red);">■ 风险 25%</span>
-                <span style="color:var(--accent);">■ 稳定 20%</span>
-                <span style="color:#b7950b;">■ 质量 25%</span>
-            </div>
+        <div style="flex:1; padding:12px; background:#fde8e8; border-radius:8px;">
+            <div style="font-size:24px; font-weight:700; color:var(--red);">30</div>
+            <div style="font-size:13px; color:var(--text-secondary);">关注卖出</div>
         </div>
     </div>
-    <div class="stat-sub" style="margin-top:8px;">趋势=8.4% 3月收益=10.0% 6月收益=7.6% 20日波动率=26.1% 回撤=-2.6% → late_expansion（置信度 60%）：指数在长期均线上方、动能趋稳</div>
+    
 </div>
+</a>
 
-
-<!-- 信号摘要 + 持仓概览 -->
+<!-- 经济周期 + 持仓配置 -->
 <div class="dashboard-grid">
-
-    <a href="signals.html" style="text-decoration:none; color:inherit;">
-    <div class="card card-clickable">
-        <div class="card-header">今日信号摘要 <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span></div>
-        
-        <div style="display:flex; gap:16px; text-align:center;">
-            <div style="flex:1; padding:12px; background:#e6f9f0; border-radius:8px;">
-                <div style="font-size:24px; font-weight:700; color:var(--green);">30</div>
-                <div style="font-size:13px; color:var(--text-secondary);">关注买入</div>
+    
+    <div class="card">
+        <div class="card-header">市场周期定位（Dalio 框架）</div>
+        <div style="display:flex; gap:16px; margin-bottom:20px; text-align:center;">
+            <div style="flex:1; padding:10px; background:#f0f4ff; border-radius:8px;">
+                <div style="font-size:13px; color:var(--text-secondary);">当前阶段</div>
+                <div style="font-size:16px; font-weight:700; color:var(--accent);">后期扩张</div>
             </div>
-            <div style="flex:1; padding:12px; background:#fef9e7; border-radius:8px;">
-                <div style="font-size:24px; font-weight:700; color:#b7950b;">3</div>
-                <div style="font-size:13px; color:var(--text-secondary);">继续关注</div>
-            </div>
-            <div style="flex:1; padding:12px; background:#fde8e8; border-radius:8px;">
-                <div style="font-size:24px; font-weight:700; color:var(--red);">30</div>
-                <div style="font-size:13px; color:var(--text-secondary);">关注卖出</div>
+            <div style="flex:1; padding:10px; background:#f0f4ff; border-radius:8px;">
+                <div style="font-size:13px; color:var(--text-secondary);">置信度</div>
+                <div style="font-size:16px; font-weight:700;">60%</div>
             </div>
         </div>
         
+        <div class="donut-wrap">
+            <svg width="160" height="160" viewBox="0 0 160 160">
+                
+                
+                
+                
+                
+                <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
+                
+                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24"
+                    stroke-dasharray="113.0976 263.8944"
+                    stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
+                
+                
+                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24"
+                    stroke-dasharray="94.248 282.744"
+                    stroke-dashoffset="-113.0976" transform="rotate(-90 80 80)"/>
+                
+                
+                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24"
+                    stroke-dasharray="75.39840000000001 301.59360000000004"
+                    stroke-dashoffset="-207.3456" transform="rotate(-90 80 80)"/>
+                
+                
+                <circle cx="80" cy="80" r="60" fill="none" stroke="#b7950b" stroke-width="24"
+                    stroke-dasharray="94.248 282.744"
+                    stroke-dashoffset="-282.744" transform="rotate(-90 80 80)"/>
+                
+                <text x="80" y="84" text-anchor="middle" font-size="13" fill="var(--text-secondary)">因子权重</text>
+            </svg>
+            <div class="donut-legend">
+                <div><span class="donut-dot" style="background:var(--green);"></span>长期回报 30%</div>
+                <div><span class="donut-dot" style="background:var(--red);"></span>风险调整 25%</div>
+                <div><span class="donut-dot" style="background:var(--accent);"></span>稳定性 20%</div>
+                <div><span class="donut-dot" style="background:#b7950b;"></span>质量 25%</div>
+            </div>
+        </div>
+        <div style="margin-top:12px; font-size:12px; color:var(--text-secondary); line-height:1.6;">趋势=8.4% 3月收益=10.0% 6月收益=7.6% 20日波动率=26.1% 回撤=-2.6% → late_expansion（置信度 60%）：指数在长期均线上方、动能趋稳</div>
     </div>
-    </a>
+    
 
     <div class="card">
         <div class="card-header">持仓配置</div>
