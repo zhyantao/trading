@@ -367,7 +367,20 @@ python3 src/generate_static.py
 
 保存后站点部署到 `https://<用户名>.github.io/<仓库名>/`。
 
-### 9.3 数据更新后重新部署
+### 9.3 自动定时更新（推荐）
+
+通过 **GitHub Actions** 免费定时运行数据流水线并自动部署，无需手动操作。
+
+已在 `.github/workflows/daily-update.yml` 中配置：
+- **定时触发**：每日 UTC 18:30（北京时间凌晨 2:30）自动执行
+- **手动触发**：在仓库 **Actions → Daily Data Update → Run workflow** 一键运行
+- **免费额度**：公开仓库无限分钟，私有仓库每月 2000 分钟（本流水线单次约 15-30 分钟）
+
+工作流程：`daily_run.py` → `generate_static.py` → 自动提交 `docs/` 并推送 → GitHub Pages 自动更新站点。
+
+#### 手动更新（备用）
+
+如果不想使用 GitHub Actions，也可以手动执行：
 
 ```bash
 # 1. 运行数据处理流水线
@@ -378,7 +391,7 @@ python3 src/generate_static.py
 
 # 3. 提交并推送
 git add docs/
-git commit -m "更新静态页面数据"
+git commit -m "chore: daily data update"
 git push origin master
 ```
 
