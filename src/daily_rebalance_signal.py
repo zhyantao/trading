@@ -71,6 +71,9 @@ def fetch_latest_change_one_fund(
             if "本期累计卖出金额" in df.columns:
                 df["本期累计卖出金额"] = pd.to_numeric(df["本期累计卖出金额"], errors="coerce")
             return df.reset_index(drop=True)
+        except KeyError:
+            # akshare 对 API 返回空数据的基金可能 KeyError('序号')（内部 bug），视为无数据
+            continue
         except Exception:
             last_exc = sys.exc_info()
             continue
