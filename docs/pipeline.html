@@ -26,6 +26,16 @@
             <a href="backtest.html" class="">回测</a>
             <a href="pipeline.html" class="active">流水线</a>
         </div>
+        
+        <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
+            <option value="">📅 最新</option>
+            
+            <option value="20260630" selected>2026-06-30</option>
+            
+            <option value="20260517" >2026-05-17</option>
+            
+        </select>
+        
     </div>
 </nav>
 
@@ -93,6 +103,12 @@
 
 </div>
 
+<script>
+function onDateChange(date) {
+    // 静态站点：切换日期时回到首页（静态站点只生成当天数据）
+    window.location = 'index.html' + (date ? '?date=' + date : '');
+}
+</script>
 
 </body>
 </html>

@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 import threading
@@ -43,6 +44,28 @@ _jinja_env.filters["num2"] = lambda v: f"{float(v):.2f}"
 def _render(name: str, context: dict[str, Any] | None = None) -> HTMLResponse:
     template = _jinja_env.get_template(name)
     return HTMLResponse(template.render(**(context or {})))
+
+
+def _get_date(request: Request) -> str:
+    """提取并校验 ?date=YYYYMMDD 查询参数。"""
+    date = request.query_params.get("date", "")
+    if date and re.match(r"^\d{8}$", date):
+        return date
+    return ""
+
+
+def _base_context(request: Request, extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    """构建页面渲染的公共上下文（含日期选择信息）。"""
+    dates = ds.available_dates()
+    selected_date = _get_date(request)
+    ctx: dict[str, Any] = {
+        "request": request,
+        "available_dates": dates,
+        "selected_date": selected_date,
+    }
+    if extra:
+        ctx.update(extra)
+    return ctx
 
 # 后台任务跟踪 {task_id: {status, start, end, log_lines}}
 _task_store: dict[str, dict[str, Any]] = {}
@@ -99,10 +122,11 @@ def _start_task(script_name: str, *args: str) -> str:
 
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request) -> Any:
-    status = ds.get_data_status()
+    date = _get_date(request)
+    status = ds.get_data_status(date=date)
     holdings = ds.get_holdings()
-    signals = ds.get_signals()
-    managers = ds.get_manager_rankings()
+    signals = ds.get_signals(date=date)
+    managers = ds.get_manager_rankings(date=date)
 
     # 信号统计
     signal_stats = {"buy": 0, "sell": 0, "hold": 0, "total": 0}
@@ -159,8 +183,7 @@ async def dashboard(request: Request) -> Any:
         "回测-净值曲线(基金)": "/backtest",
     }
 
-    return _render("dashboard.html", {
-        "request": request,
+    return _render("dashboard.html", _base_context(request, {
         "active_page": "dashboard",
         "status": status,
         "status_links": status_links,
@@ -170,90 +193,90 @@ async def dashboard(request: Request) -> Any:
         "fund_sum": fund_sum,
         "top_managers": top_managers,
         "cycle_info": cycle_info,
-    })
+    }))
 
 
 @router.get("/signals", response_class=HTMLResponse)
 async def signals_page(request: Request) -> Any:
-    signals = ds.get_signals()
+    date = _get_date(request)
+    signals = ds.get_signals(date=date)
     # 过滤参数
     signal_type = request.query_params.get("type", "")
     rows = signals.to_dict("records") if signals is not None and not signals.empty else []
     if signal_type and rows:
         tag_col = "建议标签(非投资建议)"
         rows = [r for r in rows if r.get(tag_col, "") == signal_type]
-    return _render("signals.html", {
-        "request": request,
+    return _render("signals.html", _base_context(request, {
         "active_page": "signals",
         "signals": rows,
         "has_data": signals is not None and not signals.empty,
         "filter_type": signal_type,
-    })
+    }))
 
 
 @router.get("/holdings", response_class=HTMLResponse)
 async def holdings_page(request: Request) -> Any:
     holdings = ds.get_holdings()
-    return _render("holdings.html", {
-        "request": request,
+    return _render("holdings.html", _base_context(request, {
         "active_page": "holdings",
         "holdings": holdings.to_dict("records"),
-    })
+    }))
 
 
 @router.get("/managers", response_class=HTMLResponse)
 async def managers_page(request: Request) -> Any:
-    managers = ds.get_manager_rankings()
+    date = _get_date(request)
+    managers = ds.get_manager_rankings(date=date)
     page = max(1, int(request.query_params.get("page", "1")))
     per_page = 50
     total = len(managers)
     start = (page - 1) * per_page
     paged = managers.iloc[start:start + per_page].to_dict("records")
-    return _render("managers.html", {
-        "request": request,
+    return _render("managers.html", _base_context(request, {
         "active_page": "managers",
         "managers": paged,
         "page": page,
         "total_pages": max(1, (total + per_page - 1) // per_page),
         "total": total,
-    })
+    }))
 
 
 @router.get("/funds", response_class=HTMLResponse)
 async def funds_page(request: Request) -> Any:
+    date = _get_date(request)
     min_days = int(request.query_params.get("min_days", "180"))
-    funds = ds.get_fund_annual_returns(min_days=min_days)
+    funds = ds.get_fund_annual_returns(min_days=min_days, date=date)
     page = max(1, int(request.query_params.get("page", "1")))
     per_page = 50
     total = len(funds)
     start = (page - 1) * per_page
     paged = funds.iloc[start:start + per_page].to_dict("records")
-    return _render("funds.html", {
-        "request": request,
+    return _render("funds.html", _base_context(request, {
         "active_page": "funds",
         "funds": paged,
         "page": page,
         "total_pages": max(1, (total + per_page - 1) // per_page),
         "total": total,
         "min_days": min_days,
-    })
+    }))
 
 
 @router.get("/elite", response_class=HTMLResponse)
 async def elite_page(request: Request) -> Any:
-    funds = ds.get_elite_funds()
-    stocks = ds.get_elite_stocks()
-    return _render("elite.html", {
-        "request": request,
+    date = _get_date(request)
+    funds = ds.get_elite_funds(date=date)
+    stocks = ds.get_elite_stocks(date=date)
+    return _render("elite.html", _base_context(request, {
         "active_page": "elite",
         "elite_funds": funds.to_dict("records"),
         "elite_stocks": stocks.to_dict("records"),
-    })
+    }))
 
 
 @router.get("/backtest", response_class=HTMLResponse)
 async def backtest_page(request: Request) -> Any:
-    results = ds.get_backtest_results()
+    date = _get_date(request)
+    results = ds.get_backtest_results(date=date)
     # 查看特定回测的摘要
     view_id = request.query_params.get("view", "")
     summary_html = ""
@@ -267,22 +290,20 @@ async def backtest_page(request: Request) -> Any:
                 if "chart" in r:
                     chart_file = r["chart"]
                 break
-    return _render("backtest.html", {
-        "request": request,
+    return _render("backtest.html", _base_context(request, {
         "active_page": "backtest",
         "results": results,
         "view_id": view_id,
         "summary_html": summary_html,
         "chart_file": chart_file,
-    })
+    }))
 
 
 @router.get("/pipeline", response_class=HTMLResponse)
 async def pipeline_page(request: Request) -> Any:
-    return _render("pipeline.html", {
-        "request": request,
+    return _render("pipeline.html", _base_context(request, {
         "active_page": "pipeline",
-    })
+    }))
 
 
 # ------------------------------------------------------------------

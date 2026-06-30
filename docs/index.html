@@ -26,6 +26,16 @@
             <a href="backtest.html" class="">回测</a>
             <a href="pipeline.html" class="">流水线</a>
         </div>
+        
+        <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
+            <option value="">📅 最新</option>
+            
+            <option value="20260630" selected>2026-06-30</option>
+            
+            <option value="20260517" >2026-05-17</option>
+            
+        </select>
+        
     </div>
 </nav>
 
@@ -42,7 +52,7 @@
         <div class="stat-label">基金经理-基金收益率明细</div>
         
         <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 &rarr;</div>
-        <div class="stat-sub">2026-06-29 22:15:32 · 35023 行 · 6904.8 KB</div>
+        <div class="stat-sub">2026-06-30 10:00:33 · 35056 行 · 6911.2 KB</div>
         
     </div>
     </a>
@@ -53,7 +63,7 @@
         <div class="stat-label">基金经理业绩排名</div>
         
         <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 &rarr;</div>
-        <div class="stat-sub">2026-06-29 22:15:33 · 3738 行 · 431.5 KB</div>
+        <div class="stat-sub">2026-06-30 10:00:33 · 3739 行 · 354.9 KB</div>
         
     </div>
     </a>
@@ -64,7 +74,7 @@
         <div class="stat-label">基金年化收益率排序</div>
         
         <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 &rarr;</div>
-        <div class="stat-sub">2026-06-29 22:15:36 · 19812 行 · 4133.1 KB</div>
+        <div class="stat-sub">2026-06-30 10:00:37 · 19818 行 · 3882.1 KB</div>
         
     </div>
     </a>
@@ -75,7 +85,7 @@
         <div class="stat-label">基金-经理-年化-排名关联</div>
         
         <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 &rarr;</div>
-        <div class="stat-sub">2026-06-29 22:15:37 · 24518 行 · 10761.1 KB</div>
+        <div class="stat-sub">2026-06-30 10:00:37 · 24535 行 · 10280.8 KB</div>
         
     </div>
     </a>
@@ -86,7 +96,7 @@
         <div class="stat-label">绩优基金经理-基金Top3</div>
         
         <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 &rarr;</div>
-        <div class="stat-sub">2026-06-29 22:15:56 · 44 行 · 6.2 KB</div>
+        <div class="stat-sub">2026-06-30 10:01:06 · 46 行 · 6.5 KB</div>
         
     </div>
     </a>
@@ -97,7 +107,7 @@
         <div class="stat-label">绩优基金经理-股票Top10</div>
         
         <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 &rarr;</div>
-        <div class="stat-sub">2026-06-29 22:15:56 · 200 行 · 26.2 KB</div>
+        <div class="stat-sub">2026-06-30 10:01:06 · 200 行 · 26.2 KB</div>
         
     </div>
     </a>
@@ -108,7 +118,7 @@
         <div class="stat-label">每日调仓信号</div>
         
         <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 &rarr;</div>
-        <div class="stat-sub">2026-06-29 22:17:09 · 63 行 · 10.5 KB</div>
+        <div class="stat-sub">2026-06-30 10:03:09 · 63 行 · 10.6 KB</div>
         
     </div>
     </a>
@@ -119,7 +129,7 @@
         <div class="stat-label">回测-净值曲线(股票)</div>
         
         <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 &rarr;</div>
-        <div class="stat-sub">2026-06-29 22:23:35 · 725 行 · 87.0 KB</div>
+        <div class="stat-sub">2026-06-30 10:05:52 · 725 行 · 87.1 KB</div>
         
     </div>
     </a>
@@ -130,7 +140,7 @@
         <div class="stat-label">回测-净值曲线(基金)</div>
         
         <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 &rarr;</div>
-        <div class="stat-sub">2026-06-29 22:17:44 · 725 行 · 139.8 KB</div>
+        <div class="stat-sub">2026-06-30 10:03:10 · 725 行 · 138.6 KB</div>
         
     </div>
     </a>
@@ -259,15 +269,6 @@
             
             <tr>
                 <td>1</td>
-                <td>陈文凯</td>
-                <td>华泰柏瑞基金</td>
-                <td>4.00</td>
-                <td style="color:var(--green);">349.25</td>
-                <td style="color:var(--green);">352.35</td>
-            </tr>
-            
-            <tr>
-                <td>2</td>
                 <td>金梓才</td>
                 <td>财通基金</td>
                 <td>13.00</td>
@@ -276,7 +277,7 @@
             </tr>
             
             <tr>
-                <td>3</td>
+                <td>2</td>
                 <td>张明昕</td>
                 <td>华商基金</td>
                 <td>6.00</td>
@@ -285,21 +286,30 @@
             </tr>
             
             <tr>
-                <td>4</td>
-                <td>孙硕</td>
-                <td>宏利基金</td>
-                <td>6.00</td>
-                <td style="color:var(--green);">310.15</td>
-                <td style="color:var(--green);">317.81</td>
+                <td>3</td>
+                <td>陈文凯</td>
+                <td>华泰柏瑞基金</td>
+                <td>4.00</td>
+                <td style="color:var(--green);">349.25</td>
+                <td style="color:var(--green);">352.35</td>
             </tr>
             
             <tr>
-                <td>5</td>
+                <td>4</td>
                 <td>王浩聿</td>
                 <td>长安基金</td>
                 <td>4.00</td>
                 <td style="color:var(--green);">342.87</td>
                 <td style="color:var(--green);">343.88</td>
+            </tr>
+            
+            <tr>
+                <td>5</td>
+                <td>罗擎</td>
+                <td>富国基金</td>
+                <td>6.00</td>
+                <td style="color:var(--green);">337.25</td>
+                <td style="color:var(--green);">338.55</td>
             </tr>
             
             </tbody>
@@ -311,6 +321,12 @@
 
 </div>
 
+<script>
+function onDateChange(date) {
+    // 静态站点：切换日期时回到首页（静态站点只生成当天数据）
+    window.location = 'index.html' + (date ? '?date=' + date : '');
+}
+</script>
 
 </body>
 </html>

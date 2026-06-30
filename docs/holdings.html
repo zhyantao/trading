@@ -26,6 +26,16 @@
             <a href="backtest.html" class="">回测</a>
             <a href="pipeline.html" class="">流水线</a>
         </div>
+        
+        <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
+            <option value="">📅 最新</option>
+            
+            <option value="20260630" selected>2026-06-30</option>
+            
+            <option value="20260517" >2026-05-17</option>
+            
+        </select>
+        
     </div>
 </nav>
 
@@ -52,10 +62,10 @@
                 <td><span class="tag tag-stock">股票</span></td>
                 <td>300502</td>
                 <td>新易盛</td>
-                <td style="font-weight:600;">15.49%</td>
+                <td style="font-weight:600;">15.35%</td>
                 <td style="width:120px;">
                     <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:61.96%; background:var(--accent); border-radius:4px;"></div>
+                        <div style="height:100%; width:61.4%; background:var(--accent); border-radius:4px;"></div>
                     </div>
                 </td>
             </tr>
@@ -65,10 +75,10 @@
                 <td><span class="tag tag-stock">股票</span></td>
                 <td>300308</td>
                 <td>中际旭创</td>
-                <td style="font-weight:600;">14.51%</td>
+                <td style="font-weight:600;">14.65%</td>
                 <td style="width:120px;">
                     <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:58.040000000000006%; background:var(--accent); border-radius:4px;"></div>
+                        <div style="height:100%; width:58.599999999999994%; background:var(--accent); border-radius:4px;"></div>
                     </div>
                 </td>
             </tr>
@@ -78,10 +88,10 @@
                 <td><span class="tag tag-fund">基金</span></td>
                 <td>024459</td>
                 <td>华商致远回报混合A</td>
-                <td style="font-weight:600;">23.96%</td>
+                <td style="font-weight:600;">25.00%</td>
                 <td style="width:120px;">
                     <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:95.84%; background:var(--green); border-radius:4px;"></div>
+                        <div style="height:100%; width:100.0%; background:var(--green); border-radius:4px;"></div>
                     </div>
                 </td>
             </tr>
@@ -91,10 +101,10 @@
                 <td><span class="tag tag-fund">基金</span></td>
                 <td>024480</td>
                 <td>财通品质甄选混合A</td>
-                <td style="font-weight:600;">21.04%</td>
+                <td style="font-weight:600;">25.00%</td>
                 <td style="width:120px;">
                     <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:84.16%; background:var(--green); border-radius:4px;"></div>
+                        <div style="height:100%; width:100.0%; background:var(--green); border-radius:4px;"></div>
                     </div>
                 </td>
             </tr>
@@ -102,12 +112,12 @@
             
             <tr>
                 <td><span class="tag tag-fund">基金</span></td>
-                <td>000390</td>
-                <td>华商优势行业混合A</td>
-                <td style="font-weight:600;">25.00%</td>
+                <td>018210</td>
+                <td>红土创新景气回报混合A</td>
+                <td style="font-weight:600;">20.00%</td>
                 <td style="width:120px;">
                     <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:100.0%; background:var(--green); border-radius:4px;"></div>
+                        <div style="height:100%; width:80.0%; background:var(--green); border-radius:4px;"></div>
                     </div>
                 </td>
             </tr>
@@ -124,6 +134,12 @@
 
 </div>
 
+<script>
+function onDateChange(date) {
+    // 静态站点：切换日期时回到首页（静态站点只生成当天数据）
+    window.location = 'index.html' + (date ? '?date=' + date : '');
+}
+</script>
 
 <script>
 async function reOptimize() {
