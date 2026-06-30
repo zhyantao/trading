@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import sys
 import time
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -95,9 +96,36 @@ def _lot_round_down(shares: float, lot: int = 100) -> int:
 
 def fetch_trade_calendar() -> pd.Series:
     import akshare as ak
-    cal = ak.tool_trade_date_hist_sina()
-    cal["trade_date"] = pd.to_datetime(cal["trade_date"])
-    return cal["trade_date"].sort_values().reset_index(drop=True)
+    import requests as _requests
+
+    for attempt in range(3):
+        try:
+            cal = ak.tool_trade_date_hist_sina()
+            cal["trade_date"] = pd.to_datetime(cal["trade_date"])
+            return cal["trade_date"].sort_values().reset_index(drop=True)
+        except _requests.exceptions.ConnectionError:
+            if attempt == 2:
+                raise
+            time.sleep(3)
+        except Exception:
+            if attempt == 2:
+                raise
+            time.sleep(3)
+
+
+def _process_quarter_holdings(raw: pd.DataFrame, out: dict[date, pd.DataFrame]) -> None:
+    """将单年持仓原始数据按季度拆分，追加到 out 字典。"""
+    df = raw.copy()
+    df["_yq"] = df["季度"].map(_parse_quarter_text)
+    df["占净值比例"] = pd.to_numeric(df["占净值比例"], errors="coerce")
+    df = df.dropna(subset=["占净值比例"])
+    for (yy, qq), g in df.groupby("_yq"):
+        if yy == 0:
+            continue
+        qe = _quarter_end(yy, qq)
+        gg = g[["股票代码", "股票名称", "占净值比例", "季度"]].copy()
+        gg["股票代码"] = gg["股票代码"].astype(str).str.zfill(6)
+        out[qe] = gg.reset_index(drop=True)
 
 
 def fetch_fund_quarter_holdings(
@@ -105,27 +133,57 @@ def fetch_fund_quarter_holdings(
     start_year: int,
     end_year: int,
     sleep_s: float = 0.2,
+    cache_dir: Path | None = None,
 ) -> dict[date, pd.DataFrame]:
     """返回：{季度末日期 -> DataFrame(股票代码, 股票名称, 占净值比例)}"""
     import akshare as ak
+    import requests as _requests
 
     out: dict[date, pd.DataFrame] = {}
     for y in range(end_year, start_year - 1, -1):
-        df = ak.fund_portfolio_hold_em(symbol=fund_code, date=str(y))
+        # ── 磁盘缓存 ──
+        if cache_dir is not None:
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            fp = cache_dir / f"holdings_{fund_code}_{y}.csv"
+            if fp.exists() and fp.stat().st_size > 0:
+                cached = pd.read_csv(fp)
+                if not cached.empty and "季度" in cached.columns and "占净值比例" in cached.columns and "股票代码" in cached.columns:
+                    _process_quarter_holdings(cached, out)
+                    continue
+            if fp.exists():
+                fp.unlink()
+
+        # ── 下载（3 次重试）──
+        df = None
+        last_exc: Exception | None = None
+        for _ in range(3):
+            try:
+                df = ak.fund_portfolio_hold_em(symbol=fund_code, date=str(y))
+                last_exc = None
+                break
+            except KeyError:
+                # akshare bug：API 返回空数据时内部 del big_df["序号"] 失败
+                df = None
+                break
+            except _requests.exceptions.ConnectionError:
+                last_exc = sys.exc_info()[1]
+                time.sleep(max(1.0, sleep_s) * 2)
+            except Exception:
+                last_exc = sys.exc_info()[1]
+                time.sleep(max(1.0, sleep_s) * 2)
+
         time.sleep(sleep_s)
+
         if df is None or df.empty:
+            if last_exc is not None:
+                print(f"[WARN] fund {fund_code} year {y}: download failed after retries: {last_exc}")
             continue
-        df = df.copy()
-        df["_yq"] = df["季度"].map(_parse_quarter_text)
-        df["占净值比例"] = pd.to_numeric(df["占净值比例"], errors="coerce")
-        df = df.dropna(subset=["占净值比例"])
-        for (yy, qq), g in df.groupby("_yq"):
-            if yy == 0:
-                continue
-            qe = _quarter_end(yy, qq)
-            gg = g[["股票代码", "股票名称", "占净值比例", "季度"]].copy()
-            gg["股票代码"] = gg["股票代码"].astype(str).str.zfill(6)
-            out[qe] = gg.reset_index(drop=True)
+
+        # ── 写缓存 ──
+        if cache_dir is not None:
+            df.to_csv(fp, index=False, encoding="utf-8")
+
+        _process_quarter_holdings(df, out)
     return out
 
 
@@ -232,6 +290,7 @@ def main() -> None:
     out_dir = root / "out"
     out_dir.mkdir(parents=True, exist_ok=True)
     cache_dir = out_dir / "cache_prices"
+    holdings_cache_dir = out_dir / "cache_holdings"
 
     fund_top3_path = Path(args.fund_top3) if args.fund_top3 else _latest(out_dir, "绩优基金经理_基金Top3_*.csv")
     stock_top10_path = Path(args.stock_top10) if args.stock_top10 else _latest(out_dir, "绩优基金经理_股票Top10_*.csv")
@@ -310,7 +369,7 @@ def main() -> None:
     print(f"[2/6] 抓取基金季度持仓 ... 基金数={len(fund_codes)} 年份={start_year}~{end_year}")
     fund_holdings: dict[str, dict[date, pd.DataFrame]] = {}
     for fc in fund_codes:
-        fund_holdings[fc] = fetch_fund_quarter_holdings(fc, start_year=start_year, end_year=end_year, sleep_s=args.sleep)
+        fund_holdings[fc] = fetch_fund_quarter_holdings(fc, start_year=start_year, end_year=end_year, sleep_s=args.sleep, cache_dir=holdings_cache_dir)
 
     # 收集股票名称映射
     code_to_name: dict[str, str] = {}

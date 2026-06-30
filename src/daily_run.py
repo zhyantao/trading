@@ -28,9 +28,18 @@ os.environ["no_proxy"] = "*"
 os.environ["NO_PROXY"] = "*"
 
 
-def run(cmd: list[str]) -> None:
-    print(f"[RUN] {' '.join(cmd)}")
-    subprocess.run(cmd, check=True)
+def run(cmd: list[str], retries: int = 3, delay: float = 5.0) -> None:
+    for attempt in range(1, retries + 1):
+        try:
+            print(f"[RUN] {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+            return
+        except subprocess.CalledProcessError:
+            if attempt == retries:
+                raise
+            wait = delay * attempt
+            print(f"[RETRY] attempt {attempt}/{retries} failed, waiting {wait:.0f}s ...")
+            time.sleep(wait)
 
 
 def cleanup_old_files(out_dir: Path, keep_days: int = 3) -> None:

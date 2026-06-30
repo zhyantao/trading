@@ -127,9 +127,21 @@ def fetch_fund_nav(
 
 def fetch_trade_calendar() -> pd.Series:
     import akshare as ak
-    cal = ak.tool_trade_date_hist_sina()
-    cal["trade_date"] = pd.to_datetime(cal["trade_date"])
-    return cal["trade_date"].sort_values().reset_index(drop=True)
+    import requests as _requests
+
+    for attempt in range(3):
+        try:
+            cal = ak.tool_trade_date_hist_sina()
+            cal["trade_date"] = pd.to_datetime(cal["trade_date"])
+            return cal["trade_date"].sort_values().reset_index(drop=True)
+        except _requests.exceptions.ConnectionError:
+            if attempt == 2:
+                raise
+            time.sleep(3)
+        except Exception:
+            if attempt == 2:
+                raise
+            time.sleep(3)
 
 
 def _nearest_trade_day(trade_days: pd.Series, d: date, direction: str = "next") -> date | None:
