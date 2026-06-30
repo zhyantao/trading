@@ -60,9 +60,21 @@ env.filters["num2"] = lambda v: f"{float(v):.2f}"
 ds = DataService()
 
 
+def _static_context(extra: dict | None = None) -> dict:
+    """构建静态页面的公共上下文（含日期选择信息）。"""
+    dates = ds.available_dates()
+    ctx: dict = {
+        "is_static": True,
+        "available_dates": dates,
+        "selected_date": dates[0] if dates else "",
+    }
+    if extra:
+        ctx.update(extra)
+    return ctx
+
+
 def _render(name: str, context: dict | None = None) -> str:
-    ctx = context or {}
-    ctx.setdefault("is_static", True)
+    ctx = _static_context(context)
     tpl = env.get_template(name)
     return tpl.render(**ctx)
 
@@ -330,14 +342,13 @@ def generate_backtest() -> None:
             md_text = ds.read_md_file(r["md"])
             summary_html = _md_to_html(md_text)
         chart_file = r.get("chart", "")
-        detail_html = backtest_tpl.render(
-            is_static=True,
-            active_page="backtest",
-            results=results,
-            view_id=r["id"],
-            summary_html=summary_html,
-            chart_file=chart_file,
-        )
+        detail_html = backtest_tpl.render(**_static_context({
+            "active_page": "backtest",
+            "results": results,
+            "view_id": r["id"],
+            "summary_html": summary_html,
+            "chart_file": chart_file,
+        }))
         _write(f"backtest_{r['id']}.html", detail_html)
 
 

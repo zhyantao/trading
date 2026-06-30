@@ -102,6 +102,23 @@ nav a {
 nav a:hover { background: #f0f0f5; color: var(--text); }
 nav a.active { background: #e8f0fe; color: var(--accent); font-weight: 600; }
 
+/* date selector in navbar */
+.nav-date-select {
+    margin-left: auto;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    max-width: 140px;
+}
+.nav-date-select:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+}
+
 /* ================================================================
    Layout
    ================================================================ */
@@ -526,6 +543,12 @@ tr:hover { background: #f8f9ff; }
         width: 100%;
         padding: 10px 14px;
         font-size: 14px;
+    }
+
+    .nav-date-select {
+        max-width: none;
+        width: 100%;
+        margin: 4px 0;
     }
 
     /* Layout */

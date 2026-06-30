@@ -26,6 +26,14 @@
             <a href="/backtest" class="{{ 'active' if active_page == 'backtest' }}">回测</a>
             <a href="/pipeline" class="{{ 'active' if active_page == 'pipeline' }}">流水线</a>
         </div>
+        {% if available_dates %}
+        <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
+            <option value="">📅 最新</option>
+            {% for d in available_dates %}
+            <option value="{{ d }}" {{ 'selected' if d == selected_date }}>{{ d[:4] }}-{{ d[4:6] }}-{{ d[6:8] }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
     </div>
 </nav>
 
@@ -33,6 +41,21 @@
     {% block content %}{% endblock %}
 </div>
 
+<script>
+function onDateChange(date) {
+    var url = new URL(window.location);
+    if (date) {
+        url.searchParams.set('date', date);
+    } else {
+        url.searchParams.delete('date');
+    }
+    // 切换日期时重置分页到第 1 页
+    if (url.searchParams.has('page')) {
+        url.searchParams.delete('page');
+    }
+    window.location = url.toString();
+}
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

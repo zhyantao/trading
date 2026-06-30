@@ -26,6 +26,16 @@
             <a href="backtest.html" class="">回测</a>
             <a href="pipeline.html" class="">流水线</a>
         </div>
+        
+        <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
+            <option value="">📅 最新</option>
+            
+            <option value="20260630" selected>2026-06-30</option>
+            
+            <option value="20260517" >2026-05-17</option>
+            
+        </select>
+        
     </div>
 </nav>
 
@@ -60,9 +70,9 @@
                 <td>新易盛</td>
                 <td>是</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">266.25</td>
-                <td>1493.21</td>
-                <td>1226.96</td>
+                <td style="color:var(--green); font-weight:600;">261.71</td>
+                <td>1626.50</td>
+                <td>1364.79</td>
                 <td style="font-size:11px; max-width:250px;">张明昕(华商基金):93.28; 周珊珊(交银施罗德基金):74.57; 陈文凯(华泰柏瑞基金):69.31</td>
             </tr>
             
@@ -74,9 +84,9 @@
                 <td>中际旭创</td>
                 <td>是</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">169.10</td>
-                <td>1224.65</td>
-                <td>1055.55</td>
+                <td style="color:var(--green); font-weight:600;">204.03</td>
+                <td>1367.44</td>
+                <td>1163.41</td>
                 <td style="font-size:11px; max-width:250px;">张明昕(华商基金):96.61; 周珊珊(交银施罗德基金):74.66; 陈文凯(华泰柏瑞基金):47.28</td>
             </tr>
             
@@ -91,7 +101,7 @@
                 <td style="color:var(--red); font-weight:600;">nan</td>
                 <td>nan</td>
                 <td>nan</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金) 经理排名=3</td>
+                <td style="font-size:11px; max-width:250px;">张明昕(华商基金) 经理排名=2</td>
             </tr>
             
             
@@ -105,35 +115,21 @@
                 <td style="color:var(--red); font-weight:600;">nan</td>
                 <td>nan</td>
                 <td>nan</td>
-                <td style="font-size:11px; max-width:250px;">金梓才(财通基金) 经理排名=2</td>
+                <td style="font-size:11px; max-width:250px;">金梓才(财通基金) 经理排名=1</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-fund">基金</span></td>
-                <td>000390</td>
-                <td>华商优势行业混合A</td>
+                <td>018210</td>
+                <td>红土创新景气回报混合A</td>
                 <td>是</td>
                 <td><span class="tag tag-hold">继续关注</span></td>
                 <td style="color:var(--red); font-weight:600;">nan</td>
                 <td>nan</td>
                 <td>nan</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金) 经理排名=3</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>600183</td>
-                <td>生益科技</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">387.83</td>
-                <td>839.60</td>
-                <td>451.77</td>
-                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):75.17; 王浩聿(长安基金):71.64; 周珊珊(交银施罗德基金):67.80</td>
+                <td style="font-size:11px; max-width:250px;">盖俊龙(红土创新基金) 经理排名=13</td>
             </tr>
             
             
@@ -144,10 +140,24 @@
                 <td>天孚通信</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">329.92</td>
-                <td>1292.64</td>
-                <td>962.72</td>
+                <td style="color:var(--green); font-weight:600;">456.86</td>
+                <td>1477.78</td>
+                <td>1020.92</td>
                 <td style="font-size:11px; max-width:250px;">周珊珊(交银施罗德基金):128.74; 陈文凯(华泰柏瑞基金):95.46; 单柏霖(汇安基金):50.53</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>600183</td>
+                <td>生益科技</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">356.69</td>
+                <td>823.53</td>
+                <td>466.84</td>
+                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):75.17; 王浩聿(长安基金):71.64; 周珊珊(交银施罗德基金):67.80</td>
             </tr>
             
             
@@ -158,9 +168,9 @@
                 <td>东山精密</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">304.38</td>
-                <td>737.72</td>
-                <td>433.34</td>
+                <td style="color:var(--green); font-weight:600;">296.85</td>
+                <td>738.67</td>
+                <td>441.82</td>
                 <td style="font-size:11px; max-width:250px;">王浩聿(长安基金):80.07; 张明昕(华商基金):65.78; 陈文凯(华泰柏瑞基金):60.60</td>
             </tr>
             
@@ -172,38 +182,10 @@
                 <td>沪电股份</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">227.54</td>
-                <td>1030.91</td>
-                <td>803.37</td>
+                <td style="color:var(--green); font-weight:600;">284.20</td>
+                <td>1093.19</td>
+                <td>808.99</td>
                 <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):138.46; 王浩聿(长安基金):56.68; 张明昕(华商基金):50.50</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>688120</td>
-                <td>华海清科</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">190.84</td>
-                <td>327.43</td>
-                <td>136.59</td>
-                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):142.46; 卜忠林(申万菱信基金):33.51; 付娟(申万菱信基金):14.09</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300476</td>
-                <td>胜宏科技</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">183.05</td>
-                <td>1256.32</td>
-                <td>1073.27</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):89.51; 金梓才(财通基金):79.71; 王浩聿(长安基金):54.19</td>
             </tr>
             
             
@@ -214,9 +196,9 @@
                 <td>源杰科技</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">168.22</td>
-                <td>733.74</td>
-                <td>565.52</td>
+                <td style="color:var(--green); font-weight:600;">251.59</td>
+                <td>847.08</td>
+                <td>595.49</td>
                 <td style="font-size:11px; max-width:250px;">金梓才(财通基金):72.64; 陈文凯(华泰柏瑞基金):63.22; 张明昕(华商基金):57.09</td>
             </tr>
             
@@ -224,42 +206,70 @@
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>688256</td>
-                <td>寒武纪</td>
+                <td>300476</td>
+                <td>胜宏科技</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">113.26</td>
-                <td>917.50</td>
-                <td>804.24</td>
-                <td style="font-size:11px; max-width:250px;">王浩聿(长安基金):84.56; 卜忠林(申万菱信基金):19.63; 陈文凯(华泰柏瑞基金):15.73</td>
+                <td style="color:var(--green); font-weight:600;">208.19</td>
+                <td>1336.59</td>
+                <td>1128.40</td>
+                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):89.51; 金梓才(财通基金):79.71; 王浩聿(长安基金):54.19</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>301377</td>
-                <td>鼎泰高科</td>
+                <td>002916</td>
+                <td>深南电路</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">112.65</td>
-                <td>388.28</td>
-                <td>275.63</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):56.08; 金梓才(财通基金):37.08; 孙硕(宏利基金):17.87</td>
+                <td style="color:var(--green); font-weight:600;">181.59</td>
+                <td>817.55</td>
+                <td>635.96</td>
+                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):70.17; 周珊珊(交银施罗德基金):36.01; 周建胜(诺德基金):22.68</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>688012</td>
-                <td>中微公司</td>
+                <td>601138</td>
+                <td>工业富联</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">112.07</td>
-                <td>230.73</td>
-                <td>118.66</td>
-                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):51.25; 卜忠林(申万菱信基金):34.27; 付娟(申万菱信基金):16.11</td>
+                <td style="color:var(--green); font-weight:600;">178.74</td>
+                <td>1355.42</td>
+                <td>1176.68</td>
+                <td style="font-size:11px; max-width:250px;">王浩聿(长安基金):61.25; 单柏霖(汇安基金):51.66; 金梓才(财通基金):46.45</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>300548</td>
+                <td>长芯博创</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">159.06</td>
+                <td>1025.48</td>
+                <td>866.42</td>
+                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):57.56; 武阳(易方达基金):45.77; 周珊珊(交银施罗德基金):26.67</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>688120</td>
+                <td>华海清科</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">141.24</td>
+                <td>265.63</td>
+                <td>124.39</td>
+                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):142.46; 欧阳良琦(易方达基金):3.35; 严凯(东方基金):2.26</td>
             </tr>
             
             
@@ -270,10 +280,38 @@
                 <td>长飞光纤</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">111.20</td>
-                <td>195.82</td>
-                <td>84.62</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):90.04; 陈文凯(华泰柏瑞基金):19.07; 彭雾(华商基金):3.22</td>
+                <td style="color:var(--green); font-weight:600;">137.31</td>
+                <td>224.36</td>
+                <td>87.05</td>
+                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):90.04; 武阳(易方达基金):21.41; 陈文凯(华泰柏瑞基金):19.07</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>002837</td>
+                <td>英维克</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">133.17</td>
+                <td>499.87</td>
+                <td>366.70</td>
+                <td style="font-size:11px; max-width:250px;">周珊珊(交银施罗德基金):33.26; 王浩聿(长安基金):32.28; 武阳(易方达基金):13.39</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>688313</td>
+                <td>仕佳光子</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">119.92</td>
+                <td>919.13</td>
+                <td>799.21</td>
+                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):74.84; 张明昕(华商基金):44.72; 武阳(易方达基金):37.63</td>
             </tr>
             
             
@@ -284,9 +322,9 @@
                 <td>长飞光纤光缆</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">110.77</td>
-                <td>146.33</td>
-                <td>35.56</td>
+                <td style="color:var(--green); font-weight:600;">111.69</td>
+                <td>154.06</td>
+                <td>42.37</td>
                 <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):67.44; 武阳(易方达基金):18.22; 彭雾(华商基金):16.44</td>
             </tr>
             
@@ -298,80 +336,24 @@
                 <td>腾景科技</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">99.66</td>
-                <td>332.59</td>
-                <td>232.93</td>
-                <td style="font-size:11px; max-width:250px;">金梓才(财通基金):66.24; 张明昕(华商基金):53.26; 齐宁(博时基金):8.87</td>
+                <td style="color:var(--green); font-weight:600;">108.91</td>
+                <td>367.79</td>
+                <td>258.88</td>
+                <td style="font-size:11px; max-width:250px;">金梓才(财通基金):66.24; 张明昕(华商基金):53.26; 陈文凯(华泰柏瑞基金):6.99</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>002916</td>
-                <td>深南电路</td>
+                <td>301377</td>
+                <td>鼎泰高科</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">96.01</td>
-                <td>690.75</td>
-                <td>594.74</td>
-                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):70.17; 周珊珊(交银施罗德基金):36.01; 周建胜(诺德基金):22.68</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>688072</td>
-                <td>拓荆科技</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">87.24</td>
-                <td>265.25</td>
-                <td>178.01</td>
-                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):40.62; 王浩聿(长安基金):31.33; 杨柳青(中信保诚基金):12.35</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>688143</td>
-                <td>长盈通</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">83.66</td>
-                <td>83.66</td>
-                <td>0.00</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):75.33; 彭雾(华商基金):8.33</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>601138</td>
-                <td>工业富联</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">81.01</td>
-                <td>1168.97</td>
-                <td>1087.96</td>
-                <td style="font-size:11px; max-width:250px;">王浩聿(长安基金):61.25; 单柏霖(汇安基金):51.66; 金梓才(财通基金):46.45</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>688233</td>
-                <td>神工股份</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">78.08</td>
-                <td>90.62</td>
-                <td>12.54</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):68.98; 杨宗昌(易方达基金):9.32; 彭雾(华商基金):3.27</td>
+                <td style="color:var(--green); font-weight:600;">105.49</td>
+                <td>427.92</td>
+                <td>322.43</td>
+                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):56.08; 金梓才(财通基金):37.08; 孙硕(宏利基金):17.87</td>
             </tr>
             
             
@@ -382,38 +364,24 @@
                 <td>亨通光电</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">75.04</td>
-                <td>110.29</td>
-                <td>35.25</td>
-                <td style="font-size:11px; max-width:250px;">周珊珊(交银施罗德基金):30.69; 张明昕(华商基金):22.65; 孙硕(宏利基金):21.64</td>
+                <td style="color:var(--green); font-weight:600;">94.57</td>
+                <td>125.36</td>
+                <td>30.79</td>
+                <td style="font-size:11px; max-width:250px;">周珊珊(交银施罗德基金):30.69; 张明昕(华商基金):22.65; 武阳(易方达基金):21.82</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>688629</td>
-                <td>华丰科技</td>
+                <td>688143</td>
+                <td>长盈通</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">67.53</td>
-                <td>215.59</td>
-                <td>148.06</td>
-                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):52.29; 齐宁(博时基金):11.25; 周建胜(诺德基金):8.60</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>688313</td>
-                <td>仕佳光子</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">65.79</td>
-                <td>753.29</td>
-                <td>687.50</td>
-                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):74.84; 张明昕(华商基金):44.72; 王浩聿(长安基金):22.99</td>
+                <td style="color:var(--green); font-weight:600;">83.13</td>
+                <td>85.79</td>
+                <td>2.66</td>
+                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):75.33; 彭雾(华商基金):8.33; 方建(银华基金):-0.53</td>
             </tr>
             
             
@@ -424,10 +392,52 @@
                 <td>环旭电子</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">64.11</td>
-                <td>72.14</td>
-                <td>8.03</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):55.21; 齐宁(博时基金):7.24; 杨柳青(中信保诚基金):2.24</td>
+                <td style="color:var(--green); font-weight:600;">77.99</td>
+                <td>77.99</td>
+                <td>0.00</td>
+                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):55.21; 盖俊龙(红土创新基金):13.52; 齐宁(博时基金):7.24</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>688256</td>
+                <td>寒武纪</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">72.30</td>
+                <td>960.57</td>
+                <td>888.27</td>
+                <td style="font-size:11px; max-width:250px;">王浩聿(长安基金):84.56; 陈文凯(华泰柏瑞基金):15.73; 严凯(东方基金):11.58</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>688233</td>
+                <td>神工股份</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">71.17</td>
+                <td>74.51</td>
+                <td>3.34</td>
+                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):68.98; 彭雾(华商基金):3.27; 严凯(东方基金):-1.08</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>002475</td>
+                <td>立讯精密</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">64.12</td>
+                <td>304.08</td>
+                <td>239.96</td>
+                <td style="font-size:11px; max-width:250px;">周珊珊(交银施罗德基金):45.59; 郑希(易方达基金):19.13; 张天麒(安信基金):11.25</td>
             </tr>
             
             
@@ -438,10 +448,24 @@
                 <td>东田微</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">62.53</td>
-                <td>97.72</td>
-                <td>35.19</td>
+                <td style="color:var(--green); font-weight:600;">59.98</td>
+                <td>120.54</td>
+                <td>60.56</td>
                 <td style="font-size:11px; max-width:250px;">张明昕(华商基金):65.56; 陈文凯(华泰柏瑞基金):2.31; 罗擎(富国基金):-0.50</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>001309</td>
+                <td>德明利</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">58.84</td>
+                <td>297.08</td>
+                <td>238.24</td>
+                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):39.72; 王浩聿(长安基金):30.46; 罗擎(富国基金):3.36</td>
             </tr>
             
             
@@ -452,9 +476,9 @@
                 <td>德福科技</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">56.78</td>
-                <td>154.42</td>
-                <td>97.64</td>
+                <td style="color:var(--green); font-weight:600;">58.48</td>
+                <td>180.39</td>
+                <td>121.91</td>
                 <td style="font-size:11px; max-width:250px;">周珊珊(交银施罗德基金):22.47; 单柏霖(汇安基金):21.90; 张明昕(华商基金):6.24</td>
             </tr>
             
@@ -462,14 +486,28 @@
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>300548</td>
-                <td>长芯博创</td>
+                <td>000TSM</td>
+                <td>台积电</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">54.68</td>
-                <td>798.52</td>
-                <td>743.84</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):57.56; 周珊珊(交银施罗德基金):26.67; 单柏霖(汇安基金):23.76</td>
+                <td style="color:var(--green); font-weight:600;">56.22</td>
+                <td>70.22</td>
+                <td>14.00</td>
+                <td style="font-size:11px; max-width:250px;">郑希(易方达基金):56.22</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>300274</td>
+                <td>阳光电源</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">55.99</td>
+                <td>238.44</td>
+                <td>182.45</td>
+                <td style="font-size:11px; max-width:250px;">周珊珊(交银施罗德基金):45.51; 陈文凯(华泰柏瑞基金):13.19; 武阳(易方达基金):4.99</td>
             </tr>
             
             
@@ -480,52 +518,10 @@
                 <td>伟测科技</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">53.42</td>
-                <td>159.59</td>
-                <td>106.17</td>
-                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):45.94; 杨宗昌(易方达基金):7.35; 罗擎(富国基金):4.04</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>002080</td>
-                <td>中材科技</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">51.93</td>
-                <td>313.77</td>
-                <td>261.84</td>
-                <td style="font-size:11px; max-width:250px;">张明昕(华商基金):23.11; 周珊珊(交银施罗德基金):19.57; 齐宁(博时基金):5.20</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300395</td>
-                <td>菲利华</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">51.61</td>
-                <td>265.89</td>
-                <td>214.28</td>
-                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):31.11; 周建胜(诺德基金):11.10; 王浩聿(长安基金):6.51</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>688183</td>
-                <td>生益电子</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-57.96</td>
-                <td>450.26</td>
-                <td>508.22</td>
-                <td style="font-size:11px; max-width:250px;">金梓才(财通基金):51.56; 齐宁(博时基金):5.96; 杨柳青(中信保诚基金):0.07</td>
+                <td style="color:var(--green); font-weight:600;">52.35</td>
+                <td>147.43</td>
+                <td>95.08</td>
+                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):45.94; 贾雅楠(财通基金):6.62; 罗擎(富国基金):4.04</td>
             </tr>
             
             
@@ -536,304 +532,38 @@
                 <td>小米集团-W</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-57.54</td>
-                <td>51.20</td>
-                <td>108.74</td>
-                <td style="font-size:11px; max-width:250px;">张天麒(安信基金):-0.18; 杨柳青(中信保诚基金):-3.27; 彭雾(华商基金):-3.43</td>
+                <td style="color:var(--red); font-weight:600;">-75.45</td>
+                <td>92.21</td>
+                <td>167.66</td>
+                <td style="font-size:11px; max-width:250px;">张天麒(安信基金):-0.18; 彭雾(华商基金):-3.43; 欧阳良琦(易方达基金):-6.74</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>300570</td>
-                <td>太辰光</td>
+                <td>688183</td>
+                <td>生益电子</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-56.52</td>
-                <td>376.50</td>
-                <td>433.02</td>
-                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):4.77; 单柏霖(汇安基金):3.55; 罗擎(富国基金):3.05</td>
+                <td style="color:var(--red); font-weight:600;">-43.71</td>
+                <td>572.90</td>
+                <td>616.61</td>
+                <td style="font-size:11px; max-width:250px;">金梓才(财通基金):51.56; 武阳(易方达基金):12.76; 罗擎(富国基金):-0.07</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>603596</td>
-                <td>伯特利</td>
+                <td>300972</td>
+                <td>万辰集团</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-46.04</td>
-                <td>41.46</td>
-                <td>87.50</td>
-                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):0.30; 杨宗昌(易方达基金):-9.02; 武阳(易方达基金):-37.32</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>688981</td>
-                <td>中芯国际</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-45.24</td>
-                <td>71.75</td>
-                <td>116.99</td>
-                <td style="font-size:11px; max-width:250px;">严凯(东方基金):10.34; 彭雾(华商基金):0.11; 卜忠林(申万菱信基金):-0.01</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300033</td>
-                <td>同花顺</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-44.09</td>
-                <td>78.36</td>
-                <td>122.45</td>
-                <td style="font-size:11px; max-width:250px;">孙硕(宏利基金):1.33; 王浩聿(长安基金):0.59; 彭雾(华商基金):0.11</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>002594</td>
-                <td>比亚迪</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-43.97</td>
-                <td>40.33</td>
-                <td>84.30</td>
-                <td style="font-size:11px; max-width:250px;">金梓才(财通基金):0.31; 单柏霖(汇安基金):-2.02; 高翔(华夏基金):-3.76</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>000063</td>
-                <td>中兴通讯</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-40.28</td>
-                <td>76.99</td>
-                <td>117.27</td>
-                <td style="font-size:11px; max-width:250px;">罗擎(富国基金):0.34; 单柏霖(汇安基金):0.33; 彭雾(华商基金):0.11</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>002241</td>
-                <td>歌尔股份</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-39.05</td>
-                <td>125.36</td>
-                <td>164.41</td>
-                <td style="font-size:11px; max-width:250px;">杨宗昌(易方达基金):0.74; 彭雾(华商基金):0.29; 欧阳良琦(易方达基金):-0.42</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>002920</td>
-                <td>德赛西威</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-35.52</td>
-                <td>7.40</td>
-                <td>42.92</td>
-                <td style="font-size:11px; max-width:250px;">杨宗昌(易方达基金):-9.99; 武阳(易方达基金):-25.53</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300059</td>
-                <td>东方财富</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-35.21</td>
-                <td>30.95</td>
-                <td>66.16</td>
-                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):-2.06; 武阳(易方达基金):-33.15</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300153</td>
-                <td>科泰电源</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-33.44</td>
-                <td>107.74</td>
-                <td>141.18</td>
-                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):6.24; 金梓才(财通基金):1.81; 王浩聿(长安基金):0.02</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300408</td>
-                <td>三环集团</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-32.76</td>
-                <td>66.80</td>
-                <td>99.56</td>
-                <td style="font-size:11px; max-width:250px;">彭雾(华商基金):0.11; 王浩聿(长安基金):0.10; 卜忠林(申万菱信基金):-0.09</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>003010</td>
-                <td>若羽臣</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-31.91</td>
-                <td>37.79</td>
-                <td>69.70</td>
-                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):-1.94; 武阳(易方达基金):-29.97</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>600030</td>
-                <td>中信证券</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-30.98</td>
-                <td>11.00</td>
-                <td>41.98</td>
-                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):-3.26; 武阳(易方达基金):-27.72</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>688036</td>
-                <td>传音控股</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-30.77</td>
-                <td>15.13</td>
-                <td>45.90</td>
-                <td style="font-size:11px; max-width:250px;">孙硕(宏利基金):0.23; 周珊珊(交银施罗德基金):0.13; 高翔(华夏基金):-1.81</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>002130</td>
-                <td>沃尔核材</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-28.74</td>
-                <td>63.92</td>
-                <td>92.66</td>
-                <td style="font-size:11px; max-width:250px;">彭雾(华商基金):0.96; 杨柳青(中信保诚基金):0.21; 王浩聿(长安基金):0.11</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>603737</td>
-                <td>三棵树</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-28.58</td>
-                <td>38.48</td>
-                <td>67.06</td>
-                <td style="font-size:11px; max-width:250px;">武阳(易方达基金):-28.58</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300806</td>
-                <td>斯迪克</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-27.57</td>
-                <td>0.00</td>
-                <td>27.57</td>
-                <td style="font-size:11px; max-width:250px;">卜忠林(申万菱信基金):-11.73; 付娟(申万菱信基金):-15.84</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>600941</td>
-                <td>中国移动</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-27.20</td>
-                <td>78.06</td>
-                <td>105.26</td>
-                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):1.28; 孙硕(宏利基金):-0.06; 周建胜(诺德基金):-0.30</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>002568</td>
-                <td>百润股份</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-26.71</td>
-                <td>24.65</td>
-                <td>51.36</td>
-                <td style="font-size:11px; max-width:250px;">武阳(易方达基金):-26.71</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300010</td>
-                <td>豆神教育</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-25.42</td>
-                <td>19.74</td>
-                <td>45.16</td>
-                <td style="font-size:11px; max-width:250px;">罗擎(富国基金):0.10; 张明昕(华商基金):0.05; 彭雾(华商基金):-0.30</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>603063</td>
-                <td>禾望电气</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-24.41</td>
-                <td>73.65</td>
-                <td>98.06</td>
-                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):3.39; 严凯(东方基金):0.60; 张天麒(安信基金):0.43</td>
+                <td style="color:var(--red); font-weight:600;">-41.04</td>
+                <td>74.07</td>
+                <td>115.11</td>
+                <td style="font-size:11px; max-width:250px;">夏钦(财通基金):-0.80; 郑希(易方达基金):-2.38; 金梓才(财通基金):-10.23</td>
             </tr>
             
             
@@ -844,10 +574,178 @@
                 <td>恒玄科技</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-24.14</td>
-                <td>121.19</td>
-                <td>145.33</td>
-                <td style="font-size:11px; max-width:250px;">彭雾(华商基金):0.72; 高翔(华夏基金):0.10; 严凯(东方基金):0.01</td>
+                <td style="color:var(--red); font-weight:600;">-38.46</td>
+                <td>170.67</td>
+                <td>209.13</td>
+                <td style="font-size:11px; max-width:250px;">彭雾(华商基金):0.72; 严凯(东方基金):0.01; 周建胜(诺德基金):-0.21</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>300153</td>
+                <td>科泰电源</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-38.41</td>
+                <td>159.63</td>
+                <td>198.04</td>
+                <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):6.24; 夏钦(财通基金):1.82; 金梓才(财通基金):1.81</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>688981</td>
+                <td>中芯国际</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-32.89</td>
+                <td>70.32</td>
+                <td>103.21</td>
+                <td style="font-size:11px; max-width:250px;">严凯(东方基金):10.34; 武阳(易方达基金):0.56; 彭雾(华商基金):0.11</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>000981</td>
+                <td>中芯国际</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-31.25</td>
+                <td>173.93</td>
+                <td>205.18</td>
+                <td style="font-size:11px; max-width:250px;">方建(银华基金):4.87; 欧阳良琦(易方达基金):1.43; 贾雅楠(财通基金):0.82</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>300570</td>
+                <td>太辰光</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-30.66</td>
+                <td>438.55</td>
+                <td>469.21</td>
+                <td style="font-size:11px; max-width:250px;">单柏霖(汇安基金):3.55; 罗擎(富国基金):3.05; 盖俊龙(红土创新基金):2.15</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>000063</td>
+                <td>中兴通讯</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-30.26</td>
+                <td>94.50</td>
+                <td>124.76</td>
+                <td style="font-size:11px; max-width:250px;">贾雅楠(财通基金):2.26; 方建(银华基金):1.30; 罗擎(富国基金):0.34</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>002920</td>
+                <td>德赛西威</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-28.99</td>
+                <td>0.00</td>
+                <td>28.99</td>
+                <td style="font-size:11px; max-width:250px;">武阳(易方达基金):-28.99</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>603596</td>
+                <td>伯特利</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-28.02</td>
+                <td>42.13</td>
+                <td>70.15</td>
+                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):0.30; 盖俊龙(红土创新基金):0.02; 武阳(易方达基金):-28.34</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>688037</td>
+                <td>芯源微</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-26.17</td>
+                <td>94.36</td>
+                <td>120.53</td>
+                <td style="font-size:11px; max-width:250px;">罗擎(富国基金):3.89; 齐宁(博时基金):1.93; 王浩聿(长安基金):-0.30</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>002050</td>
+                <td>三花智控</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-26.05</td>
+                <td>42.13</td>
+                <td>68.18</td>
+                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):1.42; 郑希(易方达基金):-0.03; 金梓才(财通基金):-0.10</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>688361</td>
+                <td>中科飞测</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-24.70</td>
+                <td>69.42</td>
+                <td>94.12</td>
+                <td style="font-size:11px; max-width:250px;">欧阳良琦(易方达基金):6.65; 郑希(易方达基金):1.03; 夏钦(财通基金):0.31</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>002130</td>
+                <td>沃尔核材</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-23.40</td>
+                <td>88.58</td>
+                <td>111.98</td>
+                <td style="font-size:11px; max-width:250px;">彭雾(华商基金):0.96; 王浩聿(长安基金):0.11; 贾雅楠(财通基金):-0.02</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>000880</td>
+                <td>潍柴重机</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-22.11</td>
+                <td>125.23</td>
+                <td>147.34</td>
+                <td style="font-size:11px; max-width:250px;">贾雅楠(财通基金):2.37; 金梓才(财通基金):0.03; 陈文凯(华泰柏瑞基金):-0.20</td>
             </tr>
             
             
@@ -858,80 +756,192 @@
                 <td>浪潮信息</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-22.86</td>
-                <td>20.46</td>
-                <td>43.32</td>
-                <td style="font-size:11px; max-width:250px;">欧阳良琦(易方达基金):6.40; 杨宗昌(易方达基金):2.09; 高翔(华夏基金):0.89</td>
+                <td style="color:var(--red); font-weight:600;">-21.73</td>
+                <td>12.99</td>
+                <td>34.72</td>
+                <td style="font-size:11px; max-width:250px;">欧阳良琦(易方达基金):6.40; 齐宁(博时基金):-0.05; 张天麒(安信基金):-0.06</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>002273</td>
-                <td>水晶光电</td>
+                <td>688596</td>
+                <td>正帆科技</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-22.40</td>
-                <td>21.71</td>
-                <td>44.11</td>
-                <td style="font-size:11px; max-width:250px;">高翔(华夏基金):-2.21; 罗擎(富国基金):-2.64; 杨柳青(中信保诚基金):-7.55</td>
+                <td style="color:var(--red); font-weight:600;">-20.42</td>
+                <td>8.05</td>
+                <td>28.47</td>
+                <td style="font-size:11px; max-width:250px;">严凯(东方基金):-20.42</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>688123</td>
-                <td>聚辰股份</td>
+                <td>000988</td>
+                <td>华工科技</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-22.23</td>
-                <td>86.01</td>
-                <td>108.24</td>
-                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):1.07; 杨柳青(中信保诚基金):0.77; 罗擎(富国基金):-0.15</td>
+                <td style="color:var(--red); font-weight:600;">-19.14</td>
+                <td>7.27</td>
+                <td>26.41</td>
+                <td style="font-size:11px; max-width:250px;">周珊珊(交银施罗德基金):0.03; 孙硕(宏利基金):-0.93; 王浩聿(长安基金):-2.15</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>600809</td>
-                <td>山西汾酒</td>
+                <td>603786</td>
+                <td>科博达</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-21.75</td>
-                <td>15.92</td>
-                <td>37.67</td>
-                <td style="font-size:11px; max-width:250px;">欧阳良琦(易方达基金):-0.04; 周建胜(诺德基金):-2.11; 武阳(易方达基金):-19.60</td>
+                <td style="color:var(--red); font-weight:600;">-18.51</td>
+                <td>6.88</td>
+                <td>25.39</td>
+                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):1.15; 武阳(易方达基金):-19.66</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>600989</td>
-                <td>宝丰能源</td>
+                <td>603063</td>
+                <td>禾望电气</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-21.72</td>
-                <td>20.50</td>
-                <td>42.22</td>
-                <td style="font-size:11px; max-width:250px;">欧阳良琦(易方达基金):-2.94; 杨宗昌(易方达基金):-18.78</td>
+                <td style="color:var(--red); font-weight:600;">-18.32</td>
+                <td>89.51</td>
+                <td>107.83</td>
+                <td style="font-size:11px; max-width:250px;">严凯(东方基金):0.60; 齐宁(博时基金):0.53; 张天麒(安信基金):0.43</td>
             </tr>
             
             
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>601933</td>
-                <td>永辉超市</td>
+                <td>009992</td>
+                <td>泡泡玛特</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-21.34</td>
-                <td>11.63</td>
-                <td>32.97</td>
-                <td style="font-size:11px; max-width:250px;">武阳(易方达基金):-21.34</td>
+                <td style="color:var(--red); font-weight:600;">-18.30</td>
+                <td>103.82</td>
+                <td>122.12</td>
+                <td style="font-size:11px; max-width:250px;">周建胜(诺德基金):2.20; 欧阳良琦(易方达基金):0.90; 单柏霖(汇安基金):0.00</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>601689</td>
+                <td>拓普集团</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-18.08</td>
+                <td>65.39</td>
+                <td>83.47</td>
+                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):3.57; 周珊珊(交银施罗德基金):1.33; 欧阳良琦(易方达基金):0.55</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>300260</td>
+                <td>新莱应材</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-17.45</td>
+                <td>5.90</td>
+                <td>23.35</td>
+                <td style="font-size:11px; max-width:250px;">周建胜(诺德基金):2.03; 周珊珊(交银施罗德基金):0.15; 齐宁(博时基金):-2.70</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>688362</td>
+                <td>甬矽电子</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-16.92</td>
+                <td>9.38</td>
+                <td>26.30</td>
+                <td style="font-size:11px; max-width:250px;">严凯(东方基金):0.09; 王浩聿(长安基金):-0.64; 金梓才(财通基金):-3.73</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>300170</td>
+                <td>汉得信息</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-16.15</td>
+                <td>92.90</td>
+                <td>109.05</td>
+                <td style="font-size:11px; max-width:250px;">周建胜(诺德基金):1.02; 张明昕(华商基金):0.04; 齐宁(博时基金):-0.46</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>003010</td>
+                <td>若羽臣</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-16.11</td>
+                <td>107.35</td>
+                <td>123.46</td>
+                <td style="font-size:11px; max-width:250px;">武阳(易方达基金):4.20; 陈文凯(华泰柏瑞基金):-1.94; 夏钦(财通基金):-8.44</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>000CLS</td>
+                <td>天弘科技</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-15.53</td>
+                <td>22.84</td>
+                <td>38.37</td>
+                <td style="font-size:11px; max-width:250px;">郑希(易方达基金):-15.53</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>300378</td>
+                <td>鼎捷数智</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-15.11</td>
+                <td>131.78</td>
+                <td>146.89</td>
+                <td style="font-size:11px; max-width:250px;">周建胜(诺德基金):0.80; 周珊珊(交银施罗德基金):0.78; 齐宁(博时基金):0.10</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
+                <td>603236</td>
+                <td>移远通信</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-14.77</td>
+                <td>31.13</td>
+                <td>45.90</td>
+                <td style="font-size:11px; max-width:250px;">严凯(东方基金):1.79; 盖俊龙(红土创新基金):-0.99; 孙硕(宏利基金):-15.57</td>
             </tr>
             
             </tbody>
@@ -943,6 +953,12 @@
 
 </div>
 
+<script>
+function onDateChange(date) {
+    // 静态站点：切换日期时回到首页（静态站点只生成当天数据）
+    window.location = 'index.html' + (date ? '?date=' + date : '');
+}
+</script>
 
 </body>
 </html>

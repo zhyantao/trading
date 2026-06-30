@@ -15,8 +15,10 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # 绕过 macOS 系统代理
@@ -29,6 +31,47 @@ os.environ["NO_PROXY"] = "*"
 def run(cmd: list[str]) -> None:
     print(f"[RUN] {' '.join(cmd)}")
     subprocess.run(cmd, check=True)
+
+
+def cleanup_old_files(out_dir: Path, keep_days: int = 3) -> None:
+    """删除 out/ 中超过 keep_days 天的旧数据文件，避免仓库无限膨胀。"""
+    # 收集所有文件中的日期戳
+    date_stamps: set[str] = set()
+    for f in out_dir.iterdir():
+        if not f.is_file():
+            continue
+        for part in f.stem.split("_"):
+            if len(part) == 8 and part.isdigit():
+                try:
+                    datetime.strptime(part, "%Y%m%d")
+                    date_stamps.add(part)
+                except ValueError:
+                    pass
+
+    if not date_stamps:
+        print("[cleanup] 没有找到带日期戳的文件")
+        return
+
+    # 保留最近 keep_days 个日期
+    keep_stamps = sorted(date_stamps, reverse=True)[:keep_days]
+    keep_set = set(keep_stamps)
+
+    # 删除过期日期的所有文件
+    removed = 0
+    for f in out_dir.iterdir():
+        if not f.is_file():
+            continue
+        for part in f.stem.split("_"):
+            if len(part) == 8 and part.isdigit() and part in date_stamps:
+                if part not in keep_set:
+                    try:
+                        f.unlink()
+                        removed += 1
+                    except OSError:
+                        pass
+                break
+
+    print(f"[cleanup] 保留最近 {keep_days} 天: {', '.join(keep_stamps)}，删除 {removed} 个旧文件")
 
 
 def main() -> None:
@@ -45,6 +88,11 @@ def main() -> None:
     run([py, str(root / "src" / "pick_elite_managers_targets.py"), "--top-n", "20", "--min-days", "180"])
     run([py, str(root / "src" / "optimize_holdings.py")])
     run([py, str(root / "src" / "daily_rebalance_signal.py"), "--holdings", "out/我的持仓.csv"])
+    run([py, str(root / "src" / "backtest_fund_portfolio.py")])
+    run([py, str(root / "src" / "backtest_elite_manager_portfolio.py")])
+
+    # 清理 3 天前的旧数据文件，避免仓库膨胀
+    cleanup_old_files(out_dir, keep_days=3)
 
 
 if __name__ == "__main__":
