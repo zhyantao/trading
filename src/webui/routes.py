@@ -125,7 +125,6 @@ def _start_task(script_name: str, *args: str) -> str:
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request) -> Any:
     date = _get_date(request)
-    status = ds.get_data_status(date=date)
     holdings = ds.get_holdings()
     signals = ds.get_signals(date=date)
     managers = ds.get_manager_rankings(date=date)
@@ -172,23 +171,8 @@ async def dashboard(request: Request) -> Any:
         except Exception:
             cycle_info = None
 
-    # 数据状态卡片 → 详情页链接
-    status_links = {
-        "每日调仓信号": f"/signals?date={date}",
-        "基金经理-基金收益率明细": f"/managers?date={date}",
-        "基金经理业绩排名": f"/managers?date={date}",
-        "基金年化收益率排序": f"/funds?date={date}",
-        "基金-经理-年化-排名关联": f"/funds?date={date}",
-        "绩优基金经理-基金Top3": f"/elite?date={date}",
-        "绩优基金经理-股票Top10": f"/elite?date={date}",
-        "回测-净值曲线(股票)": f"/backtest?date={date}",
-        "回测-净值曲线(基金)": f"/backtest?date={date}",
-    }
-
     return _render("dashboard.html", _base_context(request, {
         "active_page": "dashboard",
-        "status": status,
-        "status_links": status_links,
         "signal_stats": signal_stats,
         "holdings": holdings.to_dict("records"),
         "stock_sum": stock_sum,

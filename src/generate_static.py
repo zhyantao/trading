@@ -193,7 +193,6 @@ PER_PAGE = 50
 
 def generate_index() -> None:
     """总览页（/ -> index.html）"""
-    status = ds.get_data_status()
     holdings = ds.get_holdings()
     signals = ds.get_signals()
     managers = ds.get_manager_rankings()
@@ -216,22 +215,6 @@ def generate_index() -> None:
         fund_sum = float(h[h["类型"] == "基金"]["比例(%)"].sum())
 
     top_managers = managers.head(5).to_dict("records") if not managers.empty else []
-
-    # 状态卡片链接 → 静态 .html 路径（含日期参数）
-    _dates = ds.available_dates()
-    _sel_date = _dates[0] if _dates else ""
-    _dq = f"?date={_sel_date}" if _sel_date else ""
-    status_links = {
-        "每日调仓信号": f"signals.html{_dq}",
-        "基金经理-基金收益率明细": f"managers.html{_dq}",
-        "基金经理业绩排名": f"managers.html{_dq}",
-        "基金年化收益率排序": f"funds.html{_dq}",
-        "基金-经理-年化-排名关联": f"funds.html{_dq}",
-        "绩优基金经理-基金Top3": f"elite.html{_dq}",
-        "绩优基金经理-股票Top10": f"elite.html{_dq}",
-        "回测-净值曲线(股票)": f"backtest.html{_dq}",
-        "回测-净值曲线(基金)": f"backtest.html{_dq}",
-    }
 
     # 经济周期检测
     cycle_info = None
@@ -257,8 +240,6 @@ def generate_index() -> None:
 
     html = _render("dashboard.html", {
         "active_page": "dashboard",
-        "status": status,
-        "status_links": status_links,
         "signal_stats": signal_stats,
         "holdings": holdings.to_dict("records"),
         "stock_sum": stock_sum,
