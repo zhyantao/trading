@@ -180,6 +180,7 @@ def _copy_assets() -> None:
     charts_dir.mkdir(exist_ok=True)
     for png in ds.out_dir.glob("回测_*图表*.png"):
         shutil.copy2(png, charts_dir / png.name)
+        _generated_files.add(f"charts/{png.name}")
         print(f"  charts/{png.name}")
 
 
@@ -390,13 +391,14 @@ def generate_pipeline() -> None:
 
 
 def _cleanup_stale_pages() -> None:
-    """删除 docs/ 中由之前生成但本次不再需要的分页/回测文件。"""
+    """删除 docs/ 中由之前生成但本次不再需要的分页/回测文件及图表。"""
     removed = 0
+
+    # 1) docs/ 根目录下的分页 HTML 和回测详情页
     for f in DOCS_DIR.iterdir():
         if not f.is_file():
             continue
         name = f.name
-        # 只清理自动生成的分页文件和回测详情页
         is_generated = (
             (name.startswith("funds_page") or name.startswith("managers_page"))
             and name.endswith(".html")
@@ -412,10 +414,26 @@ def _cleanup_stale_pages() -> None:
                 print(f"  [删除过期] {name}")
             except OSError:
                 pass
+
+    # 2) docs/charts/ 下的图表 PNG
+    charts_dir = DOCS_DIR / "charts"
+    if charts_dir.is_dir():
+        for f in charts_dir.iterdir():
+            if not f.is_file():
+                continue
+            key = f"charts/{f.name}"
+            if key not in _generated_files:
+                try:
+                    f.unlink()
+                    removed += 1
+                    print(f"  [删除过期] {key}")
+                except OSError:
+                    pass
+
     if removed:
-        print(f"  共删除 {removed} 个过期页面")
+        print(f"  共删除 {removed} 个过期文件")
     else:
-        print(f"  没有需要清理的过期页面")
+        print(f"  没有需要清理的过期文件")
 
 
 # ------------------------------------------------------------------
