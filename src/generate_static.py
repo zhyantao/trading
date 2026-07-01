@@ -156,10 +156,15 @@ def _fix_urls(html: str) -> str:
 # ------------------------------------------------------------------
 
 
+# 记录本次生成的所有文件名，用于清理过期页面
+_generated_files: set[str] = set()
+
+
 def _write(filename: str, html: str) -> None:
     html = _fix_urls(html)
     path = DOCS_DIR / filename
     path.write_text(html, encoding="utf-8")
+    _generated_files.add(filename)
     print(f"  {filename}")
 
 
@@ -380,6 +385,40 @@ def generate_pipeline() -> None:
 
 
 # ------------------------------------------------------------------
+# 清理过期页面
+# ------------------------------------------------------------------
+
+
+def _cleanup_stale_pages() -> None:
+    """删除 docs/ 中由之前生成但本次不再需要的分页/回测文件。"""
+    removed = 0
+    for f in DOCS_DIR.iterdir():
+        if not f.is_file():
+            continue
+        name = f.name
+        # 只清理自动生成的分页文件和回测详情页
+        is_generated = (
+            (name.startswith("funds_page") or name.startswith("managers_page"))
+            and name.endswith(".html")
+        ) or (
+            name.startswith("backtest_") and not name == "backtest.html" and name.endswith(".html")
+        )
+        if not is_generated:
+            continue
+        if name not in _generated_files:
+            try:
+                f.unlink()
+                removed += 1
+                print(f"  [删除过期] {name}")
+            except OSError:
+                pass
+    if removed:
+        print(f"  共删除 {removed} 个过期页面")
+    else:
+        print(f"  没有需要清理的过期页面")
+
+
+# ------------------------------------------------------------------
 # 主入口
 # ------------------------------------------------------------------
 
@@ -403,6 +442,10 @@ def main() -> None:
     print()
     print("静态资源:")
     _copy_assets()
+
+    print()
+    print("清理过期页面:")
+    _cleanup_stale_pages()
 
     print()
     print(f"完成。打开 docs/index.html 即可预览。")
