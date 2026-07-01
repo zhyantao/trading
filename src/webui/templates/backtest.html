@@ -18,7 +18,7 @@
     <div class="card" style="height:fit-content;">
         <div class="card-header">回测记录</div>
         {% for r in results %}
-        <a href="/backtest?view={{ r.id }}" class="backtest-record {{ 'active' if view_id == r.id else '' }}">
+        <a href="/backtest?date={{ selected_date }}&view={{ r.id }}" class="backtest-record {{ 'active' if view_id == r.id else '' }}">
             <span style="font-size:13px;">{{ '基金回测' if 'fund' in r.type else '股票回测' }}</span>
             <span style="font-size:11px; color:var(--text-secondary);">{{ r.stamp }}</span>
             {% if 'chart' in r %}<span style="font-size:11px; color:var(--green);">含图表</span>{% endif %}

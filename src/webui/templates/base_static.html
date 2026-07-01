@@ -11,29 +11,30 @@
 
 <nav>
     <div class="nav-inner">
-        <span class="brand">量化信号</span>
+        <a href="index.html?date={{ selected_date }}" class="brand">量化信号</a>
         <input type="checkbox" id="nav-toggle">
-        <label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单">
-            <span></span><span></span><span></span>
-        </label>
         <div class="nav-links">
-            <a href="index.html" class="{{ 'active' if active_page == 'dashboard' }}">总览</a>
-            <a href="signals.html" class="{{ 'active' if active_page == 'signals' }}">每日信号</a>
-            <a href="holdings.html" class="{{ 'active' if active_page == 'holdings' }}">我的持仓</a>
-            <a href="managers.html" class="{{ 'active' if active_page == 'managers' }}">经理排名</a>
-            <a href="funds.html" class="{{ 'active' if active_page == 'funds' }}">基金排名</a>
-            <a href="elite.html" class="{{ 'active' if active_page == 'elite' }}">绩优标的</a>
-            <a href="backtest.html" class="{{ 'active' if active_page == 'backtest' }}">回测</a>
-            <a href="pipeline.html" class="{{ 'active' if active_page == 'pipeline' }}">流水线</a>
+            <a href="index.html?date={{ selected_date }}" class="{{ 'active' if active_page == 'dashboard' }}">总览</a>
+            <a href="signals.html?date={{ selected_date }}" class="{{ 'active' if active_page == 'signals' }}">每日信号</a>
+            <a href="holdings.html?date={{ selected_date }}" class="{{ 'active' if active_page == 'holdings' }}">我的持仓</a>
+            <a href="managers.html?date={{ selected_date }}" class="{{ 'active' if active_page == 'managers' }}">经理排名</a>
+            <a href="funds.html?date={{ selected_date }}" class="{{ 'active' if active_page == 'funds' }}">基金排名</a>
+            <a href="elite.html?date={{ selected_date }}" class="{{ 'active' if active_page == 'elite' }}">绩优标的</a>
+            <a href="backtest.html?date={{ selected_date }}" class="{{ 'active' if active_page == 'backtest' }}">回测</a>
+            <a href="pipeline.html?date={{ selected_date }}" class="{{ 'active' if active_page == 'pipeline' }}">流水线</a>
         </div>
+        <div class="nav-actions">
         {% if available_dates %}
         <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
-            <option value="">📅 最新</option>
             {% for d in available_dates %}
             <option value="{{ d }}" {{ 'selected' if d == selected_date }}>{{ d[:4] }}-{{ d[4:6] }}-{{ d[6:8] }}</option>
             {% endfor %}
         </select>
         {% endif %}
+        <label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单">
+            <span></span><span></span><span></span>
+        </label>
+        </div>
     </div>
 </nav>
 
@@ -43,8 +44,9 @@
 
 <script>
 function onDateChange(date) {
-    // 静态站点：切换日期时回到首页（静态站点只生成当天数据）
-    window.location = 'index.html' + (date ? '?date=' + date : '');
+    // 静态站点：保持当前页面，仅更新日期参数
+    var currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    window.location = currentPage + '?date=' + date;
 }
 </script>
 {% block scripts %}{% endblock %}

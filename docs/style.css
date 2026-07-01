@@ -56,10 +56,26 @@ nav .brand {
     color: var(--accent);
     margin-right: 24px;
     white-space: nowrap;
+    text-decoration: none;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+}
+nav .brand:hover {
+    background: none;
+    color: var(--accent);
 }
 
 /* hamburger: hide checkbox */
 #nav-toggle { display: none; }
+
+/* actions group: date-select + hamburger */
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
 
 /* hamburger button: hidden on desktop */
 .nav-toggle-btn {
@@ -70,7 +86,6 @@ nav .brand {
     width: 28px;
     height: 28px;
     cursor: pointer;
-    margin-left: auto;
     padding: 2px;
 }
 
@@ -104,7 +119,6 @@ nav a.active { background: #e8f0fe; color: var(--accent); font-weight: 600; }
 
 /* date selector in navbar */
 .nav-date-select {
-    margin-left: auto;
     padding: 6px 10px;
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -545,10 +559,16 @@ tr:hover { background: #f8f9ff; }
         font-size: 14px;
     }
 
+    .nav-actions {
+        gap: 6px;
+        flex-wrap: nowrap;
+    }
+
     .nav-date-select {
         max-width: none;
-        width: 100%;
         margin: 4px 0;
+        float: left;
+        display: flex;
     }
 
     /* Layout */

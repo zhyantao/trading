@@ -11,31 +11,30 @@
 
 <nav>
     <div class="nav-inner">
-        <span class="brand">量化信号</span>
+        <a href="index.html?date=20260701" class="brand">量化信号</a>
         <input type="checkbox" id="nav-toggle">
-        <label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单">
-            <span></span><span></span><span></span>
-        </label>
         <div class="nav-links">
-            <a href="index.html" class="">总览</a>
-            <a href="signals.html" class="">每日信号</a>
-            <a href="holdings.html" class="">我的持仓</a>
-            <a href="managers.html" class="">经理排名</a>
-            <a href="funds.html" class="">基金排名</a>
-            <a href="elite.html" class="">绩优标的</a>
-            <a href="backtest.html" class="active">回测</a>
-            <a href="pipeline.html" class="">流水线</a>
+            <a href="index.html?date=20260701" class="">总览</a>
+            <a href="signals.html?date=20260701" class="">每日信号</a>
+            <a href="holdings.html?date=20260701" class="">我的持仓</a>
+            <a href="managers.html?date=20260701" class="">经理排名</a>
+            <a href="funds.html?date=20260701" class="">基金排名</a>
+            <a href="elite.html?date=20260701" class="">绩优标的</a>
+            <a href="backtest.html?date=20260701" class="active">回测</a>
+            <a href="pipeline.html?date=20260701" class="">流水线</a>
         </div>
+        <div class="nav-actions">
         
         <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
-            <option value="">📅 最新</option>
             
-            <option value="20260630" selected>2026-06-30</option>
-            
-            <option value="20260517" >2026-05-17</option>
+            <option value="20260701" selected>2026-07-01</option>
             
         </select>
         
+        <label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单">
+            <span></span><span></span><span></span>
+        </label>
+        </div>
     </div>
 </nav>
 
@@ -49,21 +48,15 @@
     <div class="card" style="height:fit-content;">
         <div class="card-header">回测记录</div>
         
-        <a href="backtest_stock_20260630.html" class="backtest-record ">
+        <a href="backtest_stock_20260701.html?date=20260701" class="backtest-record ">
             <span style="font-size:13px;">股票回测</span>
-            <span style="font-size:11px; color:var(--text-secondary);">20260630</span>
+            <span style="font-size:11px; color:var(--text-secondary);">20260701</span>
             <span style="font-size:11px; color:var(--green);">含图表</span>
         </a>
         
-        <a href="backtest_fund_20260630.html" class="backtest-record ">
+        <a href="backtest_fund_20260701.html?date=20260701" class="backtest-record ">
             <span style="font-size:13px;">基金回测</span>
-            <span style="font-size:11px; color:var(--text-secondary);">20260630</span>
-            <span style="font-size:11px; color:var(--green);">含图表</span>
-        </a>
-        
-        <a href="backtest_fund_20260517.html" class="backtest-record ">
-            <span style="font-size:13px;">基金回测</span>
-            <span style="font-size:11px; color:var(--text-secondary);">20260517</span>
+            <span style="font-size:11px; color:var(--text-secondary);">20260701</span>
             <span style="font-size:11px; color:var(--green);">含图表</span>
         </a>
         
@@ -83,8 +76,9 @@
 
 <script>
 function onDateChange(date) {
-    // 静态站点：切换日期时回到首页（静态站点只生成当天数据）
-    window.location = 'index.html' + (date ? '?date=' + date : '');
+    // 静态站点：保持当前页面，仅更新日期参数
+    var currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    window.location = currentPage + '?date=' + date;
 }
 </script>
 
