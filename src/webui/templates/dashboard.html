@@ -2,25 +2,6 @@
 {% block title %}总览 - 量化交易研究{% endblock %}
 
 {% block content %}
-<!-- 数据状态卡片 -->
-<div class="card-grid">
-    {% for name, s in status.items() %}
-    {% set link = status_links[name] if status_links is defined and name in status_links else '' %}
-    {% if s.exists and link %}<a href="{{ link }}" style="text-decoration:none; color:inherit;">{% endif %}
-    <div class="stat-card {{ 'stat-card-clickable' if s.exists and link else '' }}">
-        <div class="stat-label">{{ name }}</div>
-        {% if s.exists %}
-        <div class="stat-value" style="color:var(--green);font-size:16px;">已生成 {% if link %}&rarr;{% endif %}</div>
-        <div class="stat-sub">{{ s.modified }} · {{ s.rows }} 行 · {{ s.size_kb }} KB</div>
-        {% else %}
-        <div class="stat-value" style="color:var(--text-secondary);font-size:16px;">未生成</div>
-        <div class="stat-sub">—</div>
-        {% endif %}
-    </div>
-    {% if s.exists and link %}</a>{% endif %}
-    {% endfor %}
-</div>
-
 <!-- 今日信号摘要 -->
 {% if signal_stats.total > 0 %}<a href="/signals?date={{ selected_date }}" style="text-decoration:none; color:inherit;">{% endif %}
 <div class="card {{ 'card-clickable' if signal_stats.total > 0 else '' }}" style="margin-bottom:20px;">
