@@ -24,7 +24,7 @@
 </div>
 
 <!-- 今日信号摘要 -->
-{% if signal_stats.total > 0 %}<a href="/signals" style="text-decoration:none; color:inherit;">{% endif %}
+{% if signal_stats.total > 0 %}<a href="/signals?date={{ selected_date }}" style="text-decoration:none; color:inherit;">{% endif %}
 <div class="card {{ 'card-clickable' if signal_stats.total > 0 else '' }}" style="margin-bottom:20px;">
     <div class="card-header">今日信号摘要{% if signal_stats.total > 0 %} <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span>{% endif %}</div>
     {% if signal_stats.total > 0 %}
@@ -43,7 +43,7 @@
         </div>
     </div>
     {% else %}
-    <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline">运行流水线</a> 生成每日调仓信号</div></div>
+    <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成每日调仓信号</div></div>
     {% endif %}
 </div>
 {% if signal_stats.total > 0 %}</a>{% endif %}
@@ -131,14 +131,14 @@
             </div>
         </div>
         {% else %}
-        <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">暂无持仓数据</div><div class="empty-hint"><a href="/pipeline">运行「优化持仓」</a> 生成持仓配置</div></div>
+        <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">暂无持仓数据</div><div class="empty-hint"><a href="/pipeline?date={{ selected_date }}">运行「优化持仓」</a> 生成持仓配置</div></div>
         {% endif %}
     </div>
 </div>
 
 <!-- 经理排名 Top5 -->
 <div class="card">
-    <div class="card-header">基金经理 Top5 <a href="/managers" style="float:right;font-size:13px;font-weight:400;">查看全部 →</a></div>
+    <div class="card-header">基金经理 Top5 <a href="/managers?date={{ selected_date }}" style="float:right;font-size:13px;font-weight:400;">查看全部 →</a></div>
     {% if top_managers %}
     <div class="table-wrap">
         <table>

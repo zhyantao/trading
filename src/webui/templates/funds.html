@@ -7,11 +7,11 @@
 <div class="card">
     <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
         <span style="font-size:13px; color:var(--text-secondary);">成立天数 >=</span>
-        <a href="/funds?min_days=90" class="btn btn-sm {{ 'btn-primary' if min_days == 90 else 'btn-outline' }}">90 天</a>
-        <a href="/funds?min_days=180" class="btn btn-sm {{ 'btn-primary' if min_days == 180 else 'btn-outline' }}">180 天</a>
-        <a href="/funds?min_days=365" class="btn btn-sm {{ 'btn-primary' if min_days == 365 else 'btn-outline' }}">1 年</a>
-        <a href="/funds?min_days=730" class="btn btn-sm {{ 'btn-primary' if min_days == 730 else 'btn-outline' }}">2 年</a>
-        <a href="/funds?min_days=1095" class="btn btn-sm {{ 'btn-primary' if min_days == 1095 else 'btn-outline' }}">3 年</a>
+        <a href="/funds?date={{ selected_date }}&min_days=90" class="btn btn-sm {{ 'btn-primary' if min_days == 90 else 'btn-outline' }}">90 天</a>
+        <a href="/funds?date={{ selected_date }}&min_days=180" class="btn btn-sm {{ 'btn-primary' if min_days == 180 else 'btn-outline' }}">180 天</a>
+        <a href="/funds?date={{ selected_date }}&min_days=365" class="btn btn-sm {{ 'btn-primary' if min_days == 365 else 'btn-outline' }}">1 年</a>
+        <a href="/funds?date={{ selected_date }}&min_days=730" class="btn btn-sm {{ 'btn-primary' if min_days == 730 else 'btn-outline' }}">2 年</a>
+        <a href="/funds?date={{ selected_date }}&min_days=1095" class="btn btn-sm {{ 'btn-primary' if min_days == 1095 else 'btn-outline' }}">3 年</a>
         <span style="font-size:13px; color:var(--text-secondary); margin-left:16px;">共 {{ total }} 只基金</span>
     </div>
 
@@ -50,11 +50,11 @@
     </div>
     <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
         {% if page > 1 %}
-        <a href="/funds?page={{ page - 1 }}&min_days={{ min_days }}" class="btn btn-sm btn-outline">上一页</a>
+        <a href="/funds?date={{ selected_date }}&page={{ page - 1 }}&min_days={{ min_days }}" class="btn btn-sm btn-outline">上一页</a>
         {% endif %}
         <span style="padding:5px 12px; font-size:13px;">{{ page }} / {{ total_pages }}</span>
         {% if page < total_pages %}
-        <a href="/funds?page={{ page + 1 }}&min_days={{ min_days }}" class="btn btn-sm btn-outline">下一页</a>
+        <a href="/funds?date={{ selected_date }}&page={{ page + 1 }}&min_days={{ min_days }}" class="btn btn-sm btn-outline">下一页</a>
         {% endif %}
     </div>
     {% else %}

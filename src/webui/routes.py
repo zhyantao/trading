@@ -47,11 +47,13 @@ def _render(name: str, context: dict[str, Any] | None = None) -> HTMLResponse:
 
 
 def _get_date(request: Request) -> str:
-    """提取并校验 ?date=YYYYMMDD 查询参数。"""
+    """提取并校验 ?date=YYYYMMDD 查询参数，未指定时返回最新日期。"""
     date = request.query_params.get("date", "")
     if date and re.match(r"^\d{8}$", date):
         return date
-    return ""
+    # 默认返回最新可用日期
+    dates = ds.available_dates()
+    return dates[0] if dates else ""
 
 
 def _base_context(request: Request, extra: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -172,15 +174,15 @@ async def dashboard(request: Request) -> Any:
 
     # 数据状态卡片 → 详情页链接
     status_links = {
-        "每日调仓信号": "/signals",
-        "基金经理-基金收益率明细": "/managers",
-        "基金经理业绩排名": "/managers",
-        "基金年化收益率排序": "/funds",
-        "基金-经理-年化-排名关联": "/funds",
-        "绩优基金经理-基金Top3": "/elite",
-        "绩优基金经理-股票Top10": "/elite",
-        "回测-净值曲线(股票)": "/backtest",
-        "回测-净值曲线(基金)": "/backtest",
+        "每日调仓信号": f"/signals?date={date}",
+        "基金经理-基金收益率明细": f"/managers?date={date}",
+        "基金经理业绩排名": f"/managers?date={date}",
+        "基金年化收益率排序": f"/funds?date={date}",
+        "基金-经理-年化-排名关联": f"/funds?date={date}",
+        "绩优基金经理-基金Top3": f"/elite?date={date}",
+        "绩优基金经理-股票Top10": f"/elite?date={date}",
+        "回测-净值曲线(股票)": f"/backtest?date={date}",
+        "回测-净值曲线(基金)": f"/backtest?date={date}",
     }
 
     return _render("dashboard.html", _base_context(request, {

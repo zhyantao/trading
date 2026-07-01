@@ -42,7 +42,7 @@
             </table>
         </div>
         {% else %}
-        <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优基金数据</div><div class="empty-hint">请先 <a href="/pipeline">运行流水线</a> 生成绩优经理标的</div></div>
+        <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优基金数据</div><div class="empty-hint">请先 <a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成绩优经理标的</div></div>
         {% endif %}
     </div>
 
@@ -72,7 +72,7 @@
             </table>
         </div>
         {% else %}
-        <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优股票数据</div><div class="empty-hint">请先 <a href="/pipeline">运行流水线</a> 生成绩优经理标的</div></div>
+        <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优股票数据</div><div class="empty-hint">请先 <a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成绩优经理标的</div></div>
         {% endif %}
     </div>
 </div>

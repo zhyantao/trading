@@ -9,18 +9,18 @@
     <div class="empty-state">
         <div class="empty-icon">📭</div>
         <div class="empty-text">信号数据尚未生成</div>
-        <div class="empty-hint">请先 <a href="/pipeline">运行流水线</a> 生成每日调仓信号</div>
-        <a href="/pipeline" class="btn btn-primary">前往运行</a>
+        <div class="empty-hint">请先 <a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成每日调仓信号</div>
+        <a href="/pipeline?date={{ selected_date }}" class="btn btn-primary">前往运行</a>
     </div>
 </div>
 {% else %}
 
 <div class="card">
     <div style="display:flex; gap:8px; margin-bottom:12px;">
-        <a href="/signals" class="btn btn-sm {{ 'btn-primary' if not filter_type else 'btn-outline' }}">全部</a>
-        <a href="/signals?type=关注买入" class="btn btn-sm {{ 'btn-primary' if filter_type == '关注买入' else 'btn-outline' }}">关注买入</a>
-        <a href="/signals?type=关注卖出" class="btn btn-sm {{ 'btn-primary' if filter_type == '关注卖出' else 'btn-outline' }}">关注卖出</a>
-        <a href="/signals?type=继续关注" class="btn btn-sm {{ 'btn-primary' if filter_type == '继续关注' else 'btn-outline' }}">继续关注</a>
+        <a href="/signals?date={{ selected_date }}" class="btn btn-sm {{ 'btn-primary' if not filter_type else 'btn-outline' }}">全部</a>
+        <a href="/signals?date={{ selected_date }}&type=关注买入" class="btn btn-sm {{ 'btn-primary' if filter_type == '关注买入' else 'btn-outline' }}">关注买入</a>
+        <a href="/signals?date={{ selected_date }}&type=关注卖出" class="btn btn-sm {{ 'btn-primary' if filter_type == '关注卖出' else 'btn-outline' }}">关注卖出</a>
+        <a href="/signals?date={{ selected_date }}&type=继续关注" class="btn btn-sm {{ 'btn-primary' if filter_type == '继续关注' else 'btn-outline' }}">继续关注</a>
     </div>
 
     <div class="table-wrap">

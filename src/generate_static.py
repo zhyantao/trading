@@ -85,48 +85,64 @@ def _render(name: str, context: dict | None = None) -> str:
 
 
 def _fix_urls(html: str) -> str:
-    """将动态路由 URL 转为静态 .html 相对路径。"""
+    """将动态路由 URL 转为静态 .html 相对路径，保留 date 参数。"""
     # 图表图片路径
     html = html.replace('src="/out/charts/', 'src="charts/')
     html = html.replace("src='/out/charts/", "src='charts/")
 
-    # 首页
-    html = re.sub(r'href=["\']\/["\']', 'href="index.html"', html)
+    # 通用规则：路径?date=YYYYMMDD 在 URL 转换时保留 date 参数
 
-    # /pipeline -> pipeline.html
-    html = re.sub(r'href=["\']\/pipeline["\']', 'href="pipeline.html"', html)
+    # 首页 / 或 /?date=YYYYMMDD -> index.html 或 index.html?date=YYYYMMDD
+    html = re.sub(r'href=["\']\/(\?date=\d{8})?["\']', r'href="index.html\1"', html)
 
-    # /signals -> signals.html
-    html = re.sub(r'href=["\']\/signals["\']', 'href="signals.html"', html)
+    # /pipeline 或 /pipeline?date=YYYYMMDD -> pipeline.html
+    html = re.sub(r'href=["\']\/pipeline(\?date=\d{8})?["\']', r'href="pipeline.html\1"', html)
+
+    # /signals 或 /signals?date=YYYYMMDD -> signals.html
+    html = re.sub(r'href=["\']\/signals(\?date=\d{8})?["\']', r'href="signals.html\1"', html)
+    # /signals?date=YYYYMMDD&type=XXX -> signals.html?date=YYYYMMDD (丢弃 type)
+    html = re.sub(r'href=["\']\/signals\?date=(\d{8})&type=[^"\']*["\']', r'href="signals.html?date=\1"', html)
     # /signals?type=XXX -> signals.html (丢弃过滤参数)
     html = re.sub(r'href=["\']\/signals\?type=[^"\']*["\']', 'href="signals.html"', html)
 
-    # /holdings -> holdings.html
-    html = re.sub(r'href=["\']\/holdings["\']', 'href="holdings.html"', html)
+    # /holdings 或 /holdings?date=YYYYMMDD -> holdings.html
+    html = re.sub(r'href=["\']\/holdings(\?date=\d{8})?["\']', r'href="holdings.html\1"', html)
 
-    # /managers (不含 page) -> managers.html
-    html = re.sub(r'href=["\']\/managers["\']', 'href="managers.html"', html)
+    # /managers 或 /managers?date=YYYYMMDD -> managers.html
+    html = re.sub(r'href=["\']\/managers(\?date=\d{8})?["\']', r'href="managers.html\1"', html)
     # /managers?page=1 -> managers.html
     html = re.sub(r'href=["\']\/managers\?page=1["\']', 'href="managers.html"', html)
+    # /managers?date=YYYYMMDD&page=1 -> managers.html?date=YYYYMMDD
+    html = re.sub(r'href=["\']\/managers\?date=(\d{8})&page=1["\']', r'href="managers.html?date=\1"', html)
     # /managers?page=N (N>1) -> managers_pageN.html
     html = re.sub(r'href=["\']\/managers\?page=(\d+)["\']', r'href="managers_page\1.html"', html)
+    # /managers?date=YYYYMMDD&page=N (N>1) -> managers_pageN.html?date=YYYYMMDD
+    html = re.sub(r'href=["\']\/managers\?date=(\d{8})&page=(\d+)["\']', r'href="managers_page\2.html?date=\1"', html)
 
-    # /funds (无参数) -> funds.html
-    html = re.sub(r'href=["\']\/funds["\']', 'href="funds.html"', html)
+    # /funds 或 /funds?date=YYYYMMDD -> funds.html
+    html = re.sub(r'href=["\']\/funds(\?date=\d{8})?["\']', r'href="funds.html\1"', html)
     # /funds?min_days=XXX -> funds.html
     html = re.sub(r'href=["\']\/funds\?min_days=\d+["\']', 'href="funds.html"', html)
+    # /funds?date=YYYYMMDD&min_days=XXX -> funds.html?date=YYYYMMDD
+    html = re.sub(r'href=["\']\/funds\?date=(\d{8})&min_days=\d+["\']', r'href="funds.html?date=\1"', html)
     # /funds?page=1&min_days=XXX -> funds.html
     html = re.sub(r'href=["\']\/funds\?page=1&min_days=\d+["\']', 'href="funds.html"', html)
+    # /funds?date=YYYYMMDD&page=1&min_days=XXX -> funds.html?date=YYYYMMDD
+    html = re.sub(r'href=["\']\/funds\?date=(\d{8})&page=1&min_days=\d+["\']', r'href="funds.html?date=\1"', html)
     # /funds?page=N&min_days=XXX (N>1) -> funds_pageN.html
     html = re.sub(r'href=["\']\/funds\?page=(\d+)&min_days=\d+["\']', r'href="funds_page\1.html"', html)
+    # /funds?date=YYYYMMDD&page=N&min_days=XXX (N>1) -> funds_pageN.html?date=YYYYMMDD
+    html = re.sub(r'href=["\']\/funds\?date=(\d{8})&page=(\d+)&min_days=\d+["\']', r'href="funds_page\2.html?date=\1"', html)
 
-    # /elite -> elite.html
-    html = re.sub(r'href=["\']\/elite["\']', 'href="elite.html"', html)
+    # /elite 或 /elite?date=YYYYMMDD -> elite.html
+    html = re.sub(r'href=["\']\/elite(\?date=\d{8})?["\']', r'href="elite.html\1"', html)
 
-    # /backtest -> backtest.html
-    html = re.sub(r'href=["\']\/backtest["\']', 'href="backtest.html"', html)
+    # /backtest 或 /backtest?date=YYYYMMDD -> backtest.html
+    html = re.sub(r'href=["\']\/backtest(\?date=\d{8})?["\']', r'href="backtest.html\1"', html)
     # /backtest?view=XXX -> backtest_XXX.html
     html = re.sub(r'href=["\']\/backtest\?view=([^"\']+)["\']', r'href="backtest_\1.html"', html)
+    # /backtest?date=YYYYMMDD&view=XXX -> backtest_XXX.html?date=YYYYMMDD
+    html = re.sub(r'href=["\']\/backtest\?date=(\d{8})&view=([^"\']+)["\']', r'href="backtest_\2.html?date=\1"', html)
 
     # CSS /static/style.css -> style.css
     html = html.replace('href="/static/style.css"', 'href="style.css"')
@@ -195,17 +211,20 @@ def generate_index() -> None:
 
     top_managers = managers.head(5).to_dict("records") if not managers.empty else []
 
-    # 状态卡片链接 → 静态 .html 路径
+    # 状态卡片链接 → 静态 .html 路径（含日期参数）
+    _dates = ds.available_dates()
+    _sel_date = _dates[0] if _dates else ""
+    _dq = f"?date={_sel_date}" if _sel_date else ""
     status_links = {
-        "每日调仓信号": "signals.html",
-        "基金经理-基金收益率明细": "managers.html",
-        "基金经理业绩排名": "managers.html",
-        "基金年化收益率排序": "funds.html",
-        "基金-经理-年化-排名关联": "funds.html",
-        "绩优基金经理-基金Top3": "elite.html",
-        "绩优基金经理-股票Top10": "elite.html",
-        "回测-净值曲线(股票)": "backtest.html",
-        "回测-净值曲线(基金)": "backtest.html",
+        "每日调仓信号": f"signals.html{_dq}",
+        "基金经理-基金收益率明细": f"managers.html{_dq}",
+        "基金经理业绩排名": f"managers.html{_dq}",
+        "基金年化收益率排序": f"funds.html{_dq}",
+        "基金-经理-年化-排名关联": f"funds.html{_dq}",
+        "绩优基金经理-基金Top3": f"elite.html{_dq}",
+        "绩优基金经理-股票Top10": f"elite.html{_dq}",
+        "回测-净值曲线(股票)": f"backtest.html{_dq}",
+        "回测-净值曲线(基金)": f"backtest.html{_dq}",
     }
 
     # 经济周期检测
