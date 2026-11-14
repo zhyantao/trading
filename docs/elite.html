@@ -13,25 +13,39 @@
 </head>
 <body>
 
-<nav>
+<!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
+<nav class="site-nav" aria-label="站点导航">
     <div class="nav-inner">
-        <a href="index.html?date=20260701" class="brand">量化信号</a>
+        <a href="https://zhyantao.github.io/">ZHYANTAO</a>
+        <a href="https://zhyantao.github.io/docs/">DOCS</a>
+        <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
+        <a href="https://zhyantao.github.io/callgraphs-generator/">CALLGRAPH</a>
+        <a href="https://zhyantao.github.io/riscv-bitlab/">RISC-V</a>
+        <a href="index.html?date=20260702" class="active">BOT</a>
+    </div>
+</nav>
+
+<nav class="app-nav">
+    <div class="nav-inner">
+        <a href="index.html?date=20260702" class="brand">量化信号</a>
         <input type="checkbox" id="nav-toggle">
         <div class="nav-links">
-            <a href="index.html?date=20260701" class="">总览</a>
-            <a href="signals.html?date=20260701" class="">每日信号</a>
-            <a href="holdings.html?date=20260701" class="">我的持仓</a>
-            <a href="managers.html?date=20260701" class="">经理排名</a>
-            <a href="funds.html?date=20260701" class="">基金排名</a>
-            <a href="elite.html?date=20260701" class="active">绩优标的</a>
-            <a href="backtest.html?date=20260701" class="">回测</a>
-            <a href="pipeline.html?date=20260701" class="">流水线</a>
+            <a href="index.html?date=20260702" class="">总览</a>
+            <a href="signals.html?date=20260702" class="">每日信号</a>
+            <a href="holdings.html?date=20260702" class="">我的持仓</a>
+            <a href="managers.html?date=20260702" class="">经理排名</a>
+            <a href="funds.html?date=20260702" class="">基金排名</a>
+            <a href="elite.html?date=20260702" class="active">绩优标的</a>
+            <a href="backtest.html?date=20260702" class="">回测</a>
+            <a href="pipeline.html?date=20260702" class="">流水线</a>
         </div>
         <div class="nav-actions">
         
         <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
             
-            <option value="20260701" selected>2026-07-01</option>
+            <option value="20260702" selected>2026-07-02</option>
+            
+            <option value="20260701" >2026-07-01</option>
             
         </select>
         
@@ -67,8 +81,8 @@
                     <td>财通基金</td>
                     <td>024480</td>
                     <td>财通品质甄选混合A</td>
-                    <td style="color:var(--green); font-weight:600;">308.32</td>
-                    <td>155.14</td>
+                    <td style="color:var(--green); font-weight:600;">263.34</td>
+                    <td>136.90</td>
                     <td>nan</td>
                 </tr>
                 
@@ -78,9 +92,9 @@
                     <td>财通基金</td>
                     <td>006502</td>
                     <td>财通集成电路产业股票A</td>
-                    <td style="color:var(--green); font-weight:600;">35.17</td>
-                    <td>885.19</td>
-                    <td>430.73</td>
+                    <td style="color:var(--green); font-weight:600;">33.76</td>
+                    <td>810.75</td>
+                    <td>403.59</td>
                 </tr>
                 
                 <tr>
@@ -89,9 +103,9 @@
                     <td>财通基金</td>
                     <td>720001</td>
                     <td>财通价值动量混合A</td>
-                    <td style="color:var(--green); font-weight:600;">24.58</td>
-                    <td>2370.61</td>
-                    <td>387.12</td>
+                    <td style="color:var(--green); font-weight:600;">24.04</td>
+                    <td>2220.10</td>
+                    <td>368.46</td>
                 </tr>
                 
                 <tr>
@@ -100,8 +114,8 @@
                     <td>华商基金</td>
                     <td>024459</td>
                     <td>华商致远回报混合A</td>
-                    <td style="color:var(--green); font-weight:600;">330.14</td>
-                    <td>306.73</td>
+                    <td style="color:var(--green); font-weight:600;">290.78</td>
+                    <td>272.26</td>
                     <td>nan</td>
                 </tr>
                 
@@ -111,9 +125,9 @@
                     <td>华商基金</td>
                     <td>011369</td>
                     <td>华商均衡成长混合A</td>
-                    <td style="color:var(--green); font-weight:600;">35.65</td>
-                    <td>393.11</td>
-                    <td>397.14</td>
+                    <td style="color:var(--green); font-weight:600;">33.53</td>
+                    <td>354.45</td>
+                    <td>368.99</td>
                 </tr>
                 
                 <tr>
@@ -122,9 +136,9 @@
                     <td>华商基金</td>
                     <td>000390</td>
                     <td>华商优势行业混合A</td>
-                    <td style="color:var(--green); font-weight:600;">31.37</td>
-                    <td>2978.61</td>
-                    <td>281.70</td>
+                    <td style="color:var(--green); font-weight:600;">30.51</td>
+                    <td>2739.07</td>
+                    <td>258.68</td>
                 </tr>
                 
                 <tr>
@@ -133,9 +147,9 @@
                     <td>长安基金</td>
                     <td>740001</td>
                     <td>长安宏观策略混合A</td>
-                    <td style="color:var(--green); font-weight:600;">15.43</td>
-                    <td>680.35</td>
-                    <td>334.24</td>
+                    <td style="color:var(--green); font-weight:600;">14.80</td>
+                    <td>621.60</td>
+                    <td>312.06</td>
                 </tr>
                 
                 <tr>
@@ -144,9 +158,9 @@
                     <td>华泰柏瑞基金</td>
                     <td>008528</td>
                     <td>华泰柏瑞质量成长A</td>
-                    <td style="color:var(--green); font-weight:600;">24.53</td>
-                    <td>297.39</td>
-                    <td>331.38</td>
+                    <td style="color:var(--green); font-weight:600;">22.82</td>
+                    <td>264.49</td>
+                    <td>300.49</td>
                 </tr>
                 
                 <tr>
@@ -155,9 +169,9 @@
                     <td>华泰柏瑞基金</td>
                     <td>010415</td>
                     <td>华泰柏瑞质量精选混合A</td>
-                    <td style="color:var(--green); font-weight:600;">21.71</td>
-                    <td>180.76</td>
-                    <td>335.29</td>
+                    <td style="color:var(--green); font-weight:600;">19.70</td>
+                    <td>157.37</td>
+                    <td>303.97</td>
                 </tr>
                 
                 <tr>
@@ -166,9 +180,9 @@
                     <td>富国基金</td>
                     <td>002692</td>
                     <td>富国创新科技混合A</td>
-                    <td style="color:var(--green); font-weight:600;">19.30</td>
-                    <td>488.90</td>
-                    <td>323.67</td>
+                    <td style="color:var(--green); font-weight:600;">18.46</td>
+                    <td>448.90</td>
+                    <td>301.83</td>
                 </tr>
                 
                 <tr>
@@ -177,9 +191,9 @@
                     <td>宏利基金</td>
                     <td>005903</td>
                     <td>宏利绩优混合A</td>
-                    <td style="color:var(--green); font-weight:600;">26.48</td>
-                    <td>563.27</td>
-                    <td>297.60</td>
+                    <td style="color:var(--green); font-weight:600;">25.29</td>
+                    <td>515.10</td>
+                    <td>277.81</td>
                 </tr>
                 
                 <tr>
@@ -188,9 +202,9 @@
                     <td>宏利基金</td>
                     <td>162201</td>
                     <td>宏利成长混合</td>
-                    <td style="color:var(--green); font-weight:600;">19.67</td>
-                    <td>6343.56</td>
-                    <td>298.83</td>
+                    <td style="color:var(--green); font-weight:600;">19.28</td>
+                    <td>5880.14</td>
+                    <td>279.61</td>
                 </tr>
                 
                 <tr>
@@ -199,75 +213,75 @@
                     <td>宏利基金</td>
                     <td>001170</td>
                     <td>宏利复兴混合A</td>
-                    <td style="color:var(--green); font-weight:600;">16.95</td>
-                    <td>477.70</td>
-                    <td>311.17</td>
-                </tr>
-                
-                <tr>
-                    <td>7</td>
-                    <td>武阳</td>
-                    <td>易方达基金</td>
-                    <td>011891</td>
-                    <td>易方达先锋成长混合A</td>
-                    <td style="color:var(--green); font-weight:600;">39.51</td>
-                    <td>389.96</td>
-                    <td>273.96</td>
-                </tr>
-                
-                <tr>
-                    <td>7</td>
-                    <td>武阳</td>
-                    <td>易方达基金</td>
-                    <td>010115</td>
-                    <td>易方达远见成长混合A</td>
-                    <td style="color:var(--green); font-weight:600;">32.20</td>
-                    <td>342.26</td>
-                    <td>268.64</td>
-                </tr>
-                
-                <tr>
-                    <td>7</td>
-                    <td>武阳</td>
-                    <td>易方达基金</td>
-                    <td>001437</td>
-                    <td>易方达瑞享混合I</td>
-                    <td style="color:var(--green); font-weight:600;">27.47</td>
-                    <td>1351.12</td>
-                    <td>284.59</td>
+                    <td style="color:var(--green); font-weight:600;">16.17</td>
+                    <td>436.30</td>
+                    <td>290.32</td>
                 </tr>
                 
                 <tr>
                     <td>8</td>
+                    <td>武阳</td>
+                    <td>易方达基金</td>
+                    <td>011891</td>
+                    <td>易方达先锋成长混合A</td>
+                    <td style="color:var(--green); font-weight:600;">36.66</td>
+                    <td>344.40</td>
+                    <td>249.73</td>
+                </tr>
+                
+                <tr>
+                    <td>8</td>
+                    <td>武阳</td>
+                    <td>易方达基金</td>
+                    <td>010115</td>
+                    <td>易方达远见成长混合A</td>
+                    <td style="color:var(--green); font-weight:600;">29.78</td>
+                    <td>301.17</td>
+                    <td>244.80</td>
+                </tr>
+                
+                <tr>
+                    <td>8</td>
+                    <td>武阳</td>
+                    <td>易方达基金</td>
+                    <td>001437</td>
+                    <td>易方达瑞享混合I</td>
+                    <td style="color:var(--green); font-weight:600;">26.43</td>
+                    <td>1226.84</td>
+                    <td>261.83</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>001513</td>
+                    <td>易方达信息产业混合A</td>
+                    <td style="color:var(--green); font-weight:600;">26.80</td>
+                    <td>916.45</td>
+                    <td>260.06</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>010013</td>
+                    <td>易方达信息行业精选股票A</td>
+                    <td style="color:var(--green); font-weight:600;">22.32</td>
+                    <td>225.49</td>
+                    <td>241.44</td>
+                </tr>
+                
+                <tr>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>010237</td>
                     <td>安信创新先锋混合发起A</td>
-                    <td style="color:var(--green); font-weight:600;">16.14</td>
-                    <td>133.67</td>
-                    <td>270.67</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>024717</td>
-                    <td>汇安成长领航混合A</td>
-                    <td style="color:var(--green); font-weight:600;">125.57</td>
-                    <td>91.70</td>
-                    <td>nan</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>005550</td>
-                    <td>汇安成长优选混合A</td>
-                    <td style="color:var(--green); font-weight:600;">21.04</td>
-                    <td>395.75</td>
-                    <td>264.25</td>
+                    <td style="color:var(--green); font-weight:600;">14.38</td>
+                    <td>114.31</td>
+                    <td>247.29</td>
                 </tr>
                 
                 <tr>
@@ -276,9 +290,9 @@
                     <td>诺德基金</td>
                     <td>016772</td>
                     <td>诺德兴新趋势混合A</td>
-                    <td style="color:var(--green); font-weight:600;">27.61</td>
-                    <td>136.55</td>
-                    <td>245.13</td>
+                    <td style="color:var(--green); font-weight:600;">24.53</td>
+                    <td>117.16</td>
+                    <td>223.30</td>
                 </tr>
                 
                 <tr>
@@ -287,9 +301,9 @@
                     <td>诺德基金</td>
                     <td>006887</td>
                     <td>诺德新生活混合A</td>
-                    <td style="color:var(--green); font-weight:600;">21.99</td>
-                    <td>323.77</td>
-                    <td>281.67</td>
+                    <td style="color:var(--green); font-weight:600;">20.82</td>
+                    <td>295.46</td>
+                    <td>265.76</td>
                 </tr>
                 
                 <tr>
@@ -298,8 +312,8 @@
                     <td>红土创新基金</td>
                     <td>026293</td>
                     <td>红土精选混合C</td>
-                    <td style="color:var(--green); font-weight:600;">323.06</td>
-                    <td>122.16</td>
+                    <td style="color:var(--green); font-weight:600;">256.83</td>
+                    <td>102.89</td>
                     <td>nan</td>
                 </tr>
                 
@@ -309,8 +323,8 @@
                     <td>红土创新基金</td>
                     <td>018210</td>
                     <td>红土创新景气回报混合A</td>
-                    <td style="color:var(--green); font-weight:600;">185.15</td>
-                    <td>133.24</td>
+                    <td style="color:var(--green); font-weight:600;">154.42</td>
+                    <td>113.25</td>
                     <td>nan</td>
                 </tr>
                 
@@ -320,97 +334,86 @@
                     <td>红土创新基金</td>
                     <td>006265</td>
                     <td>红土创新新科技股票A</td>
-                    <td style="color:var(--green); font-weight:600;">38.10</td>
-                    <td>1139.96</td>
-                    <td>321.78</td>
+                    <td style="color:var(--green); font-weight:600;">36.50</td>
+                    <td>1033.77</td>
+                    <td>296.44</td>
                 </tr>
                 
                 <tr>
                     <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>024717</td>
+                    <td>汇安成长领航混合A</td>
+                    <td style="color:var(--green); font-weight:600;">100.90</td>
+                    <td>75.07</td>
+                    <td>nan</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>005550</td>
+                    <td>汇安成长优选混合A</td>
+                    <td style="color:var(--green); font-weight:600;">19.71</td>
+                    <td>352.14</td>
+                    <td>240.52</td>
+                </tr>
+                
+                <tr>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>005844</td>
                     <td>东方人工智能主题混合A</td>
-                    <td style="color:var(--green); font-weight:600;">19.71</td>
-                    <td>327.15</td>
-                    <td>282.96</td>
+                    <td style="color:var(--green); font-weight:600;">18.16</td>
+                    <td>284.64</td>
+                    <td>253.46</td>
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>001702</td>
                     <td>东方创新科技混合</td>
-                    <td style="color:var(--green); font-weight:600;">16.40</td>
-                    <td>417.00</td>
-                    <td>170.69</td>
+                    <td style="color:var(--green); font-weight:600;">15.67</td>
+                    <td>383.04</td>
+                    <td>158.91</td>
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>001198</td>
                     <td>东方惠新灵活配置混合A</td>
-                    <td style="color:var(--green); font-weight:600;">15.58</td>
-                    <td>406.24</td>
-                    <td>286.12</td>
-                </tr>
-                
-                <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>013840</td>
-                    <td>银华集成电路混合A</td>
-                    <td style="color:var(--green); font-weight:600;">35.28</td>
-                    <td>297.15</td>
-                    <td>283.28</td>
-                </tr>
-                
-                <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>005119</td>
-                    <td>银华智荟内在价值灵活配置混合发起A</td>
-                    <td style="color:var(--green); font-weight:600;">22.70</td>
-                    <td>500.52</td>
-                    <td>236.54</td>
+                    <td style="color:var(--green); font-weight:600;">14.59</td>
+                    <td>360.03</td>
+                    <td>260.02</td>
                 </tr>
                 
                 <tr>
                     <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>012920</td>
-                    <td>易方达全球成长精选混合(QDII)人民币A</td>
-                    <td style="color:var(--green); font-weight:600;">45.09</td>
-                    <td>428.09</td>
-                    <td>227.88</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>000017</td>
+                    <td>财通可持续混合A</td>
+                    <td style="color:var(--green); font-weight:600;">20.47</td>
+                    <td>1084.95</td>
+                    <td>234.65</td>
                 </tr>
                 
                 <tr>
                     <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>001513</td>
-                    <td>易方达信息产业混合A</td>
-                    <td style="color:var(--green); font-weight:600;">27.81</td>
-                    <td>997.68</td>
-                    <td>280.48</td>
-                </tr>
-                
-                <tr>
-                    <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>010013</td>
-                    <td>易方达信息行业精选股票A</td>
-                    <td style="color:var(--green); font-weight:600;">24.13</td>
-                    <td>254.48</td>
-                    <td>264.92</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>501026</td>
+                    <td>财通多策略福享混合(LOF)</td>
+                    <td style="color:var(--green); font-weight:600;">11.46</td>
+                    <td>189.31</td>
+                    <td>236.06</td>
                 </tr>
                 
                 <tr>
@@ -419,9 +422,9 @@
                     <td>易方达基金</td>
                     <td>010391</td>
                     <td>易方达战略新兴产业股票A</td>
-                    <td style="color:var(--green); font-weight:600;">25.75</td>
-                    <td>249.87</td>
-                    <td>271.02</td>
+                    <td style="color:var(--green); font-weight:600;">23.87</td>
+                    <td>222.41</td>
+                    <td>247.77</td>
                 </tr>
                 
                 <tr>
@@ -430,31 +433,31 @@
                     <td>易方达基金</td>
                     <td>005875</td>
                     <td>易方达中盘成长混合</td>
-                    <td style="color:var(--green); font-weight:600;">21.09</td>
-                    <td>361.92</td>
-                    <td>226.63</td>
+                    <td style="color:var(--green); font-weight:600;">19.64</td>
+                    <td>319.73</td>
+                    <td>200.82</td>
                 </tr>
                 
                 <tr>
                     <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>000017</td>
-                    <td>财通可持续混合A</td>
-                    <td style="color:var(--green); font-weight:600;">21.11</td>
-                    <td>1169.63</td>
-                    <td>248.81</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>013840</td>
+                    <td>银华集成电路混合A</td>
+                    <td style="color:var(--green); font-weight:600;">32.08</td>
+                    <td>256.30</td>
+                    <td>253.40</td>
                 </tr>
                 
                 <tr>
                     <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>501026</td>
-                    <td>财通多策略福享混合(LOF)</td>
-                    <td style="color:var(--green); font-weight:600;">12.25</td>
-                    <td>209.98</td>
-                    <td>250.34</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>005119</td>
+                    <td>银华智荟内在价值灵活配置混合发起A</td>
+                    <td style="color:var(--green); font-weight:600;">21.28</td>
+                    <td>442.59</td>
+                    <td>210.10</td>
                 </tr>
                 
                 <tr>
@@ -463,9 +466,9 @@
                     <td>易方达基金</td>
                     <td>021179</td>
                     <td>易方达产业机遇混合A</td>
-                    <td style="color:var(--green); font-weight:600;">90.22</td>
-                    <td>226.69</td>
-                    <td>224.94</td>
+                    <td style="color:var(--green); font-weight:600;">83.09</td>
+                    <td>205.01</td>
+                    <td>206.30</td>
                 </tr>
                 
                 <tr>
@@ -474,64 +477,64 @@
                     <td>易方达基金</td>
                     <td>002910</td>
                     <td>易方达供给改革混合</td>
-                    <td style="color:var(--green); font-weight:600;">25.88</td>
-                    <td>777.44</td>
-                    <td>244.27</td>
+                    <td style="color:var(--green); font-weight:600;">24.94</td>
+                    <td>718.14</td>
+                    <td>224.58</td>
                 </tr>
                 
                 <tr>
                     <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>021382</td>
-                    <td>博时科技驱动混合A</td>
-                    <td style="color:var(--green); font-weight:600;">100.43</td>
-                    <td>316.51</td>
-                    <td>258.32</td>
-                </tr>
-                
-                <tr>
-                    <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>501082</td>
-                    <td>博时科创主题灵活配置混合(LOF)A</td>
-                    <td style="color:var(--green); font-weight:600;">27.39</td>
-                    <td>446.72</td>
-                    <td>232.27</td>
-                </tr>
-                
-                <tr>
-                    <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>005482</td>
-                    <td>博时创新驱动混合A</td>
-                    <td style="color:var(--green); font-weight:600;">9.28</td>
-                    <td>111.31</td>
-                    <td>191.18</td>
-                </tr>
-                
-                <tr>
-                    <td>20</td>
                     <td>彭雾</td>
                     <td>华商基金</td>
                     <td>008009</td>
                     <td>华商高端装备制造股票A</td>
-                    <td style="color:var(--green); font-weight:600;">33.33</td>
-                    <td>560.20</td>
-                    <td>189.94</td>
+                    <td style="color:var(--green); font-weight:600;">32.05</td>
+                    <td>520.33</td>
+                    <td>178.04</td>
                 </tr>
                 
                 <tr>
-                    <td>20</td>
+                    <td>19</td>
                     <td>彭雾</td>
                     <td>华商基金</td>
                     <td>008555</td>
                     <td>华商龙头优势混合</td>
-                    <td style="color:var(--green); font-weight:600;">22.71</td>
-                    <td>249.30</td>
-                    <td>296.80</td>
+                    <td style="color:var(--green); font-weight:600;">20.99</td>
+                    <td>220.57</td>
+                    <td>274.41</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>021382</td>
+                    <td>博时科技驱动混合A</td>
+                    <td style="color:var(--green); font-weight:600;">93.19</td>
+                    <td>286.95</td>
+                    <td>238.72</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>501082</td>
+                    <td>博时科创主题灵活配置混合(LOF)A</td>
+                    <td style="color:var(--green); font-weight:600;">25.99</td>
+                    <td>406.21</td>
+                    <td>213.21</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>005482</td>
+                    <td>博时创新驱动混合A</td>
+                    <td style="color:var(--green); font-weight:600;">8.22</td>
+                    <td>94.77</td>
+                    <td>174.63</td>
                 </tr>
                 
                 <tr>
@@ -540,9 +543,9 @@
                     <td>交银施罗德基金</td>
                     <td>009402</td>
                     <td>交银启明混合A</td>
-                    <td style="color:var(--green); font-weight:600;">23.28</td>
-                    <td>258.43</td>
-                    <td>149.63</td>
+                    <td style="color:var(--green); font-weight:600;">21.58</td>
+                    <td>229.51</td>
+                    <td>132.23</td>
                 </tr>
                 
                 <tr>
@@ -551,9 +554,9 @@
                     <td>交银施罗德基金</td>
                     <td>519770</td>
                     <td>交银优择回报灵活配置混合A</td>
-                    <td style="color:var(--green); font-weight:600;">21.81</td>
-                    <td>647.85</td>
-                    <td>300.56</td>
+                    <td style="color:var(--green); font-weight:600;">20.94</td>
+                    <td>595.25</td>
+                    <td>281.42</td>
                 </tr>
                 
                 </tbody>
@@ -1234,7 +1237,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>300548</td>
@@ -1245,7 +1248,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>300502</td>
@@ -1256,7 +1259,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>300308</td>
@@ -1267,7 +1270,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>688498</td>
@@ -1278,7 +1281,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>06869</td>
@@ -1289,7 +1292,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>002837</td>
@@ -1300,7 +1303,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>600487</td>
@@ -1311,7 +1314,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>002384</td>
@@ -1322,7 +1325,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>688008</td>
@@ -1333,7 +1336,7 @@
                 </tr>
                 
                 <tr>
-                    <td>7</td>
+                    <td>8</td>
                     <td>武阳</td>
                     <td>易方达基金</td>
                     <td>300394</td>
@@ -1344,7 +1347,117 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>300502</td>
+                    <td>新易盛</td>
+                    <td style="font-weight:600;">17.53</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>300308</td>
+                    <td>中际旭创</td>
+                    <td style="font-weight:600;">16.49</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>688498</td>
+                    <td>源杰科技</td>
+                    <td style="font-weight:600;">15.49</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>300750</td>
+                    <td>宁德时代</td>
+                    <td style="font-weight:600;">8.46</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>002384</td>
+                    <td>东山精密</td>
+                    <td style="font-weight:600;">7.63</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>301377</td>
+                    <td>鼎泰高科</td>
+                    <td style="font-weight:600;">7.49</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>600487</td>
+                    <td>亨通光电</td>
+                    <td style="font-weight:600;">7.37</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>300620</td>
+                    <td>光库科技</td>
+                    <td style="font-weight:600;">6.07</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>600522</td>
+                    <td>中天科技</td>
+                    <td style="font-weight:600;">5.83</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>9</td>
+                    <td>郑希</td>
+                    <td>易方达基金</td>
+                    <td>601869</td>
+                    <td>长飞光纤</td>
+                    <td style="font-weight:600;">3.30</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>300502</td>
@@ -1355,7 +1468,7 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>300308</td>
@@ -1366,7 +1479,7 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>002384</td>
@@ -1377,7 +1490,7 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>300476</td>
@@ -1388,7 +1501,7 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>002463</td>
@@ -1399,7 +1512,7 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>688498</td>
@@ -1410,7 +1523,7 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>300757</td>
@@ -1421,7 +1534,7 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>300394</td>
@@ -1432,7 +1545,7 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>600105</td>
@@ -1443,122 +1556,12 @@
                 </tr>
                 
                 <tr>
-                    <td>8</td>
+                    <td>10</td>
                     <td>张天麒</td>
                     <td>安信基金</td>
                     <td>301626</td>
                     <td>苏州天脉</td>
                     <td style="font-weight:600;">2.93</td>
-                    <td>1.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>300502</td>
-                    <td>新易盛</td>
-                    <td style="font-weight:600;">16.91</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>300308</td>
-                    <td>中际旭创</td>
-                    <td style="font-weight:600;">16.43</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>688120</td>
-                    <td>华海清科</td>
-                    <td style="font-weight:600;">16.37</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>688809</td>
-                    <td>强一股份</td>
-                    <td style="font-weight:600;">14.78</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>002371</td>
-                    <td>北方华创</td>
-                    <td style="font-weight:600;">10.72</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>688372</td>
-                    <td>伟测科技</td>
-                    <td style="font-weight:600;">7.61</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>300666</td>
-                    <td>江丰电子</td>
-                    <td style="font-weight:600;">7.40</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>688629</td>
-                    <td>华丰科技</td>
-                    <td style="font-weight:600;">6.56</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>09988</td>
-                    <td>阿里巴巴-W</td>
-                    <td style="font-weight:600;">4.51</td>
-                    <td>1.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>10</td>
-                    <td>单柏霖</td>
-                    <td>汇安基金</td>
-                    <td>002463</td>
-                    <td>沪电股份</td>
-                    <td style="font-weight:600;">4.25</td>
                     <td>1.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
@@ -1785,6 +1788,116 @@
                 
                 <tr>
                     <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>300502</td>
+                    <td>新易盛</td>
+                    <td style="font-weight:600;">16.91</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>300308</td>
+                    <td>中际旭创</td>
+                    <td style="font-weight:600;">16.43</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>688120</td>
+                    <td>华海清科</td>
+                    <td style="font-weight:600;">16.37</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>688809</td>
+                    <td>强一股份</td>
+                    <td style="font-weight:600;">14.78</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>002371</td>
+                    <td>北方华创</td>
+                    <td style="font-weight:600;">10.72</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>688372</td>
+                    <td>伟测科技</td>
+                    <td style="font-weight:600;">7.61</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>300666</td>
+                    <td>江丰电子</td>
+                    <td style="font-weight:600;">7.40</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>688629</td>
+                    <td>华丰科技</td>
+                    <td style="font-weight:600;">6.56</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>09988</td>
+                    <td>阿里巴巴-W</td>
+                    <td style="font-weight:600;">4.51</td>
+                    <td>1.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>13</td>
+                    <td>单柏霖</td>
+                    <td>汇安基金</td>
+                    <td>002463</td>
+                    <td>沪电股份</td>
+                    <td style="font-weight:600;">4.25</td>
+                    <td>1.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>300567</td>
@@ -1795,7 +1908,7 @@
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>688012</td>
@@ -1806,7 +1919,7 @@
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>688072</td>
@@ -1817,7 +1930,7 @@
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>002371</td>
@@ -1828,7 +1941,7 @@
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>688120</td>
@@ -1839,7 +1952,7 @@
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>688409</td>
@@ -1850,7 +1963,7 @@
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>688037</td>
@@ -1861,7 +1974,7 @@
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>688256</td>
@@ -1872,7 +1985,7 @@
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>688361</td>
@@ -1883,7 +1996,7 @@
                 </tr>
                 
                 <tr>
-                    <td>13</td>
+                    <td>14</td>
                     <td>严凯</td>
                     <td>东方基金</td>
                     <td>688123</td>
@@ -1894,221 +2007,111 @@
                 </tr>
                 
                 <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>688072</td>
-                    <td>拓荆科技</td>
-                    <td style="font-weight:600;">18.56</td>
+                    <td>15</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>300502</td>
+                    <td>新易盛</td>
+                    <td style="font-weight:600;">17.18</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>002371</td>
-                    <td>北方华创</td>
-                    <td style="font-weight:600;">17.37</td>
+                    <td>15</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>688498</td>
+                    <td>源杰科技</td>
+                    <td style="font-weight:600;">16.18</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>688120</td>
-                    <td>华海清科</td>
-                    <td style="font-weight:600;">16.96</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>688012</td>
-                    <td>中微公司</td>
-                    <td style="font-weight:600;">16.44</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>688037</td>
-                    <td>芯源微</td>
-                    <td style="font-weight:600;">16.13</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>688361</td>
-                    <td>中科飞测</td>
+                    <td>15</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>002463</td>
+                    <td>沪电股份</td>
                     <td style="font-weight:600;">15.91</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>300567</td>
-                    <td>精测电子</td>
-                    <td style="font-weight:600;">13.66</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>688409</td>
-                    <td>富创精密</td>
-                    <td style="font-weight:600;">7.57</td>
-                    <td>1.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>688347</td>
-                    <td>华虹公司</td>
-                    <td style="font-weight:600;">6.90</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>14</td>
-                    <td>方建</td>
-                    <td>银华基金</td>
-                    <td>01347</td>
-                    <td>华虹半导体</td>
-                    <td style="font-weight:600;">6.38</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
                     <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>300502</td>
-                    <td>新易盛</td>
-                    <td style="font-weight:600;">23.55</td>
-                    <td>3.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
                     <td>300308</td>
                     <td>中际旭创</td>
-                    <td style="font-weight:600;">21.16</td>
-                    <td>3.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>688498</td>
-                    <td>源杰科技</td>
-                    <td style="font-weight:600;">19.98</td>
-                    <td>3.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>002384</td>
-                    <td>东山精密</td>
-                    <td style="font-weight:600;">10.30</td>
-                    <td>3.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>TSM</td>
-                    <td>台积电</td>
-                    <td style="font-weight:600;">8.88</td>
-                    <td>1.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>LITE</td>
-                    <td>Lumentum Holdings Inc</td>
-                    <td style="font-weight:600;">8.68</td>
-                    <td>1.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>300750</td>
-                    <td>宁德时代</td>
-                    <td style="font-weight:600;">8.46</td>
+                    <td style="font-weight:600;">15.05</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>301377</td>
-                    <td>鼎泰高科</td>
-                    <td style="font-weight:600;">7.49</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>002837</td>
+                    <td>英维克</td>
+                    <td style="font-weight:600;">13.76</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>600487</td>
-                    <td>亨通光电</td>
-                    <td style="font-weight:600;">7.37</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>688256</td>
+                    <td>寒武纪</td>
+                    <td style="font-weight:600;">13.71</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>15</td>
-                    <td>郑希</td>
-                    <td>易方达基金</td>
-                    <td>300620</td>
-                    <td>光库科技</td>
-                    <td style="font-weight:600;">6.07</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>688702</td>
+                    <td>盛科通信</td>
+                    <td style="font-weight:600;">11.52</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>15</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>688661</td>
+                    <td>和林微纳</td>
+                    <td style="font-weight:600;">10.48</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>15</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>002627</td>
+                    <td>三峡旅游</td>
+                    <td style="font-weight:600;">9.06</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>15</td>
+                    <td>夏钦</td>
+                    <td>财通基金</td>
+                    <td>600183</td>
+                    <td>生益科技</td>
+                    <td style="font-weight:600;">9.06</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
@@ -2225,32 +2228,65 @@
                 
                 <tr>
                     <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>300502</td>
-                    <td>新易盛</td>
-                    <td style="font-weight:600;">17.18</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>688072</td>
+                    <td>拓荆科技</td>
+                    <td style="font-weight:600;">18.56</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>688498</td>
-                    <td>源杰科技</td>
-                    <td style="font-weight:600;">16.18</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>002371</td>
+                    <td>北方华创</td>
+                    <td style="font-weight:600;">17.37</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>002463</td>
-                    <td>沪电股份</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>688120</td>
+                    <td>华海清科</td>
+                    <td style="font-weight:600;">16.96</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>17</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>688012</td>
+                    <td>中微公司</td>
+                    <td style="font-weight:600;">16.44</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>17</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>688037</td>
+                    <td>芯源微</td>
+                    <td style="font-weight:600;">16.13</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>17</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>688361</td>
+                    <td>中科飞测</td>
                     <td style="font-weight:600;">15.91</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
@@ -2258,77 +2294,44 @@
                 
                 <tr>
                     <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>300308</td>
-                    <td>中际旭创</td>
-                    <td style="font-weight:600;">15.05</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>300567</td>
+                    <td>精测电子</td>
+                    <td style="font-weight:600;">13.66</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>002837</td>
-                    <td>英维克</td>
-                    <td style="font-weight:600;">13.76</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>688409</td>
+                    <td>富创精密</td>
+                    <td style="font-weight:600;">7.57</td>
+                    <td>1.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>17</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>688347</td>
+                    <td>华虹公司</td>
+                    <td style="font-weight:600;">6.90</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>688256</td>
-                    <td>寒武纪</td>
-                    <td style="font-weight:600;">13.71</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>688702</td>
-                    <td>盛科通信</td>
-                    <td style="font-weight:600;">11.52</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>688661</td>
-                    <td>和林微纳</td>
-                    <td style="font-weight:600;">10.48</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>002627</td>
-                    <td>三峡旅游</td>
-                    <td style="font-weight:600;">9.06</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>17</td>
-                    <td>夏钦</td>
-                    <td>财通基金</td>
-                    <td>600183</td>
-                    <td>生益科技</td>
-                    <td style="font-weight:600;">9.06</td>
+                    <td>方建</td>
+                    <td>银华基金</td>
+                    <td>01347</td>
+                    <td>华虹半导体</td>
+                    <td style="font-weight:600;">6.38</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
@@ -2445,193 +2448,94 @@
                 
                 <tr>
                     <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
+                    <td>彭雾</td>
+                    <td>华商基金</td>
+                    <td>300502</td>
+                    <td>新易盛</td>
+                    <td style="font-weight:600;">14.63</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>19</td>
+                    <td>彭雾</td>
+                    <td>华商基金</td>
+                    <td>06869</td>
+                    <td>长飞光纤光缆</td>
+                    <td style="font-weight:600;">13.64</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>19</td>
+                    <td>彭雾</td>
+                    <td>华商基金</td>
                     <td>300308</td>
                     <td>中际旭创</td>
-                    <td style="font-weight:600;">24.87</td>
-                    <td>3.00</td>
-                    <td>2026年1季度股票投资明细</td>
+                    <td style="font-weight:600;">9.43</td>
+                    <td>1.00</td>
+                    <td>2025年4季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>300502</td>
-                    <td>新易盛</td>
-                    <td style="font-weight:600;">22.43</td>
-                    <td>3.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
+                    <td>彭雾</td>
+                    <td>华商基金</td>
                     <td>688498</td>
                     <td>源杰科技</td>
-                    <td style="font-weight:600;">14.20</td>
+                    <td style="font-weight:600;">7.89</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
+                    <td>彭雾</td>
+                    <td>华商基金</td>
                     <td>002384</td>
                     <td>东山精密</td>
-                    <td style="font-weight:600;">13.17</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>002353</td>
-                    <td>杰瑞股份</td>
-                    <td style="font-weight:600;">9.60</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>06869</td>
-                    <td>长飞光纤光缆</td>
-                    <td style="font-weight:600;">8.78</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>300394</td>
-                    <td>天孚通信</td>
-                    <td style="font-weight:600;">8.15</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>688521</td>
-                    <td>芯原股份</td>
-                    <td style="font-weight:600;">7.12</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>300750</td>
-                    <td>宁德时代</td>
-                    <td style="font-weight:600;">6.64</td>
+                    <td style="font-weight:600;">7.75</td>
                     <td>1.00</td>
-                    <td>2026年1季度股票投资明细</td>
+                    <td>2025年4季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>19</td>
-                    <td>齐宁</td>
-                    <td>博时基金</td>
-                    <td>300857</td>
-                    <td>协创数据</td>
-                    <td style="font-weight:600;">5.84</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>20</td>
-                    <td>彭雾</td>
-                    <td>华商基金</td>
-                    <td>06869</td>
-                    <td>长飞光纤光缆</td>
-                    <td style="font-weight:600;">14.07</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>20</td>
-                    <td>彭雾</td>
-                    <td>华商基金</td>
-                    <td>300502</td>
-                    <td>新易盛</td>
-                    <td style="font-weight:600;">13.96</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>20</td>
                     <td>彭雾</td>
                     <td>华商基金</td>
                     <td>603986</td>
                     <td>兆易创新</td>
-                    <td style="font-weight:600;">13.23</td>
+                    <td style="font-weight:600;">6.35</td>
                     <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
-                    <td>20</td>
+                    <td>19</td>
                     <td>彭雾</td>
                     <td>华商基金</td>
-                    <td>688766</td>
-                    <td>普冉股份</td>
-                    <td style="font-weight:600;">9.55</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>20</td>
-                    <td>彭雾</td>
-                    <td>华商基金</td>
-                    <td>688498</td>
-                    <td>源杰科技</td>
-                    <td style="font-weight:600;">9.18</td>
-                    <td>2.00</td>
-                    <td>2026年1季度股票投资明细</td>
-                </tr>
-                
-                <tr>
-                    <td>20</td>
-                    <td>彭雾</td>
-                    <td>华商基金</td>
-                    <td>300308</td>
-                    <td>中际旭创</td>
-                    <td style="font-weight:600;">8.52</td>
+                    <td>300548</td>
+                    <td>长芯博创</td>
+                    <td style="font-weight:600;">5.83</td>
                     <td>1.00</td>
-                    <td>2026年1季度股票投资明细</td>
+                    <td>2025年4季度股票投资明细</td>
                 </tr>
                 
                 <tr>
-                    <td>20</td>
+                    <td>19</td>
                     <td>彭雾</td>
                     <td>华商基金</td>
-                    <td>603618</td>
-                    <td>杭电股份</td>
-                    <td style="font-weight:600;">4.75</td>
+                    <td>002916</td>
+                    <td>深南电路</td>
+                    <td style="font-weight:600;">5.71</td>
                     <td>1.00</td>
-                    <td>2026年1季度股票投资明细</td>
+                    <td>2025年4季度股票投资明细</td>
                 </tr>
                 
                 <tr>
-                    <td>20</td>
+                    <td>19</td>
                     <td>彭雾</td>
                     <td>华商基金</td>
                     <td>300750</td>
@@ -2642,24 +2546,123 @@
                 </tr>
                 
                 <tr>
-                    <td>20</td>
+                    <td>19</td>
                     <td>彭雾</td>
                     <td>华商基金</td>
+                    <td>601138</td>
+                    <td>工业富联</td>
+                    <td style="font-weight:600;">4.05</td>
+                    <td>1.00</td>
+                    <td>2025年4季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>300308</td>
+                    <td>中际旭创</td>
+                    <td style="font-weight:600;">24.87</td>
+                    <td>3.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>300502</td>
+                    <td>新易盛</td>
+                    <td style="font-weight:600;">22.43</td>
+                    <td>3.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>688498</td>
+                    <td>源杰科技</td>
+                    <td style="font-weight:600;">14.20</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
                     <td>002384</td>
                     <td>东山精密</td>
-                    <td style="font-weight:600;">4.02</td>
+                    <td style="font-weight:600;">13.17</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>002353</td>
+                    <td>杰瑞股份</td>
+                    <td style="font-weight:600;">9.60</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>06869</td>
+                    <td>长飞光纤光缆</td>
+                    <td style="font-weight:600;">8.78</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>300394</td>
+                    <td>天孚通信</td>
+                    <td style="font-weight:600;">8.15</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>688521</td>
+                    <td>芯原股份</td>
+                    <td style="font-weight:600;">7.12</td>
+                    <td>2.00</td>
+                    <td>2026年1季度股票投资明细</td>
+                </tr>
+                
+                <tr>
+                    <td>20</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>300750</td>
+                    <td>宁德时代</td>
+                    <td style="font-weight:600;">6.64</td>
                     <td>1.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
                 <tr>
                     <td>20</td>
-                    <td>彭雾</td>
-                    <td>华商基金</td>
-                    <td>688521</td>
-                    <td>芯原股份</td>
-                    <td style="font-weight:600;">3.21</td>
-                    <td>1.00</td>
+                    <td>齐宁</td>
+                    <td>博时基金</td>
+                    <td>300857</td>
+                    <td>协创数据</td>
+                    <td style="font-weight:600;">5.84</td>
+                    <td>2.00</td>
                     <td>2026年1季度股票投资明细</td>
                 </tr>
                 
@@ -2782,6 +2785,11 @@
 
 
 </div>
+
+<footer class="site-footer">
+    <hr class="slender">
+    <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
+</footer>
 
 <script>
 function onDateChange(date) {

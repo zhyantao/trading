@@ -9,25 +9,39 @@
 </head>
 <body>
 
-<nav>
+<!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
+<nav class="site-nav" aria-label="站点导航">
     <div class="nav-inner">
-        <a href="index.html?date=20260701" class="brand">量化信号</a>
+        <a href="https://zhyantao.github.io/">ZHYANTAO</a>
+        <a href="https://zhyantao.github.io/docs/">DOCS</a>
+        <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
+        <a href="https://zhyantao.github.io/callgraphs-generator/">CALLGRAPH</a>
+        <a href="https://zhyantao.github.io/riscv-bitlab/">RISC-V</a>
+        <a href="index.html?date=20260702" class="active">BOT</a>
+    </div>
+</nav>
+
+<nav class="app-nav">
+    <div class="nav-inner">
+        <a href="index.html?date=20260702" class="brand">量化信号</a>
         <input type="checkbox" id="nav-toggle">
         <div class="nav-links">
-            <a href="index.html?date=20260701" class="">总览</a>
-            <a href="signals.html?date=20260701" class="active">每日信号</a>
-            <a href="holdings.html?date=20260701" class="">我的持仓</a>
-            <a href="managers.html?date=20260701" class="">经理排名</a>
-            <a href="funds.html?date=20260701" class="">基金排名</a>
-            <a href="elite.html?date=20260701" class="">绩优标的</a>
-            <a href="backtest.html?date=20260701" class="">回测</a>
-            <a href="pipeline.html?date=20260701" class="">流水线</a>
+            <a href="index.html?date=20260702" class="">总览</a>
+            <a href="signals.html?date=20260702" class="active">每日信号</a>
+            <a href="holdings.html?date=20260702" class="">我的持仓</a>
+            <a href="managers.html?date=20260702" class="">经理排名</a>
+            <a href="funds.html?date=20260702" class="">基金排名</a>
+            <a href="elite.html?date=20260702" class="">绩优标的</a>
+            <a href="backtest.html?date=20260702" class="">回测</a>
+            <a href="pipeline.html?date=20260702" class="">流水线</a>
         </div>
         <div class="nav-actions">
         
         <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
             
-            <option value="20260701" selected>2026-07-01</option>
+            <option value="20260702" selected>2026-07-02</option>
+            
+            <option value="20260701" >2026-07-01</option>
             
         </select>
         
@@ -44,10 +58,10 @@
 
 <div class="card">
     <div style="display:flex; gap:8px; margin-bottom:12px;">
-        <a href="signals.html?date=20260701" class="btn btn-sm btn-primary">全部</a>
-        <a href="signals.html?date=20260701" class="btn btn-sm btn-outline">关注买入</a>
-        <a href="signals.html?date=20260701" class="btn btn-sm btn-outline">关注卖出</a>
-        <a href="signals.html?date=20260701" class="btn btn-sm btn-outline">继续关注</a>
+        <a href="signals.html?date=20260702" class="btn btn-sm btn-primary">全部</a>
+        <a href="signals.html?date=20260702" class="btn btn-sm btn-outline">关注买入</a>
+        <a href="signals.html?date=20260702" class="btn btn-sm btn-outline">关注卖出</a>
+        <a href="signals.html?date=20260702" class="btn btn-sm btn-outline">继续关注</a>
     </div>
 
     <div class="table-wrap">
@@ -319,9 +333,9 @@
                 <td>长飞光纤光缆</td>
                 <td>否</td>
                 <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">111.69</td>
-                <td>154.06</td>
-                <td>42.37</td>
+                <td style="color:var(--green); font-weight:600;">110.26</td>
+                <td>148.53</td>
+                <td>38.27</td>
                 <td style="font-size:11px; max-width:250px;">陈文凯(华泰柏瑞基金):67.44; 武阳(易方达基金):18.22; 彭雾(华商基金):16.44</td>
             </tr>
             
@@ -469,20 +483,6 @@
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>000TSM</td>
-                <td>台积电</td>
-                <td>否</td>
-                <td><span class="tag tag-buy">关注买入</span></td>
-                <td style="color:var(--green); font-weight:600;">56.22</td>
-                <td>70.22</td>
-                <td>14.00</td>
-                <td style="font-size:11px; max-width:250px;">郑希(易方达基金):56.22</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
                 <td>300274</td>
                 <td>阳光电源</td>
                 <td>否</td>
@@ -525,14 +525,28 @@
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
+                <td>603228</td>
+                <td>景旺电子</td>
+                <td>否</td>
+                <td><span class="tag tag-buy">关注买入</span></td>
+                <td style="color:var(--green); font-weight:600;">50.96</td>
+                <td>330.18</td>
+                <td>279.22</td>
+                <td style="font-size:11px; max-width:250px;">王浩聿(长安基金):23.39; 周珊珊(交银施罗德基金):12.97; 罗擎(富国基金):6.88</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
                 <td>001810</td>
                 <td>小米集团-W</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-62.42</td>
-                <td>63.50</td>
-                <td>125.92</td>
-                <td style="font-size:11px; max-width:250px;">张天麒(安信基金):-0.18; 彭雾(华商基金):-3.43; 欧阳良琦(易方达基金):-6.74</td>
+                <td style="color:var(--red); font-weight:600;">-57.57</td>
+                <td>54.94</td>
+                <td>112.51</td>
+                <td style="font-size:11px; max-width:250px;">张天麒(安信基金):-0.18; 郑希(易方达基金):-3.30; 彭雾(华商基金):-3.43</td>
             </tr>
             
             
@@ -623,20 +637,6 @@
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>000981</td>
-                <td>中芯国际</td>
-                <td>否</td>
-                <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-32.07</td>
-                <td>147.80</td>
-                <td>179.87</td>
-                <td style="font-size:11px; max-width:250px;">方建(银华基金):4.87; 欧阳良琦(易方达基金):1.43; 武阳(易方达基金):0.66</td>
-            </tr>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
                 <td>300570</td>
                 <td>太辰光</td>
                 <td>否</td>
@@ -665,14 +665,28 @@
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
+                <td>000981</td>
+                <td>中芯国际</td>
+                <td>否</td>
+                <td><span class="tag tag-sell">关注卖出</span></td>
+                <td style="color:var(--red); font-weight:600;">-25.71</td>
+                <td>129.73</td>
+                <td>155.44</td>
+                <td style="font-size:11px; max-width:250px;">方建(银华基金):4.87; 欧阳良琦(易方达基金):1.43; 武阳(易方达基金):0.66</td>
+            </tr>
+            
+            
+            
+            <tr>
+                <td><span class="tag tag-stock">股票</span></td>
                 <td>002050</td>
                 <td>三花智控</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-26.05</td>
-                <td>42.13</td>
-                <td>68.18</td>
-                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):1.42; 郑希(易方达基金):-0.03; 金梓才(财通基金):-0.10</td>
+                <td style="color:var(--red); font-weight:600;">-24.78</td>
+                <td>35.68</td>
+                <td>60.46</td>
+                <td style="font-size:11px; max-width:250px;">齐宁(博时基金):1.42; 金梓才(财通基金):-0.10; 张天麒(安信基金):-0.30</td>
             </tr>
             
             
@@ -809,9 +823,9 @@
                 <td>拓普集团</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-17.92</td>
-                <td>63.99</td>
-                <td>81.91</td>
+                <td style="color:var(--red); font-weight:600;">-17.86</td>
+                <td>61.68</td>
+                <td>79.54</td>
                 <td style="font-size:11px; max-width:250px;">齐宁(博时基金):3.57; 周珊珊(交银施罗德基金):1.33; 欧阳良琦(易方达基金):0.55</td>
             </tr>
             
@@ -875,14 +889,14 @@
             
             <tr>
                 <td><span class="tag tag-stock">股票</span></td>
-                <td>000CLS</td>
-                <td>天弘科技</td>
+                <td>000700</td>
+                <td>腾讯控股</td>
                 <td>否</td>
                 <td><span class="tag tag-sell">关注卖出</span></td>
-                <td style="color:var(--red); font-weight:600;">-15.53</td>
-                <td>22.84</td>
-                <td>38.37</td>
-                <td style="font-size:11px; max-width:250px;">郑希(易方达基金):-15.53</td>
+                <td style="color:var(--red); font-weight:600;">-15.46</td>
+                <td>82.95</td>
+                <td>98.41</td>
+                <td style="font-size:11px; max-width:250px;">张天麒(安信基金):0.40; 金梓才(财通基金):0.36; 齐宁(博时基金):0.08</td>
             </tr>
             
             
@@ -949,6 +963,11 @@
 
 
 </div>
+
+<footer class="site-footer">
+    <hr class="slender">
+    <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
+</footer>
 
 <script>
 function onDateChange(date) {

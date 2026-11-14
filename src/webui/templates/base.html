@@ -9,7 +9,19 @@
 </head>
 <body>
 
-<nav>
+<!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
+<nav class="site-nav" aria-label="站点导航">
+    <div class="nav-inner">
+        <a href="https://zhyantao.github.io/">ZHYANTAO</a>
+        <a href="https://zhyantao.github.io/docs/">DOCS</a>
+        <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
+        <a href="https://zhyantao.github.io/callgraphs-generator/">CALLGRAPH</a>
+        <a href="https://zhyantao.github.io/riscv-bitlab/">RISC-V</a>
+        <a href="/?date={{ selected_date }}" class="active">BOT</a>
+    </div>
+</nav>
+
+<nav class="app-nav">
     <div class="nav-inner">
         <a href="/?date={{ selected_date }}" class="brand">量化信号</a>
         <input type="checkbox" id="nav-toggle">
@@ -41,6 +53,11 @@
 <div class="container">
     {% block content %}{% endblock %}
 </div>
+
+<footer class="site-footer">
+    <hr class="slender">
+    <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
+</footer>
 
 <script>
 function onDateChange(date) {

@@ -9,25 +9,39 @@
 </head>
 <body>
 
-<nav>
+<!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
+<nav class="site-nav" aria-label="站点导航">
     <div class="nav-inner">
-        <a href="index.html?date=20260701" class="brand">量化信号</a>
+        <a href="https://zhyantao.github.io/">ZHYANTAO</a>
+        <a href="https://zhyantao.github.io/docs/">DOCS</a>
+        <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
+        <a href="https://zhyantao.github.io/callgraphs-generator/">CALLGRAPH</a>
+        <a href="https://zhyantao.github.io/riscv-bitlab/">RISC-V</a>
+        <a href="index.html?date=20260702" class="active">BOT</a>
+    </div>
+</nav>
+
+<nav class="app-nav">
+    <div class="nav-inner">
+        <a href="index.html?date=20260702" class="brand">量化信号</a>
         <input type="checkbox" id="nav-toggle">
         <div class="nav-links">
-            <a href="index.html?date=20260701" class="active">总览</a>
-            <a href="signals.html?date=20260701" class="">每日信号</a>
-            <a href="holdings.html?date=20260701" class="">我的持仓</a>
-            <a href="managers.html?date=20260701" class="">经理排名</a>
-            <a href="funds.html?date=20260701" class="">基金排名</a>
-            <a href="elite.html?date=20260701" class="">绩优标的</a>
-            <a href="backtest.html?date=20260701" class="">回测</a>
-            <a href="pipeline.html?date=20260701" class="">流水线</a>
+            <a href="index.html?date=20260702" class="active">总览</a>
+            <a href="signals.html?date=20260702" class="">每日信号</a>
+            <a href="holdings.html?date=20260702" class="">我的持仓</a>
+            <a href="managers.html?date=20260702" class="">经理排名</a>
+            <a href="funds.html?date=20260702" class="">基金排名</a>
+            <a href="elite.html?date=20260702" class="">绩优标的</a>
+            <a href="backtest.html?date=20260702" class="">回测</a>
+            <a href="pipeline.html?date=20260702" class="">流水线</a>
         </div>
         <div class="nav-actions">
         
         <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
             
-            <option value="20260701" selected>2026-07-01</option>
+            <option value="20260702" selected>2026-07-02</option>
+            
+            <option value="20260701" >2026-07-01</option>
             
         </select>
         
@@ -41,7 +55,7 @@
 <div class="container">
     
 <!-- 今日信号摘要 -->
-<a href="signals.html?date=20260701" style="text-decoration:none; color:inherit;">
+<a href="signals.html?date=20260702" style="text-decoration:none; color:inherit;">
 <div class="card card-clickable" style="margin-bottom:20px;">
     <div class="card-header">今日信号摘要 <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span></div>
     
@@ -71,11 +85,11 @@
         <div style="display:flex; gap:16px; margin-bottom:20px; text-align:center;">
             <div style="flex:1; padding:10px; background:#f0f4ff; border-radius:8px;">
                 <div style="font-size:13px; color:var(--text-secondary);">当前阶段</div>
-                <div style="font-size:16px; font-weight:700; color:var(--accent);">后期扩张</div>
+                <div style="font-size:16px; font-weight:700; color:var(--accent);">收缩</div>
             </div>
             <div style="flex:1; padding:10px; background:#f0f4ff; border-radius:8px;">
                 <div style="font-size:13px; color:var(--text-secondary);">置信度</div>
-                <div style="font-size:16px; font-weight:700;">60%</div>
+                <div style="font-size:16px; font-weight:700;">65%</div>
             </div>
         </div>
         
@@ -89,34 +103,34 @@
                 <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
                 
                 <circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24"
-                    stroke-dasharray="113.0976 263.8944"
+                    stroke-dasharray="56.5488 320.44320000000005"
                     stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
                 
                 
                 <circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24"
-                    stroke-dasharray="94.248 282.744"
-                    stroke-dashoffset="-113.0976" transform="rotate(-90 80 80)"/>
+                    stroke-dasharray="131.9472 245.0448"
+                    stroke-dashoffset="-56.5488" transform="rotate(-90 80 80)"/>
                 
                 
                 <circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24"
-                    stroke-dasharray="75.39840000000001 301.59360000000004"
-                    stroke-dashoffset="-207.3456" transform="rotate(-90 80 80)"/>
+                    stroke-dasharray="113.0976 263.8944"
+                    stroke-dashoffset="-188.496" transform="rotate(-90 80 80)"/>
                 
                 
                 <circle cx="80" cy="80" r="60" fill="none" stroke="#b7950b" stroke-width="24"
-                    stroke-dasharray="94.248 282.744"
-                    stroke-dashoffset="-282.744" transform="rotate(-90 80 80)"/>
+                    stroke-dasharray="75.39840000000001 301.59360000000004"
+                    stroke-dashoffset="-301.59360000000004" transform="rotate(-90 80 80)"/>
                 
                 <text x="80" y="84" text-anchor="middle" font-size="13" fill="var(--text-secondary)">因子权重</text>
             </svg>
             <div class="donut-legend">
-                <div><span class="donut-dot" style="background:var(--green);"></span>长期回报 30%</div>
-                <div><span class="donut-dot" style="background:var(--red);"></span>风险调整 25%</div>
-                <div><span class="donut-dot" style="background:var(--accent);"></span>稳定性 20%</div>
-                <div><span class="donut-dot" style="background:#b7950b;"></span>质量 25%</div>
+                <div><span class="donut-dot" style="background:var(--green);"></span>长期回报 15%</div>
+                <div><span class="donut-dot" style="background:var(--red);"></span>风险调整 35%</div>
+                <div><span class="donut-dot" style="background:var(--accent);"></span>稳定性 30%</div>
+                <div><span class="donut-dot" style="background:#b7950b;"></span>质量 20%</div>
             </div>
         </div>
-        <div style="margin-top:12px; font-size:12px; color:var(--text-secondary); line-height:1.6;">趋势=8.9% 3月收益=10.4% 6月收益=8.6% 20日波动率=25.6% 回撤=-2.0% → late_expansion（置信度 60%）：指数在长期均线上方、动能趋稳</div>
+        <div style="margin-top:12px; font-size:12px; color:var(--text-secondary); line-height:1.6;">趋势=-13.1% 3月收益=-13.9% 6月收益=-19.6% 20日波动率=17.0% 回撤=-20.6% → contraction（置信度 65%）：指数在长期均线下方、处于收缩阶段</div>
     </div>
     
 
@@ -151,7 +165,7 @@
 
 <!-- 经理排名 Top5 -->
 <div class="card">
-    <div class="card-header">基金经理 Top5 <a href="managers.html?date=20260701" style="float:right;font-size:13px;font-weight:400;">查看全部 →</a></div>
+    <div class="card-header">基金经理 Top5 <a href="managers.html?date=20260702" style="float:right;font-size:13px;font-weight:400;">查看全部 →</a></div>
     
     <div class="table-wrap">
         <table>
@@ -165,8 +179,8 @@
                 <td>金梓才</td>
                 <td>财通基金</td>
                 <td>13.00</td>
-                <td style="color:var(--green);">418.09</td>
-                <td style="color:var(--green);">440.34</td>
+                <td style="color:var(--green);">395.08</td>
+                <td style="color:var(--green);">417.07</td>
             </tr>
             
             <tr>
@@ -174,8 +188,8 @@
                 <td>张明昕</td>
                 <td>华商基金</td>
                 <td>6.00</td>
-                <td style="color:var(--green);">357.68</td>
-                <td style="color:var(--green);">397.14</td>
+                <td style="color:var(--green);">331.30</td>
+                <td style="color:var(--green);">368.99</td>
             </tr>
             
             <tr>
@@ -183,8 +197,8 @@
                 <td>王浩聿</td>
                 <td>长安基金</td>
                 <td>4.00</td>
-                <td style="color:var(--green);">333.10</td>
-                <td style="color:var(--green);">334.24</td>
+                <td style="color:var(--green);">310.86</td>
+                <td style="color:var(--green);">312.06</td>
             </tr>
             
             <tr>
@@ -192,8 +206,8 @@
                 <td>陈文凯</td>
                 <td>华泰柏瑞基金</td>
                 <td>4.00</td>
-                <td style="color:var(--green);">332.47</td>
-                <td style="color:var(--green);">335.29</td>
+                <td style="color:var(--green);">301.44</td>
+                <td style="color:var(--green);">303.97</td>
             </tr>
             
             <tr>
@@ -201,8 +215,8 @@
                 <td>罗擎</td>
                 <td>富国基金</td>
                 <td>6.00</td>
-                <td style="color:var(--green);">322.40</td>
-                <td style="color:var(--green);">323.67</td>
+                <td style="color:var(--green);">300.57</td>
+                <td style="color:var(--green);">301.83</td>
             </tr>
             
             </tbody>
@@ -213,6 +227,11 @@
 
 
 </div>
+
+<footer class="site-footer">
+    <hr class="slender">
+    <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
+</footer>
 
 <script>
 function onDateChange(date) {

@@ -9,25 +9,39 @@
 </head>
 <body>
 
-<nav>
+<!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
+<nav class="site-nav" aria-label="站点导航">
     <div class="nav-inner">
-        <a href="index.html?date=20260701" class="brand">量化信号</a>
+        <a href="https://zhyantao.github.io/">ZHYANTAO</a>
+        <a href="https://zhyantao.github.io/docs/">DOCS</a>
+        <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
+        <a href="https://zhyantao.github.io/callgraphs-generator/">CALLGRAPH</a>
+        <a href="https://zhyantao.github.io/riscv-bitlab/">RISC-V</a>
+        <a href="index.html?date=20260702" class="active">BOT</a>
+    </div>
+</nav>
+
+<nav class="app-nav">
+    <div class="nav-inner">
+        <a href="index.html?date=20260702" class="brand">量化信号</a>
         <input type="checkbox" id="nav-toggle">
         <div class="nav-links">
-            <a href="index.html?date=20260701" class="">总览</a>
-            <a href="signals.html?date=20260701" class="">每日信号</a>
-            <a href="holdings.html?date=20260701" class="">我的持仓</a>
-            <a href="managers.html?date=20260701" class="">经理排名</a>
-            <a href="funds.html?date=20260701" class="active">基金排名</a>
-            <a href="elite.html?date=20260701" class="">绩优标的</a>
-            <a href="backtest.html?date=20260701" class="">回测</a>
-            <a href="pipeline.html?date=20260701" class="">流水线</a>
+            <a href="index.html?date=20260702" class="">总览</a>
+            <a href="signals.html?date=20260702" class="">每日信号</a>
+            <a href="holdings.html?date=20260702" class="">我的持仓</a>
+            <a href="managers.html?date=20260702" class="">经理排名</a>
+            <a href="funds.html?date=20260702" class="active">基金排名</a>
+            <a href="elite.html?date=20260702" class="">绩优标的</a>
+            <a href="backtest.html?date=20260702" class="">回测</a>
+            <a href="pipeline.html?date=20260702" class="">流水线</a>
         </div>
         <div class="nav-actions">
         
         <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
             
-            <option value="20260701" selected>2026-07-01</option>
+            <option value="20260702" selected>2026-07-02</option>
+            
+            <option value="20260701" >2026-07-01</option>
             
         </select>
         
@@ -43,12 +57,12 @@
 <div class="card">
     <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
         <span style="font-size:13px; color:var(--text-secondary);">成立天数 >=</span>
-        <a href="funds.html?date=20260701" class="btn btn-sm btn-outline">90 天</a>
-        <a href="funds.html?date=20260701" class="btn btn-sm btn-primary">180 天</a>
-        <a href="funds.html?date=20260701" class="btn btn-sm btn-outline">1 年</a>
-        <a href="funds.html?date=20260701" class="btn btn-sm btn-outline">2 年</a>
-        <a href="funds.html?date=20260701" class="btn btn-sm btn-outline">3 年</a>
-        <span style="font-size:13px; color:var(--text-secondary); margin-left:16px;">共 19043 只基金</span>
+        <a href="funds.html?date=20260702" class="btn btn-sm btn-outline">90 天</a>
+        <a href="funds.html?date=20260702" class="btn btn-sm btn-primary">180 天</a>
+        <a href="funds.html?date=20260702" class="btn btn-sm btn-outline">1 年</a>
+        <a href="funds.html?date=20260702" class="btn btn-sm btn-outline">2 年</a>
+        <a href="funds.html?date=20260702" class="btn btn-sm btn-outline">3 年</a>
+        <span style="font-size:13px; color:var(--text-secondary); margin-left:16px;">共 18851 只基金</span>
     </div>
 
     
@@ -70,652 +84,652 @@
             
             <tr>
                 <td style="font-weight:600;">10051</td>
-                <td>014994</td>
-                <td>国泰金融ETF联接C</td>
-                <td style="color:var(--green); font-weight:600;">4.02</td>
-                <td>18.81</td>
-                <td>1597.00</td>
-                <td style="color:var(--red);">-9.86</td>
-                <td>24.38</td>
-                <td>31.52</td>
-                <td>-11.83</td>
+                <td>001721</td>
+                <td>工银新增益混合</td>
+                <td style="color:var(--green); font-weight:600;">3.81</td>
+                <td>42.70</td>
+                <td>3472.00</td>
+                <td style="color:var(--green);">5.16</td>
+                <td>13.80</td>
+                <td>13.43</td>
+                <td>2.96</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10052</td>
-                <td>003071</td>
-                <td>国联睿祥纯债A</td>
-                <td style="color:var(--green); font-weight:600;">4.02</td>
-                <td>41.74</td>
-                <td>3233.00</td>
-                <td style="color:var(--green);">2.00</td>
-                <td>4.07</td>
-                <td>10.08</td>
-                <td>1.78</td>
+                <td>017283</td>
+                <td>民生加银康宁稳健养老目标一年持有混合(FOF)Y</td>
+                <td style="color:var(--green); font-weight:600;">3.81</td>
+                <td>14.58</td>
+                <td>1329.00</td>
+                <td style="color:var(--green);">6.33</td>
+                <td>15.78</td>
+                <td>14.62</td>
+                <td>2.07</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10053</td>
-                <td>025478</td>
-                <td>华夏上证180ETF联接A</td>
-                <td style="color:var(--green); font-weight:600;">4.02</td>
-                <td>2.59</td>
-                <td>237.00</td>
-                <td style="color:var(--red);">nan</td>
-                <td>nan</td>
-                <td>nan</td>
-                <td>2.09</td>
+                <td>002765</td>
+                <td>新华双利债券A</td>
+                <td style="color:var(--green); font-weight:600;">3.81</td>
+                <td>45.18</td>
+                <td>3641.00</td>
+                <td style="color:var(--green);">13.42</td>
+                <td>20.44</td>
+                <td>7.12</td>
+                <td>9.43</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10054</td>
-                <td>164606</td>
-                <td>华泰柏瑞信用增利债(LOF)A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>78.91</td>
-                <td>5396.00</td>
-                <td style="color:var(--green);">4.68</td>
-                <td>7.87</td>
-                <td>6.14</td>
-                <td>1.57</td>
+                <td>002328</td>
+                <td>银华泰利灵活配置混合C</td>
+                <td style="color:var(--green); font-weight:600;">3.81</td>
+                <td>46.71</td>
+                <td>3744.00</td>
+                <td style="color:var(--green);">3.30</td>
+                <td>6.61</td>
+                <td>3.30</td>
+                <td>1.68</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10055</td>
-                <td>012170</td>
-                <td>华夏永顺一年持有混合A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>21.48</td>
-                <td>1805.00</td>
-                <td style="color:var(--green);">17.92</td>
-                <td>32.56</td>
-                <td>27.32</td>
-                <td>4.87</td>
+                <td>021119</td>
+                <td>中银月月鑫30天滚动持有债券A</td>
+                <td style="color:var(--green); font-weight:600;">3.81</td>
+                <td>8.61</td>
+                <td>807.00</td>
+                <td style="color:var(--green);">2.39</td>
+                <td>7.71</td>
+                <td>nan</td>
+                <td>1.76</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10056</td>
-                <td>017473</td>
-                <td>中信建投景荣债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>14.87</td>
-                <td>1286.00</td>
-                <td style="color:var(--green);">1.02</td>
-                <td>6.26</td>
-                <td>12.48</td>
-                <td>1.85</td>
+                <td>012170</td>
+                <td>华夏永顺一年持有混合A</td>
+                <td style="color:var(--green); font-weight:600;">3.81</td>
+                <td>20.30</td>
+                <td>1806.00</td>
+                <td style="color:var(--green);">16.93</td>
+                <td>31.72</td>
+                <td>26.09</td>
+                <td>3.85</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10057</td>
-                <td>001063</td>
-                <td>华夏收益债券(QDII)C</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>70.55</td>
-                <td>4954.00</td>
-                <td style="color:var(--red);">-2.34</td>
-                <td>3.12</td>
-                <td>11.94</td>
-                <td>-3.36</td>
+                <td>016109</td>
+                <td>南方振元债券发起A</td>
+                <td style="color:var(--green); font-weight:600;">3.81</td>
+                <td>14.65</td>
+                <td>1336.00</td>
+                <td style="color:var(--green);">5.62</td>
+                <td>9.60</td>
+                <td>12.09</td>
+                <td>0.32</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10058</td>
-                <td>003107</td>
-                <td>光大安祺债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>45.15</td>
-                <td>3458.00</td>
-                <td style="color:var(--green);">6.04</td>
-                <td>16.29</td>
-                <td>15.58</td>
-                <td>1.57</td>
+                <td>020377</td>
+                <td>广发景丰纯债D</td>
+                <td style="color:var(--green); font-weight:600;">3.81</td>
+                <td>9.86</td>
+                <td>919.00</td>
+                <td style="color:var(--green);">2.26</td>
+                <td>5.73</td>
+                <td>nan</td>
+                <td>2.24</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10059</td>
-                <td>001685</td>
-                <td>汇添富沪港深新价值股票</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>47.80</td>
-                <td>3626.00</td>
-                <td style="color:var(--green);">40.09</td>
-                <td>65.51</td>
-                <td>37.49</td>
-                <td>23.99</td>
+                <td>008558</td>
+                <td>永赢邦利债券A</td>
+                <td style="color:var(--green); font-weight:600;">3.81</td>
+                <td>24.99</td>
+                <td>2180.00</td>
+                <td style="color:var(--green);">2.58</td>
+                <td>6.97</td>
+                <td>11.51</td>
+                <td>2.51</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10060</td>
-                <td>015160</td>
-                <td>南方宝嘉混合A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>17.08</td>
-                <td>1464.00</td>
-                <td style="color:var(--green);">10.23</td>
-                <td>19.18</td>
-                <td>17.92</td>
-                <td>2.41</td>
+                <td>003824</td>
+                <td>天弘信利债券A</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>42.84</td>
+                <td>3485.00</td>
+                <td style="color:var(--green);">1.92</td>
+                <td>5.77</td>
+                <td>10.57</td>
+                <td>1.67</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10061</td>
-                <td>001031</td>
-                <td>华夏安康债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>72.07</td>
-                <td>5041.00</td>
-                <td style="color:var(--green);">1.05</td>
-                <td>3.77</td>
-                <td>-4.62</td>
-                <td>1.60</td>
+                <td>013878</td>
+                <td>圆信永丰中证500指数增强发起A</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>18.68</td>
+                <td>1674.00</td>
+                <td style="color:var(--green);">46.12</td>
+                <td>61.67</td>
+                <td>40.98</td>
+                <td>17.09</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10062</td>
-                <td>380006</td>
-                <td>中银纯债债券C</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>70.37</td>
-                <td>4949.00</td>
-                <td style="color:var(--green);">2.07</td>
-                <td>6.51</td>
-                <td>12.74</td>
-                <td>2.08</td>
+                <td>002245</td>
+                <td>泰康稳健增利债券A</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>47.54</td>
+                <td>3802.00</td>
+                <td style="color:var(--green);">2.21</td>
+                <td>5.53</td>
+                <td>9.14</td>
+                <td>1.17</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10063</td>
-                <td>008054</td>
-                <td>汇添富中债7-10年国开债A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>28.92</td>
-                <td>2360.00</td>
-                <td style="color:var(--green);">1.84</td>
-                <td>9.04</td>
-                <td>16.68</td>
-                <td>2.98</td>
+                <td>010674</td>
+                <td>兴全中证800六个月持有指数C</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>22.31</td>
+                <td>1969.00</td>
+                <td style="color:var(--green);">8.14</td>
+                <td>35.81</td>
+                <td>27.01</td>
+                <td>-0.39</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10064</td>
-                <td>003819</td>
-                <td>广发景华纯债A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>45.78</td>
-                <td>3502.00</td>
-                <td style="color:var(--green);">1.41</td>
-                <td>4.99</td>
-                <td>9.23</td>
-                <td>1.87</td>
+                <td>002797</td>
+                <td>景顺长城景盈双利债券C</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>44.98</td>
+                <td>3635.00</td>
+                <td style="color:var(--green);">8.40</td>
+                <td>14.52</td>
+                <td>15.22</td>
+                <td>2.09</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10065</td>
-                <td>018193</td>
-                <td>建信鑫弘180天持有期债券C</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>11.88</td>
-                <td>1043.00</td>
-                <td style="color:var(--green);">2.65</td>
-                <td>7.29</td>
-                <td>nan</td>
-                <td>2.15</td>
+                <td>519718</td>
+                <td>交银纯债债券发起A</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>65.71</td>
+                <td>4943.00</td>
+                <td style="color:var(--green);">1.73</td>
+                <td>4.36</td>
+                <td>8.92</td>
+                <td>1.43</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10066</td>
-                <td>003612</td>
-                <td>南方卓元债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>46.04</td>
-                <td>3519.00</td>
-                <td style="color:var(--green);">4.28</td>
-                <td>6.18</td>
-                <td>10.16</td>
-                <td>0.36</td>
+                <td>021539</td>
+                <td>华安法国CAC40ETF发起式联接(QDII)A</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>7.82</td>
+                <td>737.00</td>
+                <td style="color:var(--red);">-1.34</td>
+                <td>8.99</td>
+                <td>nan</td>
+                <td>-3.47</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10067</td>
-                <td>010886</td>
-                <td>长盛优势企业精选混合C</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>23.68</td>
-                <td>1975.00</td>
-                <td style="color:var(--green);">51.98</td>
-                <td>83.18</td>
-                <td>57.37</td>
-                <td>35.01</td>
+                <td>519743</td>
+                <td>交银丰润收益债券A/B</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>53.83</td>
+                <td>4217.00</td>
+                <td style="color:var(--green);">1.20</td>
+                <td>4.83</td>
+                <td>7.98</td>
+                <td>1.44</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10068</td>
-                <td>025631</td>
-                <td>鹏华睿丰债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>2.66</td>
-                <td>244.00</td>
-                <td style="color:var(--red);">nan</td>
+                <td>019665</td>
+                <td>景顺长城保守养老一年持有混合(FOF)A</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>8.89</td>
+                <td>834.00</td>
+                <td style="color:var(--green);">2.47</td>
+                <td>7.78</td>
                 <td>nan</td>
-                <td>nan</td>
-                <td>2.22</td>
+                <td>0.95</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10069</td>
-                <td>009899</td>
-                <td>上银内需增长股票A</td>
-                <td style="color:var(--green); font-weight:600;">4.01</td>
-                <td>25.85</td>
-                <td>2137.00</td>
-                <td style="color:var(--green);">53.53</td>
-                <td>75.52</td>
-                <td>56.34</td>
-                <td>22.89</td>
+                <td>025157</td>
+                <td>华泰保兴兴元债券C</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>2.48</td>
+                <td>240.00</td>
+                <td style="color:var(--red);">nan</td>
+                <td>nan</td>
+                <td>nan</td>
+                <td>2.73</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10070</td>
-                <td>020110</td>
-                <td>富国恒生港股通创新药及医疗保健ETF发起式联接A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>10.63</td>
-                <td>939.00</td>
-                <td style="color:var(--red);">-12.72</td>
-                <td>45.16</td>
-                <td>nan</td>
-                <td>-16.59</td>
+                <td>560002</td>
+                <td>益民红利成长混合</td>
+                <td style="color:var(--green); font-weight:600;">3.80</td>
+                <td>107.72</td>
+                <td>7163.00</td>
+                <td style="color:var(--green);">16.58</td>
+                <td>27.41</td>
+                <td>5.69</td>
+                <td>9.01</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10071</td>
-                <td>022550</td>
-                <td>平安瑞利6个月持有混合A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>6.14</td>
-                <td>554.00</td>
-                <td style="color:var(--green);">2.32</td>
-                <td>nan</td>
-                <td>nan</td>
-                <td>2.52</td>
+                <td>217017</td>
+                <td>招商上证消费80ETF联接A</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>78.62</td>
+                <td>5685.00</td>
+                <td style="color:var(--red);">-8.68</td>
+                <td>1.66</td>
+                <td>-15.12</td>
+                <td>-13.82</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10072</td>
-                <td>005193</td>
-                <td>华银鼎利债券C</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>39.26</td>
-                <td>3079.00</td>
-                <td style="color:var(--green);">5.82</td>
-                <td>21.19</td>
-                <td>26.50</td>
-                <td>-0.40</td>
+                <td>007152</td>
+                <td>诺德策略精选</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>30.34</td>
+                <td>2597.00</td>
+                <td style="color:var(--green);">23.00</td>
+                <td>26.52</td>
+                <td>13.59</td>
+                <td>7.07</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10073</td>
-                <td>017464</td>
-                <td>长江楚财一年持有期混合发起A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>11.93</td>
-                <td>1048.00</td>
-                <td style="color:var(--green);">9.53</td>
-                <td>13.54</td>
-                <td>nan</td>
-                <td>3.58</td>
+                <td>017691</td>
+                <td>国投瑞银稳定增利债券A</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>13.74</td>
+                <td>1262.00</td>
+                <td style="color:var(--green);">4.09</td>
+                <td>7.96</td>
+                <td>10.72</td>
+                <td>2.12</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10074</td>
-                <td>560002</td>
-                <td>益民红利成长混合</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>115.98</td>
-                <td>7162.00</td>
-                <td style="color:var(--green);">19.97</td>
-                <td>32.02</td>
-                <td>9.90</td>
-                <td>13.34</td>
+                <td>019221</td>
+                <td>工银瑞享纯债债券D</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>11.09</td>
+                <td>1031.00</td>
+                <td style="color:var(--green);">2.06</td>
+                <td>6.94</td>
+                <td>nan</td>
+                <td>1.56</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10075</td>
-                <td>003135</td>
-                <td>金元顺安沣楹债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>46.77</td>
-                <td>3569.00</td>
-                <td style="color:var(--green);">15.11</td>
-                <td>18.84</td>
-                <td>16.17</td>
-                <td>8.74</td>
+                <td>010560</td>
+                <td>永赢稳健增利18个月持有混合A</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>22.41</td>
+                <td>1983.00</td>
+                <td style="color:var(--green);">12.47</td>
+                <td>19.80</td>
+                <td>22.66</td>
+                <td>6.96</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10076</td>
-                <td>000606</td>
-                <td>天弘优选债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>41.06</td>
-                <td>3200.00</td>
-                <td style="color:var(--green);">1.45</td>
-                <td>6.84</td>
-                <td>13.78</td>
-                <td>1.10</td>
+                <td>006178</td>
+                <td>中信保诚稳达C</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>33.88</td>
+                <td>2862.00</td>
+                <td style="color:var(--green);">2.32</td>
+                <td>8.33</td>
+                <td>14.10</td>
+                <td>3.44</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10077</td>
-                <td>686868</td>
-                <td>浙商聚盈纯债债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>71.80</td>
-                <td>5034.00</td>
-                <td style="color:var(--green);">2.55</td>
-                <td>7.05</td>
-                <td>12.37</td>
-                <td>2.14</td>
+                <td>002178</td>
+                <td>嘉实新起点混合C</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>48.26</td>
+                <td>3863.00</td>
+                <td style="color:var(--green);">3.89</td>
+                <td>7.02</td>
+                <td>10.56</td>
+                <td>2.04</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10078</td>
-                <td>023583</td>
-                <td>交银180天持有期债券C</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>3.81</td>
-                <td>348.00</td>
-                <td style="color:var(--red);">nan</td>
-                <td>nan</td>
-                <td>nan</td>
-                <td>2.68</td>
+                <td>014892</td>
+                <td>永赢添添欣12个月持有混合A</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>17.68</td>
+                <td>1597.00</td>
+                <td style="color:var(--green);">5.17</td>
+                <td>8.85</td>
+                <td>13.10</td>
+                <td>2.44</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10079</td>
-                <td>002742</td>
-                <td>泓德裕祥债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>44.96</td>
-                <td>3456.00</td>
-                <td style="color:var(--red);">-0.46</td>
-                <td>4.69</td>
-                <td>-0.29</td>
-                <td>-0.92</td>
+                <td>020825</td>
+                <td>景顺长城景泰丰利纯债债券F</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>8.94</td>
+                <td>840.00</td>
+                <td style="color:var(--green);">1.45</td>
+                <td>6.69</td>
+                <td>nan</td>
+                <td>2.23</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10080</td>
-                <td>013714</td>
-                <td>方正富邦泰利12个月持有混合A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>19.03</td>
-                <td>1622.00</td>
-                <td style="color:var(--green);">20.59</td>
-                <td>30.72</td>
-                <td>21.29</td>
-                <td>21.22</td>
+                <td>012954</td>
+                <td>华泰柏瑞恒利混合C</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>19.55</td>
+                <td>1752.00</td>
+                <td style="color:var(--green);">0.67</td>
+                <td>5.02</td>
+                <td>10.33</td>
+                <td>-0.23</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10081</td>
-                <td>013226</td>
-                <td>景顺长城安景一年持有期混合C</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>19.22</td>
-                <td>1637.00</td>
-                <td style="color:var(--green);">8.36</td>
-                <td>10.85</td>
-                <td>15.75</td>
-                <td>3.26</td>
+                <td>009766</td>
+                <td>安信平稳双利3个月持有混合A</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>24.22</td>
+                <td>2128.00</td>
+                <td style="color:var(--green);">3.86</td>
+                <td>9.33</td>
+                <td>12.27</td>
+                <td>3.14</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10082</td>
-                <td>011387</td>
-                <td>工银宁瑞6个月持有期混合A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>22.24</td>
-                <td>1870.00</td>
-                <td style="color:var(--green);">9.23</td>
-                <td>16.92</td>
-                <td>20.49</td>
-                <td>3.11</td>
+                <td>009102</td>
+                <td>鹏扬红利优选混合A</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>24.77</td>
+                <td>2172.00</td>
+                <td style="color:var(--green);">4.88</td>
+                <td>18.40</td>
+                <td>18.06</td>
+                <td>-8.47</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10083</td>
-                <td>013215</td>
-                <td>大摩安盈稳固六个月持有债券C</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>16.63</td>
-                <td>1433.00</td>
-                <td style="color:var(--green);">3.30</td>
-                <td>12.57</td>
-                <td>15.91</td>
-                <td>2.68</td>
+                <td>016863</td>
+                <td>华安招裕一年持有混合A</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>12.91</td>
+                <td>1192.00</td>
+                <td style="color:var(--green);">6.29</td>
+                <td>10.41</td>
+                <td>11.65</td>
+                <td>2.61</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10084</td>
-                <td>001143</td>
-                <td>华商量化进取混合</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>55.30</td>
-                <td>4101.00</td>
-                <td style="color:var(--green);">52.55</td>
-                <td>81.43</td>
-                <td>42.22</td>
-                <td>28.35</td>
+                <td>009598</td>
+                <td>景顺长城科创三年定开混合</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>25.03</td>
+                <td>2193.00</td>
+                <td style="color:var(--green);">65.14</td>
+                <td>116.28</td>
+                <td>65.58</td>
+                <td>35.65</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10085</td>
-                <td>020389</td>
-                <td>英大福鑫稳健养老一年持有偏债混合发起(FOF)</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>7.41</td>
-                <td>666.00</td>
-                <td style="color:var(--green);">5.71</td>
+                <td>019216</td>
+                <td>天弘价值精选混合发起C</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>11.22</td>
+                <td>1044.00</td>
+                <td style="color:var(--green);">3.95</td>
+                <td>7.34</td>
                 <td>nan</td>
-                <td>nan</td>
-                <td>1.04</td>
+                <td>2.54</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10086</td>
-                <td>012397</td>
-                <td>南方佳元6个月持有债券A</td>
-                <td style="color:var(--green); font-weight:600;">4.00</td>
-                <td>21.78</td>
-                <td>1836.00</td>
-                <td style="color:var(--green);">8.19</td>
-                <td>11.99</td>
-                <td>15.48</td>
-                <td>3.68</td>
+                <td>008792</td>
+                <td>招商安华债券C</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>26.27</td>
+                <td>2290.00</td>
+                <td style="color:var(--green);">1.50</td>
+                <td>8.29</td>
+                <td>8.28</td>
+                <td>-1.07</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10087</td>
-                <td>002158</td>
-                <td>汇添富安鑫智选混合C</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>51.48</td>
-                <td>3870.00</td>
-                <td style="color:var(--green);">38.80</td>
-                <td>63.24</td>
-                <td>33.83</td>
-                <td>-0.77</td>
+                <td>006191</td>
+                <td>华夏鼎通债券A</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>33.12</td>
+                <td>2809.00</td>
+                <td style="color:var(--green);">1.41</td>
+                <td>5.87</td>
+                <td>10.80</td>
+                <td>1.64</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10088</td>
-                <td>012953</td>
-                <td>华泰柏瑞恒利混合A</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>20.67</td>
-                <td>1751.00</td>
-                <td style="color:var(--green);">0.89</td>
-                <td>5.22</td>
-                <td>10.95</td>
-                <td>-0.18</td>
+                <td>018978</td>
+                <td>中信建投惠享债券C</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>10.36</td>
+                <td>968.00</td>
+                <td style="color:var(--green);">0.42</td>
+                <td>5.58</td>
+                <td>nan</td>
+                <td>1.68</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10089</td>
-                <td>021478</td>
-                <td>东方周期优选灵活配置混合C</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>8.52</td>
-                <td>762.00</td>
-                <td style="color:var(--green);">4.59</td>
-                <td>11.67</td>
+                <td>020182</td>
+                <td>长城智盈添益债券发起式C</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>9.81</td>
+                <td>919.00</td>
+                <td style="color:var(--green);">1.28</td>
+                <td>7.16</td>
                 <td>nan</td>
-                <td>-5.81</td>
+                <td>0.93</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10090</td>
-                <td>004103</td>
-                <td>中信保诚稳悦债券C</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>44.45</td>
-                <td>3428.00</td>
-                <td style="color:var(--green);">8.07</td>
-                <td>12.24</td>
-                <td>15.34</td>
-                <td>6.03</td>
+                <td>024962</td>
+                <td>宏利集享债券A</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>3.06</td>
+                <td>296.00</td>
+                <td style="color:var(--red);">nan</td>
+                <td>nan</td>
+                <td>nan</td>
+                <td>3.57</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10091</td>
-                <td>002877</td>
-                <td>华夏大中华信用债A</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>47.54</td>
-                <td>3626.00</td>
-                <td style="color:var(--red);">-2.16</td>
-                <td>3.47</td>
-                <td>8.71</td>
-                <td>-2.24</td>
+                <td>001720</td>
+                <td>工银新增利混合</td>
+                <td style="color:var(--green); font-weight:600;">3.79</td>
+                <td>42.40</td>
+                <td>3472.00</td>
+                <td style="color:var(--green);">0.49</td>
+                <td>4.29</td>
+                <td>5.26</td>
+                <td>-3.43</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10092</td>
-                <td>006457</td>
-                <td>平安估值优势混合A</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>34.50</td>
-                <td>2765.00</td>
-                <td style="color:var(--red);">-5.57</td>
-                <td>0.10</td>
-                <td>4.80</td>
-                <td>-16.30</td>
+                <td>014677</td>
+                <td>中信保诚至远动力混合E</td>
+                <td style="color:var(--green); font-weight:600;">3.78</td>
+                <td>18.07</td>
+                <td>1632.00</td>
+                <td style="color:var(--green);">54.31</td>
+                <td>87.92</td>
+                <td>45.80</td>
+                <td>25.64</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10093</td>
-                <td>020414</td>
-                <td>中信保诚优质纯债债券I</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>10.40</td>
-                <td>923.00</td>
-                <td style="color:var(--green);">6.24</td>
-                <td>7.99</td>
-                <td>nan</td>
-                <td>3.33</td>
+                <td>015768</td>
+                <td>长信内需成长混合C</td>
+                <td style="color:var(--green); font-weight:600;">3.78</td>
+                <td>16.47</td>
+                <td>1499.00</td>
+                <td style="color:var(--green);">18.59</td>
+                <td>24.59</td>
+                <td>17.51</td>
+                <td>3.03</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10094</td>
-                <td>003978</td>
-                <td>中信建投稳祥A</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>44.08</td>
-                <td>3407.00</td>
-                <td style="color:var(--green);">1.02</td>
-                <td>4.80</td>
-                <td>10.36</td>
-                <td>1.42</td>
+                <td>009649</td>
+                <td>嘉实精选平衡混合A</td>
+                <td style="color:var(--green); font-weight:600;">3.78</td>
+                <td>25.23</td>
+                <td>2212.00</td>
+                <td style="color:var(--red);">-2.19</td>
+                <td>5.28</td>
+                <td>-2.85</td>
+                <td>-7.76</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10095</td>
-                <td>005152</td>
-                <td>农银沪深300指数C</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>38.28</td>
-                <td>3024.00</td>
-                <td style="color:var(--green);">25.24</td>
-                <td>43.81</td>
-                <td>32.28</td>
-                <td>7.23</td>
+                <td>011984</td>
+                <td>永赢中债3-5年政金债指数C</td>
+                <td style="color:var(--green); font-weight:600;">3.78</td>
+                <td>19.65</td>
+                <td>1764.00</td>
+                <td style="color:var(--green);">2.01</td>
+                <td>5.91</td>
+                <td>11.03</td>
+                <td>2.14</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10096</td>
-                <td>015959</td>
-                <td>太平嘉和三个月定开债发起</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>17.00</td>
-                <td>1465.00</td>
-                <td style="color:var(--green);">9.06</td>
-                <td>15.52</td>
-                <td>16.23</td>
-                <td>4.72</td>
+                <td>015294</td>
+                <td>金鹰时代领航一年持有混合C</td>
+                <td style="color:var(--green); font-weight:600;">3.78</td>
+                <td>15.24</td>
+                <td>1395.00</td>
+                <td style="color:var(--green);">83.85</td>
+                <td>69.50</td>
+                <td>13.70</td>
+                <td>60.97</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10097</td>
-                <td>006840</td>
-                <td>安信聚利增强债券C</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>32.60</td>
-                <td>2634.00</td>
-                <td style="color:var(--green);">9.59</td>
-                <td>20.49</td>
-                <td>24.81</td>
-                <td>2.93</td>
+                <td>011119</td>
+                <td>汇添富稳健睿选一年持有混合C</td>
+                <td style="color:var(--green); font-weight:600;">3.78</td>
+                <td>21.88</td>
+                <td>1946.00</td>
+                <td style="color:var(--green);">5.82</td>
+                <td>11.01</td>
+                <td>15.89</td>
+                <td>0.02</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10098</td>
-                <td>004555</td>
-                <td>南方和元A</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>42.86</td>
-                <td>3330.00</td>
-                <td style="color:var(--green);">1.78</td>
-                <td>4.98</td>
-                <td>9.13</td>
-                <td>1.13</td>
+                <td>003730</td>
+                <td>博时富华纯债债券A</td>
+                <td style="color:var(--green); font-weight:600;">3.78</td>
+                <td>42.82</td>
+                <td>3506.00</td>
+                <td style="color:var(--green);">1.37</td>
+                <td>8.39</td>
+                <td>11.09</td>
+                <td>2.02</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10099</td>
-                <td>011533</td>
-                <td>工银聚丰混合C</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>22.04</td>
-                <td>1860.00</td>
-                <td style="color:var(--green);">3.39</td>
-                <td>9.49</td>
-                <td>21.48</td>
-                <td>-5.00</td>
+                <td>016524</td>
+                <td>招商均衡成长混合A</td>
+                <td style="color:var(--green); font-weight:600;">3.78</td>
+                <td>15.14</td>
+                <td>1387.00</td>
+                <td style="color:var(--green);">31.75</td>
+                <td>49.49</td>
+                <td>15.05</td>
+                <td>15.44</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">10100</td>
-                <td>650002</td>
-                <td>英大纯债债券C</td>
-                <td style="color:var(--green); font-weight:600;">3.99</td>
-                <td>67.47</td>
-                <td>4816.00</td>
-                <td style="color:var(--green);">1.57</td>
-                <td>5.37</td>
-                <td>9.48</td>
-                <td>0.87</td>
+                <td>017410</td>
+                <td>农银养老2035混合(FOF)Y</td>
+                <td style="color:var(--green); font-weight:600;">3.78</td>
+                <td>14.38</td>
+                <td>1322.00</td>
+                <td style="color:var(--green);">19.88</td>
+                <td>23.15</td>
+                <td>17.10</td>
+                <td>8.19</td>
             </tr>
             
             </tbody>
@@ -723,17 +737,22 @@
     </div>
     <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
         
-        <a href="funds_page201.html?date=20260701" class="btn btn-sm btn-outline">上一页</a>
+        <a href="funds_page201.html?date=20260702" class="btn btn-sm btn-outline">上一页</a>
         
-        <span style="padding:5px 12px; font-size:13px;">202 / 381</span>
+        <span style="padding:5px 12px; font-size:13px;">202 / 378</span>
         
-        <a href="funds_page203.html?date=20260701" class="btn btn-sm btn-outline">下一页</a>
+        <a href="funds_page203.html?date=20260702" class="btn btn-sm btn-outline">下一页</a>
         
     </div>
     
 </div>
 
 </div>
+
+<footer class="site-footer">
+    <hr class="slender">
+    <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
+</footer>
 
 <script>
 function onDateChange(date) {

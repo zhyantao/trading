@@ -175,6 +175,14 @@ def _copy_assets() -> None:
     shutil.copy2(css_src, DOCS_DIR / "style.css")
     print("  style.css")
 
+    # 字体（ET Book）
+    fonts_src = TPL_DIR.parent / "static" / "fonts"
+    if fonts_src.is_dir():
+        (DOCS_DIR / "fonts").mkdir(exist_ok=True)
+        for woff in fonts_src.rglob("*.woff"):
+            shutil.copy2(woff, DOCS_DIR / "fonts" / woff.name)
+        print("  fonts/")
+
     # 图表图片
     charts_dir = DOCS_DIR / "charts"
     charts_dir.mkdir(exist_ok=True)

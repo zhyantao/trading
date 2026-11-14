@@ -9,25 +9,39 @@
 </head>
 <body>
 
-<nav>
+<!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
+<nav class="site-nav" aria-label="站点导航">
     <div class="nav-inner">
-        <a href="index.html?date=20260701" class="brand">量化信号</a>
+        <a href="https://zhyantao.github.io/">ZHYANTAO</a>
+        <a href="https://zhyantao.github.io/docs/">DOCS</a>
+        <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
+        <a href="https://zhyantao.github.io/callgraphs-generator/">CALLGRAPH</a>
+        <a href="https://zhyantao.github.io/riscv-bitlab/">RISC-V</a>
+        <a href="index.html?date=20260702" class="active">BOT</a>
+    </div>
+</nav>
+
+<nav class="app-nav">
+    <div class="nav-inner">
+        <a href="index.html?date=20260702" class="brand">量化信号</a>
         <input type="checkbox" id="nav-toggle">
         <div class="nav-links">
-            <a href="index.html?date=20260701" class="">总览</a>
-            <a href="signals.html?date=20260701" class="">每日信号</a>
-            <a href="holdings.html?date=20260701" class="active">我的持仓</a>
-            <a href="managers.html?date=20260701" class="">经理排名</a>
-            <a href="funds.html?date=20260701" class="">基金排名</a>
-            <a href="elite.html?date=20260701" class="">绩优标的</a>
-            <a href="backtest.html?date=20260701" class="">回测</a>
-            <a href="pipeline.html?date=20260701" class="">流水线</a>
+            <a href="index.html?date=20260702" class="">总览</a>
+            <a href="signals.html?date=20260702" class="">每日信号</a>
+            <a href="holdings.html?date=20260702" class="active">我的持仓</a>
+            <a href="managers.html?date=20260702" class="">经理排名</a>
+            <a href="funds.html?date=20260702" class="">基金排名</a>
+            <a href="elite.html?date=20260702" class="">绩优标的</a>
+            <a href="backtest.html?date=20260702" class="">回测</a>
+            <a href="pipeline.html?date=20260702" class="">流水线</a>
         </div>
         <div class="nav-actions">
         
         <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
             
-            <option value="20260701" selected>2026-07-01</option>
+            <option value="20260702" selected>2026-07-02</option>
+            
+            <option value="20260701" >2026-07-01</option>
             
         </select>
         
@@ -59,10 +73,10 @@
                 <td><span class="tag tag-stock">股票</span></td>
                 <td>300502</td>
                 <td>新易盛</td>
-                <td style="font-weight:600;">15.35%</td>
+                <td style="font-weight:600;">15.31%</td>
                 <td style="width:120px;">
                     <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:61.4%; background:var(--accent); border-radius:4px;"></div>
+                        <div style="height:100%; width:61.24000000000001%; background:var(--accent); border-radius:4px;"></div>
                     </div>
                 </td>
             </tr>
@@ -72,10 +86,10 @@
                 <td><span class="tag tag-stock">股票</span></td>
                 <td>300308</td>
                 <td>中际旭创</td>
-                <td style="font-weight:600;">14.65%</td>
+                <td style="font-weight:600;">14.69%</td>
                 <td style="width:120px;">
                     <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:58.599999999999994%; background:var(--accent); border-radius:4px;"></div>
+                        <div style="height:100%; width:58.76%; background:var(--accent); border-radius:4px;"></div>
                     </div>
                 </td>
             </tr>
@@ -130,6 +144,11 @@
 
 
 </div>
+
+<footer class="site-footer">
+    <hr class="slender">
+    <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
+</footer>
 
 <script>
 function onDateChange(date) {

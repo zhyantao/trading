@@ -9,25 +9,39 @@
 </head>
 <body>
 
-<nav>
+<!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
+<nav class="site-nav" aria-label="站点导航">
     <div class="nav-inner">
-        <a href="index.html?date=20260701" class="brand">量化信号</a>
+        <a href="https://zhyantao.github.io/">ZHYANTAO</a>
+        <a href="https://zhyantao.github.io/docs/">DOCS</a>
+        <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
+        <a href="https://zhyantao.github.io/callgraphs-generator/">CALLGRAPH</a>
+        <a href="https://zhyantao.github.io/riscv-bitlab/">RISC-V</a>
+        <a href="index.html?date=20260702" class="active">BOT</a>
+    </div>
+</nav>
+
+<nav class="app-nav">
+    <div class="nav-inner">
+        <a href="index.html?date=20260702" class="brand">量化信号</a>
         <input type="checkbox" id="nav-toggle">
         <div class="nav-links">
-            <a href="index.html?date=20260701" class="">总览</a>
-            <a href="signals.html?date=20260701" class="">每日信号</a>
-            <a href="holdings.html?date=20260701" class="">我的持仓</a>
-            <a href="managers.html?date=20260701" class="active">经理排名</a>
-            <a href="funds.html?date=20260701" class="">基金排名</a>
-            <a href="elite.html?date=20260701" class="">绩优标的</a>
-            <a href="backtest.html?date=20260701" class="">回测</a>
-            <a href="pipeline.html?date=20260701" class="">流水线</a>
+            <a href="index.html?date=20260702" class="">总览</a>
+            <a href="signals.html?date=20260702" class="">每日信号</a>
+            <a href="holdings.html?date=20260702" class="">我的持仓</a>
+            <a href="managers.html?date=20260702" class="active">经理排名</a>
+            <a href="funds.html?date=20260702" class="">基金排名</a>
+            <a href="elite.html?date=20260702" class="">绩优标的</a>
+            <a href="backtest.html?date=20260702" class="">回测</a>
+            <a href="pipeline.html?date=20260702" class="">流水线</a>
         </div>
         <div class="nav-actions">
         
         <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
             
-            <option value="20260701" selected>2026-07-01</option>
+            <option value="20260702" selected>2026-07-02</option>
+            
+            <option value="20260701" >2026-07-01</option>
             
         </select>
         
@@ -43,7 +57,7 @@
 
 <div class="card">
     <div style="margin-bottom:12px; color:var(--text-secondary); font-size:13px;">
-        共 3743 位经理，第 32/75 页
+        共 3711 位经理，第 32/75 页
     </div>
     <div class="table-wrap">
         <table>
@@ -62,290 +76,290 @@
             
             <tr>
                 <td style="font-weight:600;">1551</td>
-                <td>鲁炳良</td>
+                <td>熊琳</td>
                 <td>南方基金</td>
-                <td>19.00</td>
-                <td>17.00</td>
-                <td style="color:var(--green); font-weight:600;">20.69</td>
-                <td>21.07</td>
-                <td style="color:var(--green);">29.76</td>
-                <td style="color:var(--red);">3.16</td>
+                <td>2.00</td>
+                <td>2.00</td>
+                <td style="color:var(--green); font-weight:600;">18.51</td>
+                <td>18.51</td>
+                <td style="color:var(--green);">18.87</td>
+                <td style="color:var(--red);">18.15</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1552</td>
-                <td>温琪</td>
-                <td>汇添富基金</td>
-                <td>9.00</td>
-                <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">20.68</td>
-                <td>10.59</td>
-                <td style="color:var(--green);">48.00</td>
-                <td style="color:var(--red);">3.75</td>
+                <td>贾鹏</td>
+                <td>银华基金</td>
+                <td>4.00</td>
+                <td>4.00</td>
+                <td style="color:var(--green); font-weight:600;">18.49</td>
+                <td>22.16</td>
+                <td style="color:var(--green);">27.58</td>
+                <td style="color:var(--red);">2.06</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1553</td>
-                <td>徐林明</td>
-                <td>华宝基金</td>
-                <td>10.00</td>
-                <td>8.00</td>
-                <td style="color:var(--green); font-weight:600;">20.66</td>
-                <td>25.39</td>
-                <td style="color:var(--green);">30.02</td>
-                <td style="color:var(--red);">1.94</td>
+                <td>陆志明</td>
+                <td>广发基金</td>
+                <td>29.00</td>
+                <td>17.00</td>
+                <td style="color:var(--green); font-weight:600;">18.47</td>
+                <td>14.13</td>
+                <td style="color:var(--green);">96.06</td>
+                <td style="color:var(--red);">-22.99</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1554</td>
-                <td>王凌霄</td>
-                <td>博时基金</td>
-                <td>4.00</td>
-                <td>4.00</td>
-                <td style="color:var(--green); font-weight:600;">20.66</td>
-                <td>20.69</td>
-                <td style="color:var(--green);">29.45</td>
-                <td style="color:var(--red);">11.79</td>
+                <td>刘淑生</td>
+                <td>华安基金</td>
+                <td>1.00</td>
+                <td>1.00</td>
+                <td style="color:var(--green); font-weight:600;">18.46</td>
+                <td>18.46</td>
+                <td style="color:var(--green);">18.46</td>
+                <td style="color:var(--red);">18.46</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1555</td>
-                <td>赵鹏飞</td>
-                <td>汇添富基金</td>
-                <td>6.00</td>
-                <td>5.00</td>
-                <td style="color:var(--green); font-weight:600;">20.64</td>
-                <td>24.98</td>
-                <td style="color:var(--green);">35.98</td>
-                <td style="color:var(--red);">3.44</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1556</td>
                 <td>严筱娴</td>
                 <td>华夏基金</td>
                 <td>23.00</td>
                 <td>10.00</td>
-                <td style="color:var(--green); font-weight:600;">20.60</td>
-                <td>5.94</td>
-                <td style="color:var(--green);">90.90</td>
-                <td style="color:var(--red);">-20.85</td>
+                <td style="color:var(--green); font-weight:600;">18.36</td>
+                <td>5.08</td>
+                <td style="color:var(--green);">82.56</td>
+                <td style="color:var(--red);">-19.41</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1556</td>
+                <td>范佳瓅</td>
+                <td>南方基金</td>
+                <td>6.00</td>
+                <td>4.00</td>
+                <td style="color:var(--green); font-weight:600;">18.34</td>
+                <td>18.35</td>
+                <td style="color:var(--green);">19.69</td>
+                <td style="color:var(--red);">16.97</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1557</td>
-                <td>高晖</td>
-                <td>博时基金</td>
-                <td>7.00</td>
-                <td>5.00</td>
-                <td style="color:var(--green); font-weight:600;">20.58</td>
-                <td>31.39</td>
-                <td style="color:var(--green);">31.91</td>
-                <td style="color:var(--red);">3.66</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1558</td>
-                <td>夏祥全</td>
-                <td>申万菱信基金</td>
-                <td>6.00</td>
-                <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">20.52</td>
-                <td>21.73</td>
-                <td style="color:var(--green);">33.43</td>
-                <td style="color:var(--red);">6.56</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1559</td>
-                <td>李育鑫</td>
-                <td>广发基金</td>
-                <td>13.00</td>
-                <td>5.00</td>
-                <td style="color:var(--green); font-weight:600;">20.51</td>
-                <td>21.81</td>
-                <td style="color:var(--green);">23.22</td>
-                <td style="color:var(--red);">17.36</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1560</td>
-                <td>母亚乾</td>
-                <td>工银瑞信基金</td>
-                <td>9.00</td>
-                <td>8.00</td>
-                <td style="color:var(--green); font-weight:600;">20.50</td>
-                <td>20.27</td>
-                <td style="color:var(--green);">42.86</td>
-                <td style="color:var(--red);">0.65</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1561</td>
-                <td>陈麟瓒</td>
-                <td>大成基金</td>
-                <td>2.00</td>
-                <td>2.00</td>
-                <td style="color:var(--green); font-weight:600;">20.46</td>
-                <td>20.46</td>
-                <td style="color:var(--green);">20.50</td>
-                <td style="color:var(--red);">20.42</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1562</td>
-                <td>刘重晋</td>
-                <td>中金基金</td>
-                <td>12.00</td>
-                <td>10.00</td>
-                <td style="color:var(--green); font-weight:600;">20.45</td>
-                <td>32.62</td>
-                <td style="color:var(--green);">41.75</td>
-                <td style="color:var(--red);">-29.16</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1563</td>
                 <td>王翰生</td>
                 <td>南方基金</td>
                 <td>10.00</td>
                 <td>10.00</td>
-                <td style="color:var(--green); font-weight:600;">20.26</td>
-                <td>17.51</td>
-                <td style="color:var(--green);">46.27</td>
-                <td style="color:var(--red);">1.13</td>
+                <td style="color:var(--green); font-weight:600;">18.27</td>
+                <td>15.29</td>
+                <td style="color:var(--green);">42.27</td>
+                <td style="color:var(--red);">0.94</td>
             </tr>
             
             <tr>
-                <td style="font-weight:600;">1564</td>
-                <td>郭锐</td>
-                <td>招商基金</td>
-                <td>12.00</td>
-                <td>10.00</td>
-                <td style="color:var(--green); font-weight:600;">20.26</td>
-                <td>25.21</td>
-                <td style="color:var(--green);">38.68</td>
-                <td style="color:var(--red);">3.16</td>
+                <td style="font-weight:600;">1558</td>
+                <td>王玉</td>
+                <td>国泰基金</td>
+                <td>16.00</td>
+                <td>7.00</td>
+                <td style="color:var(--green); font-weight:600;">18.25</td>
+                <td>3.15</td>
+                <td style="color:var(--green);">39.78</td>
+                <td style="color:var(--red);">1.54</td>
             </tr>
             
             <tr>
-                <td style="font-weight:600;">1565</td>
-                <td>钟伟</td>
-                <td>中加基金</td>
-                <td>9.00</td>
-                <td>9.00</td>
-                <td style="color:var(--green); font-weight:600;">20.23</td>
-                <td>8.28</td>
-                <td style="color:var(--green);">46.59</td>
-                <td style="color:var(--red);">3.72</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1566</td>
-                <td>王浩</td>
+                <td style="font-weight:600;">1559</td>
+                <td>郑澄然</td>
                 <td>广发基金</td>
-                <td>4.00</td>
-                <td>4.00</td>
-                <td style="color:var(--green); font-weight:600;">20.21</td>
-                <td>20.21</td>
-                <td style="color:var(--green);">22.81</td>
-                <td style="color:var(--red);">17.61</td>
+                <td>12.00</td>
+                <td>12.00</td>
+                <td style="color:var(--green); font-weight:600;">18.21</td>
+                <td>10.38</td>
+                <td style="color:var(--green);">75.12</td>
+                <td style="color:var(--red);">-6.60</td>
             </tr>
             
             <tr>
-                <td style="font-weight:600;">1567</td>
-                <td>蔡铮</td>
-                <td>交银施罗德基金</td>
-                <td>15.00</td>
-                <td>8.00</td>
-                <td style="color:var(--green); font-weight:600;">20.18</td>
-                <td>-1.15</td>
-                <td style="color:var(--green);">103.57</td>
-                <td style="color:var(--red);">-27.14</td>
+                <td style="font-weight:600;">1560</td>
+                <td>倪瑞超</td>
+                <td>安信基金</td>
+                <td>2.00</td>
+                <td>2.00</td>
+                <td style="color:var(--green); font-weight:600;">18.16</td>
+                <td>18.16</td>
+                <td style="color:var(--green);">18.40</td>
+                <td style="color:var(--red);">17.92</td>
             </tr>
             
             <tr>
-                <td style="font-weight:600;">1568</td>
+                <td style="font-weight:600;">1561</td>
+                <td>谭珏娜</td>
+                <td>安信基金</td>
+                <td>2.00</td>
+                <td>2.00</td>
+                <td style="color:var(--green); font-weight:600;">18.16</td>
+                <td>18.16</td>
+                <td style="color:var(--green);">18.40</td>
+                <td style="color:var(--red);">17.92</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1562</td>
                 <td>孙庆</td>
                 <td>惠升基金</td>
                 <td>6.00</td>
                 <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">20.16</td>
-                <td>10.21</td>
-                <td style="color:var(--green);">48.60</td>
-                <td style="color:var(--red);">1.92</td>
+                <td style="color:var(--green); font-weight:600;">18.15</td>
+                <td>8.50</td>
+                <td style="color:var(--green);">44.57</td>
+                <td style="color:var(--red);">1.61</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1563</td>
+                <td>曾辉</td>
+                <td>国泰基金</td>
+                <td>14.00</td>
+                <td>8.00</td>
+                <td style="color:var(--green); font-weight:600;">18.11</td>
+                <td>18.40</td>
+                <td style="color:var(--green);">30.15</td>
+                <td style="color:var(--red);">3.77</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1564</td>
+                <td>王明旭</td>
+                <td>广发基金</td>
+                <td>15.00</td>
+                <td>15.00</td>
+                <td style="color:var(--green); font-weight:600;">18.06</td>
+                <td>13.97</td>
+                <td style="color:var(--green);">39.61</td>
+                <td style="color:var(--red);">7.68</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1565</td>
+                <td>刘方旭</td>
+                <td>兴业基金</td>
+                <td>7.00</td>
+                <td>7.00</td>
+                <td style="color:var(--green); font-weight:600;">18.06</td>
+                <td>28.06</td>
+                <td style="color:var(--green);">28.91</td>
+                <td style="color:var(--red);">1.15</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1566</td>
+                <td>章鸽武</td>
+                <td>招商基金</td>
+                <td>9.00</td>
+                <td>7.00</td>
+                <td style="color:var(--green); font-weight:600;">17.99</td>
+                <td>22.04</td>
+                <td style="color:var(--green);">25.55</td>
+                <td style="color:var(--red);">9.78</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1567</td>
+                <td>吕俏</td>
+                <td>天弘基金</td>
+                <td>2.00</td>
+                <td>2.00</td>
+                <td style="color:var(--green); font-weight:600;">17.93</td>
+                <td>17.93</td>
+                <td style="color:var(--green);">18.16</td>
+                <td style="color:var(--red);">17.69</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1568</td>
+                <td>温琪</td>
+                <td>汇添富基金</td>
+                <td>9.00</td>
+                <td>6.00</td>
+                <td style="color:var(--green); font-weight:600;">17.92</td>
+                <td>7.63</td>
+                <td style="color:var(--green);">43.06</td>
+                <td style="color:var(--red);">3.34</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1569</td>
-                <td>袁婕</td>
-                <td>长信基金</td>
+                <td>张金涛</td>
+                <td>华宝基金</td>
                 <td>6.00</td>
-                <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">20.15</td>
-                <td>6.19</td>
-                <td style="color:var(--green);">69.20</td>
-                <td style="color:var(--red);">-14.80</td>
+                <td>5.00</td>
+                <td style="color:var(--green); font-weight:600;">17.89</td>
+                <td>-1.77</td>
+                <td style="color:var(--green);">96.77</td>
+                <td style="color:var(--red);">-2.39</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1570</td>
-                <td>温泉</td>
-                <td>易方达基金</td>
+                <td>尹涛</td>
+                <td>民生加银基金</td>
                 <td>6.00</td>
                 <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">20.08</td>
-                <td>10.41</td>
-                <td style="color:var(--green);">42.89</td>
-                <td style="color:var(--red);">7.02</td>
+                <td style="color:var(--green); font-weight:600;">17.89</td>
+                <td>16.73</td>
+                <td style="color:var(--green);">29.98</td>
+                <td style="color:var(--red);">7.09</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1571</td>
-                <td>林晶</td>
-                <td>华夏基金</td>
-                <td>4.00</td>
-                <td>4.00</td>
-                <td style="color:var(--green); font-weight:600;">20.06</td>
-                <td>20.97</td>
-                <td style="color:var(--green);">38.18</td>
-                <td style="color:var(--red);">0.12</td>
+                <td>刘晓晨</td>
+                <td>宏利基金</td>
+                <td>15.00</td>
+                <td>10.00</td>
+                <td style="color:var(--green); font-weight:600;">17.82</td>
+                <td>16.70</td>
+                <td style="color:var(--green);">35.76</td>
+                <td style="color:var(--red);">-0.58</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1572</td>
-                <td>丁凯琳</td>
-                <td>兴证全球基金</td>
-                <td>8.00</td>
-                <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">20.05</td>
-                <td>21.98</td>
-                <td style="color:var(--green);">33.90</td>
-                <td style="color:var(--red);">4.42</td>
+                <td>姚石</td>
+                <td>光大保德信基金</td>
+                <td>7.00</td>
+                <td>1.00</td>
+                <td style="color:var(--green); font-weight:600;">17.78</td>
+                <td>17.78</td>
+                <td style="color:var(--green);">17.78</td>
+                <td style="color:var(--red);">17.78</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1573</td>
-                <td>刘腾飞</td>
-                <td>新沃基金</td>
-                <td>3.00</td>
-                <td>3.00</td>
-                <td style="color:var(--green); font-weight:600;">20.05</td>
-                <td>27.99</td>
-                <td style="color:var(--green);">28.60</td>
-                <td style="color:var(--red);">3.57</td>
+                <td>韦钰</td>
+                <td>汇丰晋信基金</td>
+                <td>5.00</td>
+                <td>5.00</td>
+                <td style="color:var(--green); font-weight:600;">17.78</td>
+                <td>9.94</td>
+                <td style="color:var(--green);">31.31</td>
+                <td style="color:var(--red);">7.61</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1574</td>
-                <td>周思捷</td>
-                <td>国投瑞银基金</td>
-                <td>11.00</td>
-                <td>11.00</td>
-                <td style="color:var(--green); font-weight:600;">20.00</td>
-                <td>21.78</td>
-                <td style="color:var(--green);">26.05</td>
-                <td style="color:var(--red);">10.64</td>
+                <td>郭锐</td>
+                <td>招商基金</td>
+                <td>12.00</td>
+                <td>10.00</td>
+                <td style="color:var(--green); font-weight:600;">17.76</td>
+                <td>20.38</td>
+                <td style="color:var(--green);">36.22</td>
+                <td style="color:var(--red);">3.26</td>
             </tr>
             
             <tr>
@@ -354,310 +368,310 @@
                 <td>银华基金</td>
                 <td>5.00</td>
                 <td>5.00</td>
-                <td style="color:var(--green); font-weight:600;">19.81</td>
-                <td>12.73</td>
-                <td style="color:var(--green);">62.88</td>
-                <td style="color:var(--red);">4.93</td>
+                <td style="color:var(--green); font-weight:600;">17.75</td>
+                <td>11.30</td>
+                <td style="color:var(--green);">56.33</td>
+                <td style="color:var(--red);">4.48</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1576</td>
-                <td>叶萌</td>
-                <td>渤海汇金</td>
-                <td>6.00</td>
-                <td>4.00</td>
-                <td style="color:var(--green); font-weight:600;">19.80</td>
-                <td>19.76</td>
-                <td style="color:var(--green);">39.78</td>
-                <td style="color:var(--red);">-0.09</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1577</td>
-                <td>佘金花</td>
-                <td>朱雀基金</td>
-                <td>2.00</td>
-                <td>2.00</td>
-                <td style="color:var(--green); font-weight:600;">19.77</td>
-                <td>19.77</td>
-                <td style="color:var(--green);">20.12</td>
-                <td style="color:var(--red);">19.42</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1578</td>
-                <td>孙梦祎</td>
-                <td>华宝基金</td>
-                <td>2.00</td>
-                <td>2.00</td>
-                <td style="color:var(--green); font-weight:600;">19.77</td>
-                <td>19.77</td>
-                <td style="color:var(--green);">19.98</td>
-                <td style="color:var(--red);">19.55</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1579</td>
-                <td>张金志</td>
-                <td>华夏基金</td>
-                <td>37.00</td>
-                <td>26.00</td>
-                <td style="color:var(--green); font-weight:600;">19.74</td>
-                <td>5.44</td>
-                <td style="color:var(--green);">94.63</td>
-                <td style="color:var(--red);">-11.89</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1580</td>
-                <td>杜晓海</td>
-                <td>海富通基金</td>
-                <td>13.00</td>
-                <td>12.00</td>
-                <td style="color:var(--green); font-weight:600;">19.73</td>
-                <td>9.88</td>
-                <td style="color:var(--green);">61.40</td>
-                <td style="color:var(--red);">-18.02</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1581</td>
-                <td>梁溥森</td>
-                <td>前海开源基金</td>
-                <td>18.00</td>
-                <td>4.00</td>
-                <td style="color:var(--green); font-weight:600;">19.63</td>
-                <td>19.61</td>
-                <td style="color:var(--green);">28.05</td>
-                <td style="color:var(--red);">11.26</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1582</td>
-                <td>何移直</td>
-                <td>华安基金</td>
-                <td>6.00</td>
-                <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">19.57</td>
-                <td>23.11</td>
-                <td style="color:var(--green);">24.11</td>
-                <td style="color:var(--red);">11.43</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1583</td>
-                <td>李巍宇</td>
-                <td>宝盈基金</td>
-                <td>5.00</td>
-                <td>5.00</td>
-                <td style="color:var(--green); font-weight:600;">19.50</td>
-                <td>22.52</td>
-                <td style="color:var(--green);">23.61</td>
-                <td style="color:var(--red);">13.73</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1584</td>
-                <td>郑玥</td>
-                <td>摩根基金(中国)</td>
-                <td>2.00</td>
-                <td>2.00</td>
-                <td style="color:var(--green); font-weight:600;">19.43</td>
-                <td>19.43</td>
-                <td style="color:var(--green);">19.73</td>
-                <td style="color:var(--red);">19.12</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1585</td>
-                <td>王海涛</td>
-                <td>广发基金</td>
-                <td>8.00</td>
-                <td>8.00</td>
-                <td style="color:var(--green); font-weight:600;">19.32</td>
-                <td>16.72</td>
-                <td style="color:var(--green);">38.71</td>
-                <td style="color:var(--red);">5.21</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1586</td>
-                <td>吴鹏</td>
-                <td>博时基金</td>
-                <td>6.00</td>
-                <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">19.27</td>
-                <td>19.00</td>
-                <td style="color:var(--green);">21.17</td>
-                <td style="color:var(--red);">17.61</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1587</td>
-                <td>冷雪源</td>
-                <td>中泰证券(上海)资管</td>
-                <td>2.00</td>
-                <td>2.00</td>
-                <td style="color:var(--green); font-weight:600;">19.21</td>
-                <td>19.21</td>
-                <td style="color:var(--green);">19.51</td>
-                <td style="color:var(--red);">18.91</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1588</td>
-                <td>张梦珂</td>
-                <td>农银汇理基金</td>
-                <td>6.00</td>
-                <td>5.00</td>
-                <td style="color:var(--green); font-weight:600;">19.21</td>
-                <td>19.08</td>
-                <td style="color:var(--green);">24.73</td>
-                <td style="color:var(--red);">9.72</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1589</td>
-                <td>焦文龙</td>
-                <td>工银瑞信基金</td>
-                <td>12.00</td>
-                <td>7.00</td>
-                <td style="color:var(--green); font-weight:600;">19.20</td>
-                <td>10.54</td>
-                <td style="color:var(--green);">38.83</td>
-                <td style="color:var(--red);">4.90</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1590</td>
-                <td>徐中华</td>
-                <td>渤海汇金</td>
-                <td>4.00</td>
-                <td>2.00</td>
-                <td style="color:var(--green); font-weight:600;">19.20</td>
-                <td>19.20</td>
-                <td style="color:var(--green);">19.25</td>
-                <td style="color:var(--red);">19.14</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1591</td>
-                <td>马晓东</td>
-                <td>安信基金</td>
-                <td>10.00</td>
-                <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">19.18</td>
-                <td>6.90</td>
-                <td style="color:var(--green);">48.56</td>
-                <td style="color:var(--red);">2.14</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1592</td>
-                <td>张湘龙</td>
-                <td>建信基金</td>
-                <td>6.00</td>
-                <td>6.00</td>
-                <td style="color:var(--green); font-weight:600;">19.16</td>
-                <td>20.96</td>
-                <td style="color:var(--green);">30.62</td>
-                <td style="color:var(--red);">0.44</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1593</td>
-                <td>张延闽</td>
-                <td>南方基金</td>
-                <td>8.00</td>
-                <td>7.00</td>
-                <td style="color:var(--green); font-weight:600;">19.09</td>
-                <td>19.42</td>
-                <td style="color:var(--green);">22.97</td>
-                <td style="color:var(--red);">14.92</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1594</td>
-                <td>陈恒</td>
-                <td>华商基金</td>
-                <td>5.00</td>
-                <td>5.00</td>
-                <td style="color:var(--green); font-weight:600;">19.09</td>
-                <td>16.69</td>
-                <td style="color:var(--green);">26.17</td>
-                <td style="color:var(--red);">16.09</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1595</td>
-                <td>张韵</td>
-                <td>招商基金</td>
-                <td>7.00</td>
-                <td>7.00</td>
-                <td style="color:var(--green); font-weight:600;">19.07</td>
-                <td>23.65</td>
-                <td style="color:var(--green);">26.12</td>
-                <td style="color:var(--red);">6.16</td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:600;">1596</td>
                 <td>张昆</td>
                 <td>恒生前海基金</td>
                 <td>4.00</td>
                 <td>2.00</td>
-                <td style="color:var(--green); font-weight:600;">19.05</td>
-                <td>19.05</td>
-                <td style="color:var(--green);">19.15</td>
-                <td style="color:var(--red);">18.96</td>
+                <td style="color:var(--green); font-weight:600;">17.66</td>
+                <td>17.66</td>
+                <td style="color:var(--green);">17.74</td>
+                <td style="color:var(--red);">17.57</td>
             </tr>
             
             <tr>
-                <td style="font-weight:600;">1597</td>
-                <td>周双志</td>
+                <td style="font-weight:600;">1577</td>
+                <td>张金志</td>
+                <td>华夏基金</td>
+                <td>37.00</td>
+                <td>26.00</td>
+                <td style="color:var(--green); font-weight:600;">17.64</td>
+                <td>4.39</td>
+                <td style="color:var(--green);">86.06</td>
+                <td style="color:var(--red);">-11.78</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1578</td>
+                <td>李浩玄</td>
+                <td>浦银安盛基金</td>
+                <td>10.00</td>
+                <td>10.00</td>
+                <td style="color:var(--green); font-weight:600;">17.64</td>
+                <td>12.58</td>
+                <td style="color:var(--green);">27.05</td>
+                <td style="color:var(--red);">11.38</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1579</td>
+                <td>丁小丹</td>
+                <td>国泰基金</td>
+                <td>5.00</td>
+                <td>5.00</td>
+                <td style="color:var(--green); font-weight:600;">17.63</td>
+                <td>12.04</td>
+                <td style="color:var(--green);">40.51</td>
+                <td style="color:var(--red);">11.10</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1580</td>
+                <td>盛骅</td>
+                <td>华安基金</td>
+                <td>3.00</td>
+                <td>3.00</td>
+                <td style="color:var(--green); font-weight:600;">17.62</td>
+                <td>21.28</td>
+                <td style="color:var(--green);">21.93</td>
+                <td style="color:var(--red);">9.66</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1581</td>
+                <td>朴虹睿</td>
+                <td>国投瑞银基金</td>
+                <td>2.00</td>
+                <td>2.00</td>
+                <td style="color:var(--green); font-weight:600;">17.61</td>
+                <td>17.61</td>
+                <td style="color:var(--green);">17.97</td>
+                <td style="color:var(--red);">17.25</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1582</td>
+                <td>张旭</td>
+                <td>东兴基金</td>
+                <td>6.00</td>
+                <td>6.00</td>
+                <td style="color:var(--green); font-weight:600;">17.60</td>
+                <td>27.85</td>
+                <td style="color:var(--green);">29.45</td>
+                <td style="color:var(--red);">-4.62</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1583</td>
+                <td>周思捷</td>
+                <td>国投瑞银基金</td>
+                <td>11.00</td>
+                <td>11.00</td>
+                <td style="color:var(--green); font-weight:600;">17.58</td>
+                <td>19.29</td>
+                <td style="color:var(--green);">23.41</td>
+                <td style="color:var(--red);">9.07</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1584</td>
+                <td>杜晓海</td>
+                <td>海富通基金</td>
+                <td>13.00</td>
+                <td>12.00</td>
+                <td style="color:var(--green); font-weight:600;">17.54</td>
+                <td>9.07</td>
+                <td style="color:var(--green);">56.17</td>
+                <td style="color:var(--red);">-18.29</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1585</td>
+                <td>林朝雄</td>
+                <td>南方基金</td>
+                <td>4.00</td>
+                <td>4.00</td>
+                <td style="color:var(--green); font-weight:600;">17.49</td>
+                <td>17.46</td>
+                <td style="color:var(--green);">22.64</td>
+                <td style="color:var(--red);">12.39</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1586</td>
+                <td>杨喆</td>
+                <td>广发基金</td>
+                <td>18.00</td>
+                <td>12.00</td>
+                <td style="color:var(--green); font-weight:600;">17.44</td>
+                <td>16.93</td>
+                <td style="color:var(--green);">37.02</td>
+                <td style="color:var(--red);">3.24</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1587</td>
+                <td>李赫</td>
                 <td>前海开源基金</td>
-                <td>3.00</td>
-                <td>3.00</td>
-                <td style="color:var(--green); font-weight:600;">19.04</td>
-                <td>27.35</td>
-                <td style="color:var(--green);">27.61</td>
-                <td style="color:var(--red);">2.17</td>
+                <td>8.00</td>
+                <td>4.00</td>
+                <td style="color:var(--green); font-weight:600;">17.43</td>
+                <td>14.39</td>
+                <td style="color:var(--green);">34.65</td>
+                <td style="color:var(--red);">6.27</td>
             </tr>
             
             <tr>
-                <td style="font-weight:600;">1598</td>
+                <td style="font-weight:600;">1588</td>
                 <td>刘方正</td>
                 <td>鹏华基金</td>
                 <td>19.00</td>
                 <td>15.00</td>
-                <td style="color:var(--green); font-weight:600;">18.99</td>
-                <td>6.94</td>
-                <td style="color:var(--green);">54.47</td>
-                <td style="color:var(--red);">1.55</td>
+                <td style="color:var(--green); font-weight:600;">17.41</td>
+                <td>7.22</td>
+                <td style="color:var(--green);">47.06</td>
+                <td style="color:var(--red);">1.50</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1589</td>
+                <td>马晓东</td>
+                <td>安信基金</td>
+                <td>10.00</td>
+                <td>6.00</td>
+                <td style="color:var(--green); font-weight:600;">17.40</td>
+                <td>5.91</td>
+                <td style="color:var(--green);">44.58</td>
+                <td style="color:var(--red);">1.79</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1590</td>
+                <td>楼慧源</td>
+                <td>交银施罗德基金</td>
+                <td>6.00</td>
+                <td>6.00</td>
+                <td style="color:var(--green); font-weight:600;">17.40</td>
+                <td>20.23</td>
+                <td style="color:var(--green);">21.67</td>
+                <td style="color:var(--red);">10.32</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1591</td>
+                <td>周雅雯</td>
+                <td>金鹰基金</td>
+                <td>5.00</td>
+                <td>3.00</td>
+                <td style="color:var(--green); font-weight:600;">17.39</td>
+                <td>17.35</td>
+                <td style="color:var(--green);">17.58</td>
+                <td style="color:var(--red);">17.23</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1592</td>
+                <td>刘芳</td>
+                <td>益民基金</td>
+                <td>2.00</td>
+                <td>2.00</td>
+                <td style="color:var(--green); font-weight:600;">17.38</td>
+                <td>17.38</td>
+                <td style="color:var(--green);">17.51</td>
+                <td style="color:var(--red);">17.25</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1593</td>
+                <td>代宏坤</td>
+                <td>民生加银基金</td>
+                <td>8.00</td>
+                <td>5.00</td>
+                <td style="color:var(--green); font-weight:600;">17.35</td>
+                <td>18.88</td>
+                <td style="color:var(--green);">21.65</td>
+                <td style="color:var(--red);">6.82</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1594</td>
+                <td>李晗</td>
+                <td>创金合信基金</td>
+                <td>2.00</td>
+                <td>2.00</td>
+                <td style="color:var(--green); font-weight:600;">17.35</td>
+                <td>17.35</td>
+                <td style="color:var(--green);">17.64</td>
+                <td style="color:var(--red);">17.06</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1595</td>
+                <td>刘腾飞</td>
+                <td>新沃基金</td>
+                <td>3.00</td>
+                <td>3.00</td>
+                <td style="color:var(--green); font-weight:600;">17.34</td>
+                <td>25.55</td>
+                <td style="color:var(--green);">26.16</td>
+                <td style="color:var(--red);">0.30</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1596</td>
+                <td>张湘龙</td>
+                <td>建信基金</td>
+                <td>6.00</td>
+                <td>6.00</td>
+                <td style="color:var(--green); font-weight:600;">17.33</td>
+                <td>18.65</td>
+                <td style="color:var(--green);">29.75</td>
+                <td style="color:var(--red);">-0.37</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1597</td>
+                <td>范磊</td>
+                <td>诺安基金</td>
+                <td>2.00</td>
+                <td>2.00</td>
+                <td style="color:var(--green); font-weight:600;">17.29</td>
+                <td>17.29</td>
+                <td style="color:var(--green);">17.53</td>
+                <td style="color:var(--red);">17.04</td>
+            </tr>
+            
+            <tr>
+                <td style="font-weight:600;">1598</td>
+                <td>刘文杰</td>
+                <td>万家基金</td>
+                <td>6.00</td>
+                <td>4.00</td>
+                <td style="color:var(--green); font-weight:600;">17.28</td>
+                <td>17.28</td>
+                <td style="color:var(--green);">33.76</td>
+                <td style="color:var(--red);">0.80</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1599</td>
-                <td>王振鹏</td>
-                <td>招商基金</td>
+                <td>王海涛</td>
+                <td>广发基金</td>
                 <td>8.00</td>
-                <td>4.00</td>
-                <td style="color:var(--green); font-weight:600;">18.95</td>
-                <td>18.89</td>
-                <td style="color:var(--green);">50.55</td>
-                <td style="color:var(--red);">-12.53</td>
+                <td>8.00</td>
+                <td style="color:var(--green); font-weight:600;">17.23</td>
+                <td>15.30</td>
+                <td style="color:var(--green);">34.18</td>
+                <td style="color:var(--red);">4.23</td>
             </tr>
             
             <tr>
                 <td style="font-weight:600;">1600</td>
-                <td>范刚强</td>
-                <td>招商基金</td>
-                <td>8.00</td>
+                <td>李树建</td>
+                <td>易方达基金</td>
+                <td>14.00</td>
                 <td>4.00</td>
-                <td style="color:var(--green); font-weight:600;">18.85</td>
-                <td>18.82</td>
-                <td style="color:var(--green);">29.65</td>
-                <td style="color:var(--red);">8.11</td>
+                <td style="color:var(--green); font-weight:600;">17.23</td>
+                <td>17.18</td>
+                <td style="color:var(--green);">27.48</td>
+                <td style="color:var(--red);">7.05</td>
             </tr>
             
             </tbody>
@@ -665,17 +679,22 @@
     </div>
     <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
         
-        <a href="managers_page31.html?date=20260701" class="btn btn-sm btn-outline">上一页</a>
+        <a href="managers_page31.html?date=20260702" class="btn btn-sm btn-outline">上一页</a>
         
         <span style="padding:5px 12px; font-size:13px;">32 / 75</span>
         
-        <a href="managers_page33.html?date=20260701" class="btn btn-sm btn-outline">下一页</a>
+        <a href="managers_page33.html?date=20260702" class="btn btn-sm btn-outline">下一页</a>
         
     </div>
 </div>
 
 
 </div>
+
+<footer class="site-footer">
+    <hr class="slender">
+    <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
+</footer>
 
 <script>
 function onDateChange(date) {
