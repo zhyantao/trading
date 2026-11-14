@@ -515,7 +515,7 @@
       })
       .catch(function (err) {
         console.error(err);
-        root.innerHTML = errorCard(err.message || err);
+        if (root) root.innerHTML = errorCard(err.message || err);
       });
   }
 
