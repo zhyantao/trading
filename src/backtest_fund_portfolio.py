@@ -66,82 +66,64 @@ def fetch_fund_nav(
 ) -> pd.Series:
     """
     抓取基金单位净值历史，返回 index=date, values=单位净值 的 Series。
-    带缓存到 cache_dir/nav_{fund_code}_*.csv。
+
+    增量模式：历史净值按标的持久缓存在 out/cache_series/nav_{code}.csv，
+    每天只通过 F10 lsjz 补拉「缓存最后日期 → 已发布最新净值日」这一小段。
+    ``cache_dir`` 仅为兼容旧调用签名保留（旧目录里带运行日期的缓存会自动迁移）。
     """
-    import akshare as ak
-    import requests
+    from incremental import SeriesCache, effective_end, fetch_fund_nav_range
 
-    if cache_dir is not None:
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        fp = cache_dir / f"nav_{fund_code}_{_to_yyyymmdd(start) if start else 'all'}_{_to_yyyymmdd(end) if end else 'all'}.csv"
-        if fp.exists() and fp.stat().st_size > 0:
-            df = pd.read_csv(fp)
-            if not df.empty and "日期" in df.columns and "单位净值" in df.columns:
-                df["日期"] = pd.to_datetime(df["日期"]).dt.date
-                s = pd.Series(df["单位净值"].values, index=df["日期"].values, name=fund_code)
-                if not s.empty:
-                    if start:
-                        s = s[s.index >= start]
-                    if end:
-                        s = s[s.index <= end]
-                    return s
-        if fp.exists():
-            fp.unlink()
+    if start is None:
+        start = date.today() - timedelta(days=365 * 3)
+    if end is None:
+        end = date.today()
+    # 净值未发布时不逐标的空跑：全流水线共用一次「最新净值日」探测结果
+    eff_end = min(effective_end(end), date.today())
 
-    last_exc: Exception | None = None
-    df = None
-    for _ in range(3):
-        try:
-            df = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
-            if df is not None and not df.empty:
-                break
-        except requests.exceptions.ConnectionError as e:
-            raise RuntimeError(f"网络连接失败（远端关闭连接），基金 {fund_code} 净值下载中止") from e
-        except Exception as e:
-            last_exc = e
-            time.sleep(max(1.0, sleep_s) * 2)
-    time.sleep(sleep_s)
+    def fetch_full() -> pd.Series:
+        """首建缓存或增量接口失效时，回退到 AkShare 全量净值。"""
+        import akshare as ak
+        import requests
 
-    if df is None or df.empty:
-        return pd.Series(dtype="float64", name=fund_code)
+        df = None
+        for _ in range(3):
+            try:
+                df = ak.fund_open_fund_info_em(symbol=fund_code, indicator="单位净值走势")
+                if df is not None and not df.empty:
+                    break
+            except requests.exceptions.ConnectionError as e:
+                raise RuntimeError(
+                    f"网络连接失败（远端关闭连接），基金 {fund_code} 净值下载中止"
+                ) from e
+            except Exception:
+                time.sleep(max(1.0, sleep_s) * 2)
+        time.sleep(sleep_s)
+        if df is None or df.empty:
+            return pd.Series(dtype="float64", name=fund_code)
+        date_col = next((c for c in df.columns if "日期" in str(c)), df.columns[0])
+        nav_col = next((c for c in df.columns if "单位净值" in str(c)), df.columns[1])
+        df = df.rename(columns={date_col: "日期", nav_col: "单位净值"})
+        df["日期"] = pd.to_datetime(df["日期"], errors="coerce").dt.date
+        df["单位净值"] = pd.to_numeric(df["单位净值"], errors="coerce")
+        df = df.dropna(subset=["单位净值"]).sort_values("日期")
+        return pd.Series(df["单位净值"].values, index=df["日期"].values, name=fund_code)
 
-    # 列名可能为中文：净值日期, 单位净值
-    date_col = next((c for c in df.columns if "日期" in str(c)), df.columns[0])
-    nav_col = next((c for c in df.columns if "单位净值" in str(c)), df.columns[1])
-    df = df.rename(columns={date_col: "日期", nav_col: "单位净值"})
-    df["日期"] = pd.to_datetime(df["日期"], errors="coerce").dt.date
-    df["单位净值"] = pd.to_numeric(df["单位净值"], errors="coerce")
-    df = df.dropna(subset=["单位净值"])
-    df = df.sort_values("日期")
-
-    if cache_dir is not None and not df.empty:
-        df[["日期", "单位净值"]].to_csv(fp, index=False, encoding="utf-8")
-
-    s = pd.Series(df["单位净值"].values, index=df["日期"].values, name=fund_code)
-    if start:
-        s = s[s.index >= start]
-    if end:
-        s = s[s.index <= end]
+    s = SeriesCache().get(
+        f"nav_{fund_code}",
+        start,
+        eff_end,
+        fetch_range=lambda d0, d1: fetch_fund_nav_range(fund_code, d0, d1),
+        fetch_full=fetch_full,
+    )
+    s.name = fund_code
     return s
 
 
 def fetch_trade_calendar() -> pd.Series:
-    import akshare as ak
-    import requests as _requests
+    """交易日历走共享 TTL 缓存，两个回测脚本不再各拉一次。"""
+    from incremental import get_trade_calendar
 
-    for attempt in range(3):
-        try:
-            cal = ak.tool_trade_date_hist_sina()
-            cal["trade_date"] = pd.to_datetime(cal["trade_date"])
-            return cal["trade_date"].sort_values().reset_index(drop=True)
-        except _requests.exceptions.ConnectionError:
-            if attempt == 2:
-                raise
-            time.sleep(3)
-        except Exception:
-            if attempt == 2:
-                raise
-            time.sleep(3)
+    return get_trade_calendar()
 
 
 def _nearest_trade_day(trade_days: pd.Series, d: date, direction: str = "next") -> date | None:
@@ -467,6 +449,9 @@ def main() -> None:
     if metrics.benchmark_return is not None:
         print(f"基准收益:   {metrics.benchmark_return*100:.2f}%")
         print(f"超额收益:   {metrics.excess_return*100:.2f}%")
+
+    from incremental import report
+    report("[incremental] 基金回测")
 
 
 if __name__ == "__main__":

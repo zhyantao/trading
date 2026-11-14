@@ -95,22 +95,10 @@ def _lot_round_down(shares: float, lot: int = 100) -> int:
 
 
 def fetch_trade_calendar() -> pd.Series:
-    import akshare as ak
-    import requests as _requests
+    """交易日历走共享 TTL 缓存，两个回测脚本不再各拉一次。"""
+    from incremental import get_trade_calendar
 
-    for attempt in range(3):
-        try:
-            cal = ak.tool_trade_date_hist_sina()
-            cal["trade_date"] = pd.to_datetime(cal["trade_date"])
-            return cal["trade_date"].sort_values().reset_index(drop=True)
-        except _requests.exceptions.ConnectionError:
-            if attempt == 2:
-                raise
-            time.sleep(3)
-        except Exception:
-            if attempt == 2:
-                raise
-            time.sleep(3)
+    return get_trade_calendar()
 
 
 def _process_quarter_holdings(raw: pd.DataFrame, out: dict[date, pd.DataFrame]) -> None:
@@ -162,55 +150,54 @@ def fetch_stock_prices(
     cache_dir: Path | None = None,
     sleep_s: float = 0.05,
 ) -> pd.Series:
-    """返回：index=日期(date), value=收盘(float)"""
-    if cache_dir is not None:
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        fp = cache_dir / f"{code}_{adjust}_{_to_yyyymmdd(start)}_{_to_yyyymmdd(end)}.csv"
-        if fp.exists() and fp.stat().st_size > 0:
-            df = pd.read_csv(fp)
-            if not df.empty and "日期" in df.columns and "收盘" in df.columns:
-                df["日期"] = pd.to_datetime(df["日期"]).dt.date
-                s = pd.Series(df["收盘"].values, index=df["日期"].values, name=code)
-                if not s.empty:
-                    return s
-        # 缓存无效则删除，重新下载
-        if fp.exists():
-            fp.unlink()
+    """返回：index=日期(date), value=收盘(float)。
 
-    import akshare as ak
+    东方财富日线接口本身支持起止日期，因此直接按「缓存缺口区间」请求：
+    首次建缓存拉近 3 年，之后每天只拉新增的几个交易日。
+    ``cache_dir`` 仅为兼容旧调用签名保留（旧缓存会自动迁移）。
+    """
+    from incremental import SeriesCache, effective_end
 
-    import requests as _requests
+    eff_end = min(effective_end(end), date.today())
 
-    df = None
-    last_exc: Exception | None = None
-    for _ in range(3):
-        try:
-            df = ak.stock_zh_a_hist(
-                symbol=code,
-                period="daily",
-                start_date=_to_yyyymmdd(start),
-                end_date=_to_yyyymmdd(end),
-                adjust=adjust,
-            )
-            last_exc = None
-            break
-        except _requests.exceptions.ConnectionError as e:
-            # 远端关闭连接，不重试
-            raise RuntimeError(f"网络连接失败（远端关闭连接），股票 {code} 数据下载中止") from e
-        except Exception as e:
-            last_exc = e
-            time.sleep(max(1.0, sleep_s) * 2)
-    time.sleep(sleep_s)
-    if df is None or df.empty:
-        s = pd.Series(dtype="float64", name=code)
-    else:
+    def fetch_range(d0: date, d1: date) -> pd.Series:
+        import akshare as ak
+        import requests as _requests
+
+        df = None
+        for _ in range(3):
+            try:
+                df = ak.stock_zh_a_hist(
+                    symbol=code,
+                    period="daily",
+                    start_date=_to_yyyymmdd(d0),
+                    end_date=_to_yyyymmdd(d1),
+                    adjust=adjust,
+                )
+                break
+            except _requests.exceptions.ConnectionError as e:
+                raise RuntimeError(
+                    f"网络连接失败（远端关闭连接），股票 {code} 数据下载中止"
+                ) from e
+            except Exception:
+                time.sleep(max(1.0, sleep_s) * 2)
+        time.sleep(sleep_s)
+        if df is None or df.empty:
+            return pd.Series(dtype="float64", name=code)
         df["日期"] = pd.to_datetime(df["日期"], errors="coerce").dt.date
         df["收盘"] = pd.to_numeric(df["收盘"], errors="coerce")
         df = df.dropna(subset=["收盘"])
-        s = pd.Series(df["收盘"].values, index=df["日期"].values, name=code)
+        return pd.Series(df["收盘"].values, index=df["日期"].values, name=code)
 
-    if cache_dir is not None and not s.empty:
-        pd.DataFrame({"日期": list(s.index), "收盘": list(s.values)}).to_csv(fp, index=False, encoding="utf-8")
+    s = SeriesCache().get(
+        f"{code}_{adjust}",
+        start,
+        eff_end,
+        fetch_range=fetch_range,
+        # 前复权价会随除权整体重算，每 7 天重建一次历史，避免基准漂移
+        rebuild_after_days=7 if adjust else None,
+    )
+    s.name = code
     return s
 
 
@@ -590,6 +577,9 @@ def main() -> None:
     if metrics.benchmark_return is not None:
         print(f"基准收益:   {metrics.benchmark_return*100:.2f}%")
         print(f"超额收益:   {metrics.excess_return*100:.2f}%")
+
+    from incremental import report
+    report("[incremental] 绩优经理回测")
 
 
 if __name__ == "__main__":

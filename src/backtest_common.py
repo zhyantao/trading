@@ -222,58 +222,47 @@ def fetch_benchmark(
 ) -> pd.Series:
     """
     获取基准指数日线，返回 index=date, values=收盘价 的 Series。
-    支持缓存到 cache_dir。
+
+    该接口（新浪）只能一次性返回全部历史、没有区间参数，因此改为
+    「按标的固定缓存 + 当天最多刷新一次」：两个回测脚本共用同一份，
+    避免每个脚本都把整条指数历史重拉一遍。``cache_dir`` 为兼容旧签名保留。
     """
-    import akshare as ak
+    from incremental import SeriesCache, effective_end
 
     if start is None:
         start = date.today().replace(year=date.today().year - 3)
     if end is None:
         end = date.today()
+    eff_end = min(effective_end(end), date.today())
 
-    def _yyyymmdd(d: date) -> str:
-        return d.strftime("%Y%m%d")
+    def fetch_full() -> pd.Series:
+        import akshare as ak
+        import requests as _requests
 
-    # 检查缓存
-    if cache_dir is not None:
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        fp = cache_dir / f"benchmark_{symbol}_{_yyyymmdd(start)}_{_yyyymmdd(end)}.csv"
-        if fp.exists() and fp.stat().st_size > 0:
-            df = pd.read_csv(fp)
-            if not df.empty and "日期" in df.columns and "收盘" in df.columns:
-                df["日期"] = pd.to_datetime(df["日期"]).dt.date
-                s = pd.Series(df["收盘"].values, index=df["日期"].values, name=symbol)
-                if not s.empty:
-                    return s
-        if fp.exists():
-            fp.unlink()
+        df = None
+        for _ in range(3):
+            try:
+                df = ak.stock_zh_index_daily(symbol=symbol)
+                if df is not None and not df.empty:
+                    break
+            except _requests.exceptions.ConnectionError as e:
+                raise RuntimeError(
+                    f"网络连接失败（远端关闭连接），基准指数 {symbol} 数据下载中止"
+                ) from e
+            except Exception:
+                time.sleep(max(1.0, sleep_s) * 2)
+        time.sleep(sleep_s)
+        if df is None or df.empty:
+            return pd.Series(dtype="float64", name=symbol)
+        idx = pd.to_datetime(df["date"], errors="coerce").dt.date
+        vals = pd.to_numeric(df["close"], errors="coerce")
+        s = pd.Series(vals.values, index=idx, name=symbol).dropna().sort_index()
+        return s
 
-    import akshare as ak
-    import requests as _requests
-
-    last_exc: Exception | None = None
-    for _ in range(3):
-        try:
-            df = ak.stock_zh_index_daily(symbol=symbol)
-            if df is not None and not df.empty:
-                break
-        except _requests.exceptions.ConnectionError as e:
-            raise RuntimeError(f"网络连接失败（远端关闭连接），基准指数 {symbol} 数据下载中止") from e
-        except Exception as e:
-            last_exc = e
-            time.sleep(max(1.0, sleep_s) * 2)
-    time.sleep(sleep_s)
-
-    if df is None or df.empty:
-        s = pd.Series(dtype="float64", name=symbol)
-    else:
-        df["date"] = pd.to_datetime(df["date"], errors="coerce").dt.date
-        df = df[(df["date"] >= start) & (df["date"] <= end)]
-        s = pd.Series(df["close"].values, index=df["date"].values, name=symbol)
-
-    if cache_dir is not None and not s.empty:
-        pd.DataFrame({"日期": list(s.index), "收盘": list(s.values)}).to_csv(fp, index=False, encoding="utf-8")
-
+    s = SeriesCache().get(
+        f"benchmark_{symbol}", start, eff_end, fetch_full=fetch_full, daily_refresh=True
+    )
+    s.name = symbol
     return s
 
 

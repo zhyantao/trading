@@ -14,10 +14,15 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from incremental import get_manager_list, report  # noqa: E402
+from market_snapshot import as_akshare_rank_columns, get_fund_rank_snapshot  # noqa: E402
 
 
 def build_out_path(out_dir: Path) -> Path:
@@ -52,10 +57,8 @@ def main() -> None:
     if not out_path.is_absolute():
         out_path = (project_root / out_path).resolve()
 
-    import akshare as ak  # 延迟导入，便于定位依赖问题
-
-    print("[1/3] 拉取基金经理-现任基金列表 ...")
-    mgr_df = ak.fund_manager_em()
+    print("[1/3] 获取基金经理-现任基金列表（7 天缓存）...")
+    mgr_df = get_manager_list()
     mgr_df = mgr_df.rename(
         columns={
             "现任基金代码": "基金代码",
@@ -64,8 +67,8 @@ def main() -> None:
     )
     mgr_df = mgr_df.drop_duplicates(subset=["序号", "姓名", "所属公司", "基金代码"])
 
-    print("[2/3] 拉取开放基金收益率排行 ...")
-    rank_df = ak.fund_open_fund_rank_em(symbol=args.symbol)
+    print("[2/3] 获取开放基金收益率排行（当日全市场快照，与年化排序共用）...")
+    rank_df = as_akshare_rank_columns(get_fund_rank_snapshot(args.symbol))
     if "日期" in rank_df.columns:
         rank_df["日期"] = pd.to_datetime(rank_df["日期"], errors="coerce").dt.strftime("%Y-%m-%d")
 
@@ -86,6 +89,7 @@ def main() -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_df.to_csv(out_path, index=False, encoding="utf-8-sig")
     print(f"完成：{out_path}  行数={len(out_df):,}  列数={len(out_df.columns)}")
+    report("[incremental] 经理明细")
 
 
 if __name__ == "__main__":

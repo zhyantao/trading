@@ -31,6 +31,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # 跨天持久化行情时序缓存与当日全市场快照。
+      # runner 每次都是全新环境，若不缓存，历史净值/行情就得天天全量重拉。
+      # key 用 run_id 保证每次运行都会写入新快照；restore-keys 取最近一次缓存。
+      - name: Restore incremental data caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            out/cache_series
+            out/cache_meta
+          key: trading-incremental-${{ github.run_id }}
+          restore-keys: |
+            trading-incremental-
+          save-always: true
+
       - name: Run daily pipeline
         env:
           MPLBACKEND: Agg

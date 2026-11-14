@@ -9,6 +9,8 @@
   - “成立来年化”按复合年化计算：
         annualized = (1 + total_return) ** (365 / days_since_inception) - 1
     其中 total_return = 成立来 / 100
+  - 全市场排行从 ``market_snapshot`` 读取当日快照，与「基金经理明细」共用
+    同一次请求，不再单独重复拉取全市场数据。
 
 输出：out/基金年化收益率排序_YYYYMMDD.csv（UTF-8 with BOM）
 """
@@ -16,123 +18,16 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date, datetime, timedelta
+import sys
+from datetime import date, datetime
 from pathlib import Path
 
 import pandas as pd
-import requests
-import demjson3 as demjson
 
-
-def _one_year_ago_yyyymmdd(d: date) -> str:
-    # 与 AkShare 的逻辑类似：用 365 天近似回退一年
-    return (d - timedelta(days=365)).strftime("%Y-%m-%d")
-
-
-def fetch_open_fund_rank_raw(symbol: str = "全部", pn: int = 30000) -> pd.DataFrame:
-    """
-    获取开放基金排行原始数据，并保留“成立日”等 AkShare 丢弃的字段。
-    """
-    today = date.today()
-    current_date = today.strftime("%Y-%m-%d")
-    last_date = _one_year_ago_yyyymmdd(today)
-
-    url = "https://fund.eastmoney.com/data/rankhandler.aspx"
-    type_map = {
-        "全部": ["all", "1nzf"],
-        "股票型": ["gp", "1nzf"],
-        "混合型": ["hh", "1nzf"],
-        "债券型": ["zq", "1nzf"],
-        "指数型": ["zs", "1nzf"],
-        "QDII": ["qdii", "1nzf"],
-        "LOF": ["lof", "1nzf"],
-        "FOF": ["fof", "1nzf"],
-    }
-    if symbol not in type_map:
-        raise ValueError(f"symbol 必须为 {list(type_map.keys())} 之一，当前={symbol}")
-
-    params = {
-        "op": "ph",
-        "dt": "kf",
-        "ft": type_map[symbol][0],
-        "rs": "",
-        "gs": "0",
-        "sc": type_map[symbol][1],
-        "st": "desc",
-        "sd": last_date,
-        "ed": current_date,
-        "qdii": "",
-        "tabSubtype": ",,,,,",
-        "pi": "1",
-        "pn": str(pn),
-        "dx": "1",
-        "v": "0.1",
-    }
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Referer": "https://fund.eastmoney.com/fundguzhi.html",
-    }
-    r = requests.get(url, params=params, headers=headers, timeout=60)
-    r.raise_for_status()
-    text = r.text
-
-    # 返回内容形如：var rankData = {...}; 取 {...} 部分
-    idx = text.find("{")
-    if idx == -1:
-        raise ValueError(f"API 返回格式异常，未找到 JSON 起始位置")
-    j = demjson.decode(text[idx: -1])
-    temp_df = pd.DataFrame(j["datas"])
-    split_df = temp_df.iloc[:, 0].str.split(",", expand=True)
-
-    # 该接口目前常见为 25 列（不同时间可能略有变化）
-    # 参考：AkShare fund_open_fund_rank_em 的列映射 + 补充“成立日”等
-    # 我们只取关键字段并保留原始成立日/基金类型等可能信息。
-    col_map = {
-        0: "基金代码",
-        1: "基金简称",
-        3: "日期",
-        4: "单位净值",
-        5: "累计净值",
-        6: "日增长率",
-        7: "近1周",
-        8: "近1月",
-        9: "近3月",
-        10: "近6月",
-        11: "近1年",
-        12: "近2年",
-        13: "近3年",
-        14: "今年来",
-        15: "成立来",
-        16: "成立日",
-        20: "手续费",
-        24: "近1年同类排名百分位(原始)",
-    }
-
-    keep = [i for i in sorted(col_map.keys()) if i < split_df.shape[1]]
-    df = split_df.iloc[:, keep].rename(columns={i: col_map[i] for i in keep})
-
-    # 类型转换
-    df["日期"] = pd.to_datetime(df["日期"], errors="coerce").dt.strftime("%Y-%m-%d")
-    df["成立日"] = pd.to_datetime(df["成立日"], errors="coerce").dt.date
-
-    for c in [
-        "单位净值",
-        "累计净值",
-        "日增长率",
-        "近1周",
-        "近1月",
-        "近3月",
-        "近6月",
-        "近1年",
-        "近2年",
-        "近3年",
-        "今年来",
-        "成立来",
-    ]:
-        if c in df.columns:
-            df[c] = pd.to_numeric(df[c], errors="coerce")
-
-    return df
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from incremental import report  # noqa: E402
+# 保留原导出名，避免其他脚本/笔记本按旧方式 import 时报错
+from market_snapshot import fetch_open_fund_rank_raw, get_fund_rank_snapshot  # noqa: E402,F401
 
 
 def calc_annualized_since_inception(df: pd.DataFrame) -> pd.Series:
@@ -186,7 +81,7 @@ def main() -> None:
         stamp = datetime.now().strftime("%Y%m%d")
         out_path = out_dir / f"基金年化收益率排序_{stamp}.csv"
 
-    df = fetch_open_fund_rank_raw(symbol=args.symbol, pn=30000)
+    df = get_fund_rank_snapshot(symbol=args.symbol).copy()
     # 成立天数：用于用户后续筛除“太新”的基金（新基金年化会被极端放大）
     df["成立天数"] = (pd.to_datetime(date.today()) - pd.to_datetime(df["成立日"])).dt.days
     df["成立来年化"] = calc_annualized_since_inception(df)
@@ -209,6 +104,7 @@ def main() -> None:
 
     ranked.to_csv(out_path, index=False, encoding="utf-8-sig")
     print(f"完成：{out_path}  行数={len(ranked):,}  列数={len(ranked.columns)}")
+    report("[incremental] 年化排序")
 
 
 if __name__ == "__main__":
