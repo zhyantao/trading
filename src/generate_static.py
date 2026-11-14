@@ -183,6 +183,12 @@ def _copy_assets() -> None:
             shutil.copy2(woff, DOCS_DIR / "fonts" / woff.name)
         print("  fonts/")
 
+    # Favicon
+    favicon_src = TPL_DIR.parent / "static" / "favicon.svg"
+    if favicon_src.is_file():
+        shutil.copy2(favicon_src, DOCS_DIR / "favicon.svg")
+        print("  favicon.svg")
+
     # 图表图片
     charts_dir = DOCS_DIR / "charts"
     charts_dir.mkdir(exist_ok=True)
