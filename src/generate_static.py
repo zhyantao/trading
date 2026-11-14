@@ -29,6 +29,7 @@ if _src_dir not in sys.path:
 
 from webui.data_service import DataService
 from webui.routes import _md_to_html
+from backtest_series import build_series
 
 # 周期检测（可选，失败则降级）
 try:
@@ -90,8 +91,10 @@ def _copy_static_assets() -> None:
     static_dir = Path(__file__).resolve().parent / "webui" / "static"
     shutil.copy2(static_dir / "style.css", DOCS_DIR / "style.css")
     shutil.copy2(static_dir / "app.js", DOCS_DIR / "app.js")
+    shutil.copy2(static_dir / "backtest-chart.js", DOCS_DIR / "backtest-chart.js")
     print("  style.css")
     print("  app.js")
+    print("  backtest-chart.js")
 
     # 字体（ET Book）
     fonts_src = static_dir / "fonts"
@@ -206,10 +209,19 @@ def generate_data_for_date(date: str) -> None:
         "stocks": _records(ds.get_elite_stocks(date)),
     })
 
-    # --- backtest（含 md 预渲染 HTML）---
+    # --- backtest（含 md 预渲染 HTML + 交互图表数据）---
+    # 曲线数据单独成文件，前端只在用户查看对应回测时按需加载，
+    # 避免把所有日期的几百个交易日一次性塞进 backtest.json。
     results = ds.get_backtest_results(date)
     for r in results:
         r["summary_html"] = _md_to_html(ds.read_md_file(r["md"])) if "md" in r else ""
+        nav_file = r.get("nav")
+        if nav_file:
+            series = build_series(ds.out_dir / nav_file, r["id"], r.get("type", "fund"))
+            if series:
+                name = f"series_{r['id']}.json"
+                _write_json(out / name, series)
+                r["series"] = name
     _write_json(out / "backtest.json", {"results": results})
 
 

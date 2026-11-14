@@ -584,13 +584,17 @@
     var assetType = current.type === 'fund' ? '基金' : '股票';
     var detail = '';
 
-    /* 1) 图表在最上方（点击可查看原始大图） */
-    if (current.chart) {
-      var chartUrl = 'charts/' + encodeURIComponent(current.chart);
-      detail += card('回测图表',
-        '<a href="' + chartUrl + '" target="_blank" rel="noopener noreferrer" title="点击查看原图">' +
-        '<img src="' + chartUrl + '" class="backtest-chart" alt="回测图表"></a>' +
-        '<p style="font-size:12px;color:var(--text-secondary);margin:6px 0 0;">点击查看原图（高清）</p>');
+    /* 1) 交互图表在最上方：悬浮显示当日日期与各项数值；静态 PNG 作为兜底/高清原图 */
+    var chartUrl = current.chart ? 'charts/' + encodeURIComponent(current.chart) : '';
+    if (chartUrl || current.series) {
+      var chartBody = '<div id="bt-chart" class="bt-chart"><div class="bt-empty">正在加载净值曲线…</div></div>';
+      if (chartUrl) {
+        chartBody += '<details class="bt-fallback"><summary>查看静态高清原图</summary>' +
+          '<a href="' + chartUrl + '" target="_blank" rel="noopener noreferrer" title="点击查看原图">' +
+          '<img src="' + chartUrl + '" class="backtest-chart" alt="回测图表" loading="lazy"></a></details>';
+      }
+      detail += card('回测图表 <span style="font-size:12px;font-weight:400;color:var(--text-secondary);">' +
+        '交互式 · 悬浮查看当日数据</span>', chartBody);
     }
 
     /* 2) 汇总数据：参数 / 绩效指标 / 年度收益 / 标的交易汇总 */
@@ -613,6 +617,34 @@
     if (!detail) detail = '<div class="card"><div class="empty-state"><div class="empty-text">该回测无摘要与图表</div></div></div>';
 
     root.innerHTML = detail;
+    loadInteractiveChart(current, chartUrl);
+  }
+
+  /* 曲线 JSON 按需加载：成功则绘制交互图，失败（旧日期/无数据）回退静态 PNG */
+  function loadInteractiveChart(current, chartUrl) {
+    var box = document.getElementById('bt-chart');
+    if (!box) return;
+    var fallback = chartUrl
+      ? '<a href="' + chartUrl + '" target="_blank" rel="noopener noreferrer">' +
+        '<img src="' + chartUrl + '" class="backtest-chart" alt="回测图表"></a>' +
+        '<p class="bt-foot">交互曲线暂不可用，已显示静态图表。</p>'
+      : '<div class="bt-empty">暂无净值曲线数据。</div>';
+    if (!window.BacktestChart || !(current.series || current.nav)) {
+      box.innerHTML = fallback;
+      return;
+    }
+    var name = current.series || ('series_' + current.id + '.json');
+    getJSON('data/' + state.date + '/' + encodeURIComponent(name))
+      .then(function (s) {
+        var target = document.getElementById('bt-chart');
+        if (!target || state.view !== current.id) return; /* 已切换到另一份回测 */
+        if (!s || !s.dates || !s.dates.length) { target.innerHTML = fallback; return; }
+        window.BacktestChart.render(target, s, { fallbackImage: chartUrl });
+      })
+      .catch(function () {
+        var target = document.getElementById('bt-chart');
+        if (target && state.view === current.id) target.innerHTML = fallback;
+      });
   }
 
   /* ---------------- 启动 ---------------- */

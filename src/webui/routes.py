@@ -453,6 +453,28 @@ async def api_run_backtest_fund(
     return JSONResponse({"task_id": task_id, "step": "基金回测"})
 
 
+@router.get("/api/backtest-series")
+async def api_backtest_series(request: Request) -> JSONResponse:
+    """回测净值曲线数据，供交互图表使用（与静态站 series_*.json 同口径）。"""
+    try:
+        from backtest_series import build_series
+    except ImportError:
+        return JSONResponse({"dates": []})
+
+    date = _get_date(request)
+    view_id = request.query_params.get("view", "")
+    results = ds.get_backtest_results(date=date)
+    current = next((r for r in results if r["id"] == view_id), None)
+    if current is None and results:
+        current = results[0]
+    if not current or "nav" not in current:
+        return JSONResponse({"dates": []})
+    series = build_series(
+        ds.out_dir / current["nav"], current["id"], current.get("type", "fund")
+    )
+    return JSONResponse(series or {"dates": []})
+
+
 @router.get("/out/charts/{filename}")
 async def serve_chart(filename: str) -> Any:
     fp = ds.out_dir / filename

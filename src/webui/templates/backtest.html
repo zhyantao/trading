@@ -39,8 +39,14 @@
         {% endif %}
         {% if chart_file %}
         <div class="card">
-            <div class="card-header">回测图表</div>
-            <img src="/out/charts/{{ chart_file }}" class="backtest-chart" alt="回测图表">
+            <div class="card-header">回测图表
+                <span style="font-size:12px;font-weight:400;color:var(--text-secondary);">交互式 · 悬浮查看当日数据</span>
+            </div>
+            <div id="bt-chart" class="bt-chart"><div class="bt-empty">正在加载净值曲线…</div></div>
+            <details class="bt-fallback">
+                <summary>查看静态高清原图</summary>
+                <img src="/out/charts/{{ chart_file }}" class="backtest-chart" alt="回测图表" loading="lazy">
+            </details>
         </div>
         {% endif %}
     </div>
@@ -82,6 +88,27 @@
 {% endblock %}
 
 {% block scripts %}
+{% if chart_file %}
+<script src="/static/backtest-chart.js"></script>
+<script>
+(async function () {
+    var box = document.getElementById('bt-chart');
+    if (!box || !window.BacktestChart) return;
+    var image = '/out/charts/{{ chart_file }}';
+    try {
+        var resp = await fetch('/api/backtest-series?date={{ selected_date }}&view={{ view_id }}');
+        var data = await resp.json();
+        if (data && data.dates && data.dates.length) {
+            window.BacktestChart.render(box, data, { fallbackImage: image });
+            return;
+        }
+    } catch (e) { /* 降级到静态图 */ }
+    box.innerHTML = '<a href="' + image + '" target="_blank" rel="noopener noreferrer">' +
+        '<img src="' + image + '" class="backtest-chart" alt="回测图表"></a>' +
+        '<p class="bt-foot">交互曲线暂不可用，已显示静态图表。</p>';
+})();
+</script>
+{% endif %}
 <script>
 {% if not is_static %}
 async function runBacktest(e, type) {
