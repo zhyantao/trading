@@ -63,8 +63,8 @@ def run_optional(cmd: list[str]) -> None:
         )
 
 
-def cleanup_old_files(out_dir: Path, keep_days: int = 3) -> None:
-    """删除 out/ 中超过 keep_days 天的旧数据文件，避免仓库无限膨胀。"""
+def cleanup_old_files(out_dir: Path, keep_days: int = 1) -> None:
+    """只保留最近 keep_days 个日期的产物（默认仅最新一天），删除其余旧日期文件。"""
     # 收集所有文件中的日期戳
     date_stamps: set[str] = set()
     for f in out_dir.iterdir():
@@ -122,8 +122,8 @@ def main() -> None:
     run_optional([py, str(root / "src" / "backtest_fund_portfolio.py")])
     run_optional([py, str(root / "src" / "backtest_elite_manager_portfolio.py")])
 
-    # 清理 3 天前的旧数据文件，避免仓库膨胀
-    cleanup_old_files(out_dir, keep_days=3)
+    # 只保留最新一天的数据，避免旧日期重新出现在页面下拉里
+    cleanup_old_files(out_dir, keep_days=1)
 
 
 if __name__ == "__main__":

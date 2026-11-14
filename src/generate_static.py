@@ -50,8 +50,9 @@ SITE_DIR = Path(__file__).resolve().parent / "static_site"  # 静态壳 HTML
 DOCS_DIR = ROOT / "docs"
 DATA_DIR = DOCS_DIR / "data"
 
-# 数据 JSON 保留最近多少个日期（控制仓库体积，旧日期自动清理）
-RETAIN_DATES = 30
+# 数据 JSON 保留最近多少个日期。只保留最新一天：旧日期目录与图表会自动删除，
+# 页眉日期下拉也就不会出现过期选项。
+RETAIN_DATES = 1
 
 # 前端分页大小（与 JS 端保持一致，仅用于提示）
 PER_PAGE = 50
@@ -320,13 +321,19 @@ def main() -> None:
     print()
 
     all_dates = ds.available_dates()
-    dates = [d for d in all_dates if _date_is_complete(d)]
-    skipped = [d for d in all_dates if d not in dates]
+    complete = [d for d in all_dates if _date_is_complete(d)]
+    skipped = [d for d in all_dates if d not in complete]
     if skipped:
         print(f"跳过数据不完整的日期: {', '.join(skipped)}")
-    retained = dates[:RETAIN_DATES]
 
-    print(f"数据日期: {len(dates)} 个，保留最近 {len(retained)} 个（{retained[0] if retained else '无'} 起）")
+    # 若最新日期残缺，绝不能「退而求其次」把旧日期当成最新发布，
+    # 否则页眉日期下拉会退回到几个月前。此时保持上一版站点原样不动。
+    if not all_dates or not complete or complete[0] != all_dates[0]:
+        print("[WARN] 最新日期数据不完整（或 out/ 无数据）：保留上一版站点，不生成、不清理")
+        return
+    retained = complete[:RETAIN_DATES]
+
+    print(f"数据日期: {len(complete)} 个完整日期，只保留最近 {len(retained)} 个（{retained[0]} 起）")
     print()
     print("页面: 8 个静态壳（src/static_site/ 原样拷贝）")
     print()

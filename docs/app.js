@@ -83,13 +83,30 @@
   }
 
   var _cache = {};
+  /* GitHub Pages / 浏览器会缓存 JSON（Cache-Control: max-age=600）。
+     若不加版本参数，数据更新后 manifest.json 可能仍是旧内容，日期下拉就会
+     继续列出已删除的历史日期。http(s) 下给请求加版本参数并禁用 manifest 缓存；
+     file:// 本地预览保持原样（带 query 的 file URL 反而读不到文件）。 */
+  var BUST_CACHE = /^https?:$/.test(location.protocol || '');
+  var DATA_VERSION = '';
+  function dataUrl(url) {
+    if (!BUST_CACHE) return url;
+    var isManifest = url.indexOf('manifest.json') >= 0;
+    var v = isManifest ? 't' + Date.now() : 'd' + (DATA_VERSION || 'init');
+    return url + (url.indexOf('?') < 0 ? '?' : '&') + 'v=' + encodeURIComponent(v);
+  }
   function getJSON(url) {
-    if (_cache[url]) return _cache[url];
-    _cache[url] = fetch(url).then(function (r) {
+    var key = dataUrl(url);
+    if (_cache[key]) return _cache[key];
+    /* manifest 必须每次回源；数据文件带版本号后可由浏览器正常缓存 */
+    var opts = BUST_CACHE
+      ? { cache: url.indexOf('manifest.json') >= 0 ? 'no-store' : 'default' }
+      : undefined;
+    _cache[key] = fetch(key, opts).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + url);
       return r.json();
     });
-    return _cache[url];
+    return _cache[key];
   }
 
   /* ---------------- 页眉（站点导航 + 应用导航） ---------------- */
@@ -101,6 +118,11 @@
   function buildHeader(manifest) {
     var dates = manifest.dates || [];
     if (!state.date || dates.indexOf(state.date) < 0) state.date = manifest.latest || dates[0] || '';
+    /* URL / 书签里残留的过期日期参数一并纠正，避免继续指向已删除的旧数据。
+       file:// 下 replaceState 可能因 null origin 抛错，本地预览时不动 URL。 */
+    if (BUST_CACHE && params.get('date') && params.get('date') !== state.date) {
+      setParam('date', state.date);
+    }
 
     var dateOpts = dates.map(function (d) {
       return '<option value="' + d + '"' + (d === state.date ? ' selected' : '') + '>' +
@@ -651,6 +673,8 @@
   function run() {
     getJSON('data/manifest.json')
       .then(function (manifest) {
+        /* 用数据生成时间做版本号：CI 更新数据后 URL 自动变化，旧缓存立即失效 */
+        DATA_VERSION = manifest.generated_at || String(Date.now());
         buildHeader(manifest);
         if (PAGE === 'pipeline') return; /* 静态壳自带内容 */
 
