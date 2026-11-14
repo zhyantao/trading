@@ -442,20 +442,35 @@
   /* ---------------- 页面：回测 ---------------- */
   function renderBacktest(data) {
     var results = data.results || [];
+    var navActions = document.querySelector('#site-header .nav-actions');
+    var oldSelect = document.getElementById('backtest-select');
+    if (oldSelect) oldSelect.remove();
+
     if (!results.length) {
       root.innerHTML = emptyState('📈', '该日期暂无回测结果', '回测由本地或 CI 运行生成');
       return;
     }
     var current = results.filter(function (r) { return r.id === state.view; })[0] || results[0];
+    state.view = current.id;
 
-    var list = results.map(function (r) {
-      return '<a href="backtest.html?date=' + state.date + '&view=' + encodeURIComponent(r.id) +
-        '" class="backtest-record ' + (r.id === current.id ? 'active' : '') + '">' +
-        '<span style="font-size:13px;">' + (r.id.indexOf('fund') === 0 ? '基金回测' : '股票回测') + '</span>' +
-        '<span style="font-size:11px; color:var(--text-secondary);">' + esc(r.stamp) + '</span>' +
-        (r.chart ? '<span style="font-size:11px; color:var(--green);">含图表</span>' : '') +
-        '</a>';
-    }).join('');
+    /* 回测记录选择器：放在右上角日期下拉旁边 */
+    if (navActions) {
+      var sel = document.createElement('select');
+      sel.id = 'backtest-select';
+      sel.className = 'nav-date-select';
+      sel.setAttribute('aria-label', '选择回测记录');
+      sel.innerHTML = results.map(function (r) {
+        var label = (r.id.indexOf('fund') === 0 ? '基金回测' : '股票回测') + ' ' + fmtDate(r.stamp);
+        return '<option value="' + esc(r.id) + '"' + (r.id === current.id ? ' selected' : '') + '>' +
+          label + '</option>';
+      }).join('');
+      sel.addEventListener('change', function () {
+        state.view = sel.value;
+        setParam('view', sel.value);
+        renderBacktest(data);
+      });
+      navActions.insertBefore(sel, navActions.firstChild);
+    }
 
     var detail = '';
     if (current.summary_html) {
@@ -468,9 +483,7 @@
     }
     if (!detail) detail = '<div class="card"><div class="empty-state"><div class="empty-text">该回测无摘要与图表</div></div></div>';
 
-    root.innerHTML = '<div class="backtest-layout">' +
-      '<div class="card" style="height:fit-content;"><div class="card-header">回测记录</div>' + list + '</div>' +
-      '<div>' + detail + '</div></div>';
+    root.innerHTML = detail;
   }
 
   /* ---------------- 启动 ---------------- */
