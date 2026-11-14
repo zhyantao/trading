@@ -1,190 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的持仓 - 量化交易研究</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="style.css">
-    
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的持仓 - 量化交易研究</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-<!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
-<nav class="site-nav" aria-label="站点导航">
-    <div class="nav-inner">
-        <a href="index.html?date=20260702"><img class="nav-badge" src="favicon.svg" alt="BOT"></a>
-        <a href="https://zhyantao.github.io/">ZHYANTAO</a>
-        <a href="https://zhyantao.github.io/docs/">DOCS</a>
-        <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
-        <a href="https://zhyantao.github.io/callgraphs-generator/">CALLGRAPH</a>
-        <a href="https://zhyantao.github.io/riscv-bitlab/">RISC-V</a>
-        <a href="index.html?date=20260702" class="active">TRADING</a>
-    </div>
-</nav>
-
-<nav class="app-nav">
-    <div class="nav-inner">
-        <a href="index.html?date=20260702" class="brand">量化信号</a>
-        <input type="checkbox" id="nav-toggle">
-        <div class="nav-links">
-            <a href="index.html?date=20260702" class="">总览</a>
-            <a href="signals.html?date=20260702" class="">每日信号</a>
-            <a href="holdings.html?date=20260702" class="active">我的持仓</a>
-            <a href="managers.html?date=20260702" class="">经理排名</a>
-            <a href="funds.html?date=20260702" class="">基金排名</a>
-            <a href="elite.html?date=20260702" class="">绩优标的</a>
-            <a href="backtest.html?date=20260702" class="">回测</a>
-            <a href="pipeline.html?date=20260702" class="">流水线</a>
-        </div>
-        <div class="nav-actions">
-        
-        <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
-            
-            <option value="20260702" selected>2026-07-02</option>
-            
-            <option value="20260701" >2026-07-01</option>
-            
-        </select>
-        
-        <label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单">
-            <span></span><span></span><span></span>
-        </label>
-        </div>
-    </div>
-</nav>
-
-<div class="container">
-    
-
-<div class="card">
-    <div class="card-header">
-        当前持仓配置
-        
-    </div>
-    <div class="table-wrap">
-        <table>
-            <thead><tr>
-                <th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>比例柱</th>
-            </tr></thead>
-            <tbody>
-            
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300502</td>
-                <td>新易盛</td>
-                <td style="font-weight:600;">15.31%</td>
-                <td style="width:120px;">
-                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:61.24000000000001%; background:var(--accent); border-radius:4px;"></div>
-                    </div>
-                </td>
-            </tr>
-            
-            
-            <tr>
-                <td><span class="tag tag-stock">股票</span></td>
-                <td>300308</td>
-                <td>中际旭创</td>
-                <td style="font-weight:600;">14.69%</td>
-                <td style="width:120px;">
-                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:58.76%; background:var(--accent); border-radius:4px;"></div>
-                    </div>
-                </td>
-            </tr>
-            
-            
-            <tr>
-                <td><span class="tag tag-fund">基金</span></td>
-                <td>024459</td>
-                <td>华商致远回报混合A</td>
-                <td style="font-weight:600;">25.00%</td>
-                <td style="width:120px;">
-                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:100.0%; background:var(--green); border-radius:4px;"></div>
-                    </div>
-                </td>
-            </tr>
-            
-            
-            <tr>
-                <td><span class="tag tag-fund">基金</span></td>
-                <td>024480</td>
-                <td>财通品质甄选混合A</td>
-                <td style="font-weight:600;">25.00%</td>
-                <td style="width:120px;">
-                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:100.0%; background:var(--green); border-radius:4px;"></div>
-                    </div>
-                </td>
-            </tr>
-            
-            
-            <tr>
-                <td><span class="tag tag-fund">基金</span></td>
-                <td>018210</td>
-                <td>红土创新景气回报混合A</td>
-                <td style="font-weight:600;">20.00%</td>
-                <td style="width:120px;">
-                    <div style="height:8px; background:#e0e0e0; border-radius:4px; overflow:hidden;">
-                        <div style="height:100%; width:80.0%; background:var(--green); border-radius:4px;"></div>
-                    </div>
-                </td>
-            </tr>
-            
-            </tbody>
-        </table>
-    </div>
-</div>
-
-
-
-
-
-
-</div>
-
+<body data-page="holdings">
+<div id="site-header"></div>
+<main class="container">
+  <div id="page-root"><div class="loading">加载中…</div></div>
+</main>
 <footer class="site-footer">
-    <hr class="slender">
-    <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
+  <hr class="slender">
+  <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a> &middot; <a href="https://github.com/zhyantao/trading">GitHub</a></div>
 </footer>
-
-<script>
-function onDateChange(date) {
-    // 静态站点：保持当前页面，仅更新日期参数
-    var currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    window.location = currentPage + '?date=' + date;
-}
-</script>
-
-<script>
-async function reOptimize() {
-    document.getElementById('optimize-form').style.display = 'block';
-}
-async function runOptimize(e) {
-    e.preventDefault();
-    const logEl = document.getElementById('optimize-log');
-    logEl.style.display = 'block';
-    logEl.textContent = '运行中...\n';
-    const form = e.target;
-    const body = new FormData(form);
-    const resp = await fetch('/api/run/optimize', { method: 'POST', body });
-    const data = await resp.json();
-    const taskId = data.task_id;
-    const poll = setInterval(async () => {
-        const r = await fetch(`/api/run/status/${taskId}`);
-        const t = await r.json();
-        logEl.textContent = t.log_lines.join('\n');
-        if (t.status === 'done' || t.status === 'failed') {
-            clearInterval(poll);
-            if (t.status === 'done') location.reload();
-        }
-    }, 500);
-}
-</script>
-
+<script src="app.js"></script>
 </body>
 </html>

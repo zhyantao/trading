@@ -1,133 +1,78 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>流水线 - 量化交易研究</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="style.css">
-    
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>流水线 - 量化交易研究</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
-
-<!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
-<nav class="site-nav" aria-label="站点导航">
-    <div class="nav-inner">
-        <a href="index.html?date=20260702"><img class="nav-badge" src="favicon.svg" alt="BOT"></a>
-        <a href="https://zhyantao.github.io/">ZHYANTAO</a>
-        <a href="https://zhyantao.github.io/docs/">DOCS</a>
-        <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
-        <a href="https://zhyantao.github.io/callgraphs-generator/">CALLGRAPH</a>
-        <a href="https://zhyantao.github.io/riscv-bitlab/">RISC-V</a>
-        <a href="index.html?date=20260702" class="active">TRADING</a>
-    </div>
-</nav>
-
-<nav class="app-nav">
-    <div class="nav-inner">
-        <a href="index.html?date=20260702" class="brand">量化信号</a>
-        <input type="checkbox" id="nav-toggle">
-        <div class="nav-links">
-            <a href="index.html?date=20260702" class="">总览</a>
-            <a href="signals.html?date=20260702" class="">每日信号</a>
-            <a href="holdings.html?date=20260702" class="">我的持仓</a>
-            <a href="managers.html?date=20260702" class="">经理排名</a>
-            <a href="funds.html?date=20260702" class="">基金排名</a>
-            <a href="elite.html?date=20260702" class="">绩优标的</a>
-            <a href="backtest.html?date=20260702" class="">回测</a>
-            <a href="pipeline.html?date=20260702" class="active">流水线</a>
-        </div>
-        <div class="nav-actions">
-        
-        <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
-            
-            <option value="20260702" selected>2026-07-02</option>
-            
-            <option value="20260701" >2026-07-01</option>
-            
-        </select>
-        
-        <label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单">
-            <span></span><span></span><span></span>
-        </label>
-        </div>
-    </div>
-</nav>
-
-<div class="container">
-    
-<div class="card">
+<body data-page="pipeline">
+<div id="site-header"></div>
+<main class="container">
+  <div class="card">
     <div class="card-header">流水线步骤（共 7 步）</div>
     <div style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
-        请<a href="https://github.com/zhyantao/trading-bot">本地运行</a>生成最新数据。
+      数据由 GitHub Actions 每个交易日 22:00（北京时间）自动运行并发布；也可
+      <a href="https://github.com/zhyantao/trading-bot">本地运行</a>。
     </div>
     <div class="pipeline-steps">
-        <div class="pipeline-step">
-            <div class="step-num">1</div>
-            <div class="step-info">
-                <div class="step-name">基金经理-基金收益率明细</div>
-                <div class="step-desc">拉取全市场基金经理+基金收益率字段</div>
-            </div>
+      <div class="pipeline-step">
+        <div class="step-num">1</div>
+        <div class="step-info">
+          <div class="step-name">基金经理-基金收益率明细</div>
+          <div class="step-desc">拉取全市场基金经理+基金收益率字段</div>
         </div>
-        <div class="pipeline-step">
-            <div class="step-num">2</div>
-            <div class="step-info">
-                <div class="step-name">基金经理排名</div>
-                <div class="step-desc">按近1年收益率+多基金简单平均排名</div>
-            </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">2</div>
+        <div class="step-info">
+          <div class="step-name">基金经理排名</div>
+          <div class="step-desc">按近1年收益率+多基金简单平均排名</div>
         </div>
-        <div class="pipeline-step">
-            <div class="step-num">3</div>
-            <div class="step-info">
-                <div class="step-name">基金年化收益率排序</div>
-                <div class="step-desc">计算成立来复合年化并排序</div>
-            </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">3</div>
+        <div class="step-info">
+          <div class="step-name">基金年化收益率排序</div>
+          <div class="step-desc">计算成立来复合年化并排序</div>
         </div>
-        <div class="pipeline-step">
-            <div class="step-num">4</div>
-            <div class="step-info">
-                <div class="step-name">基金-经理关联表</div>
-                <div class="step-desc">关联基金年化与经理排名，过滤新基金</div>
-            </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">4</div>
+        <div class="step-info">
+          <div class="step-name">基金-经理关联表</div>
+          <div class="step-desc">关联基金年化与经理排名，过滤新基金</div>
         </div>
-        <div class="pipeline-step">
-            <div class="step-num">5</div>
-            <div class="step-info">
-                <div class="step-name">绩优经理筛选+投资标的</div>
-                <div class="step-desc">筛选绩优经理，抓取基金Top3和股票Top10</div>
-            </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">5</div>
+        <div class="step-info">
+          <div class="step-name">绩优经理筛选+投资标的</div>
+          <div class="step-desc">筛选绩优经理，抓取基金Top3和股票Top10</div>
         </div>
-        <div class="pipeline-step">
-            <div class="step-num">6</div>
-            <div class="step-info">
-                <div class="step-name">优化持仓</div>
-                <div class="step-desc">自动生成优化后的持仓配置</div>
-            </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">6</div>
+        <div class="step-info">
+          <div class="step-name">优化持仓</div>
+          <div class="step-desc">自动生成优化后的持仓配置</div>
         </div>
-        <div class="pipeline-step">
-            <div class="step-num">7</div>
-            <div class="step-info">
-                <div class="step-name">每日调仓信号</div>
-                <div class="step-desc">抓取基金重大变动，对照持仓输出信号</div>
-            </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-num">7</div>
+        <div class="step-info">
+          <div class="step-name">每日调仓信号</div>
+          <div class="step-desc">抓取基金重大变动，对照持仓输出信号</div>
         </div>
+      </div>
     </div>
-</div>
-
-</div>
-
+  </div>
+</main>
 <footer class="site-footer">
-    <hr class="slender">
-    <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
+  <hr class="slender">
+  <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a> &middot; <a href="https://github.com/zhyantao/trading">GitHub</a></div>
 </footer>
-
-<script>
-function onDateChange(date) {
-    // 静态站点：保持当前页面，仅更新日期参数
-    var currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    window.location = currentPage + '?date=' + date;
-}
-</script>
-
+<script src="app.js"></script>
 </body>
 </html>

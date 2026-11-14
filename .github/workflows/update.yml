@@ -1,0 +1,53 @@
+name: Update data and publish
+
+# 每个交易日收盘后（北京时间 22:00 / UTC 14:00）自动运行数据管道，
+# 生成数据 JSON 与静态页面并提交，触发 GitHub Pages 重新发布。
+# 也可在 Actions 页面手动触发（workflow_dispatch）。
+
+on:
+  schedule:
+    - cron: "0 14 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pages-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run daily pipeline
+        env:
+          MPLBACKEND: Agg
+          TZ: Asia/Shanghai
+        run: python src/daily_run.py
+
+      - name: Generate static site
+        run: python src/generate_static.py
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: auto update data $(date +%F)"
+            git push
+          fi

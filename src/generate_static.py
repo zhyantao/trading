@@ -1,18 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-生成静态 HTML 页面，用于 GitHub Pages 托管。
-从 out/ 目录读取最新 CSV 数据，用 Jinja2 模板渲染后输出到 docs/。
+生成纯静态站点，用于 GitHub Pages 托管（无需任何服务端）。
+
+思路：数据与页面分离。
+- 页面：src/static_site/ 下的静态壳 HTML，原样拷贝到 docs/；
+- 数据：从 out/ 读取各日期的 CSV/MD，输出为 docs/data/{date}/*.json；
+- 前端：docs/app.js 在浏览器里 fetch JSON 完成全部渲染（日期切换/分页/筛选）。
+
+数据更新由 GitHub Actions 定时跑 src/daily_run.py 后重新生成本目录实现。
 
 用法: python3 src/generate_static.py
 """
 
 from __future__ import annotations
 
-import os
+import json
 import re
 import shutil
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # 确保 src/ 在 path 中
@@ -20,14 +27,13 @@ _src_dir = str(Path(__file__).resolve().parent)
 if _src_dir not in sys.path:
     sys.path.insert(0, _src_dir)
 
-from jinja2 import Environment, FileSystemLoader, Template
-
 from webui.data_service import DataService
 from webui.routes import _md_to_html
 
 # 周期检测（可选，失败则降级）
 try:
     from economic_cycle import detect_cycle_phase
+
     _HAS_CYCLE = True
 except Exception:
     _HAS_CYCLE = False
@@ -35,148 +41,60 @@ except Exception:
 import pandas as pd
 
 # ------------------------------------------------------------------
-# 自定义 Jinja2 Loader：将 base.html 替换为 base_static.html
-# ------------------------------------------------------------------
-
-
-class StaticLoader(FileSystemLoader):
-    def get_source(self, environment: Environment, template: str) -> tuple[str, str, callable]:
-        if template == "base.html":
-            template = "base_static.html"
-        return super().get_source(environment, template)
-
-
-# ------------------------------------------------------------------
 # 初始化
 # ------------------------------------------------------------------
 
 ROOT = Path(__file__).resolve().parent.parent
-TPL_DIR = Path(__file__).resolve().parent / "webui" / "templates"
+SITE_DIR = Path(__file__).resolve().parent / "static_site"  # 静态壳 HTML
 DOCS_DIR = ROOT / "docs"
+DATA_DIR = DOCS_DIR / "data"
 
-env = Environment(loader=StaticLoader(str(TPL_DIR)), auto_reload=False)
-env.filters["num2"] = lambda v: f"{float(v):.2f}"
+# 数据 JSON 保留最近多少个日期（控制仓库体积，旧日期自动清理）
+RETAIN_DATES = 30
+
+# 前端分页大小（与 JS 端保持一致，仅用于提示）
+PER_PAGE = 50
 
 ds = DataService()
 
 
-def _static_context(extra: dict | None = None) -> dict:
-    """构建静态页面的公共上下文（含日期选择信息）。"""
-    dates = ds.available_dates()
-    ctx: dict = {
-        "is_static": True,
-        "available_dates": dates,
-        "selected_date": dates[0] if dates else "",
-    }
-    if extra:
-        ctx.update(extra)
-    return ctx
+def _records(df: pd.DataFrame | None) -> list[dict]:
+    """DataFrame → JSON 友好的 records（DataService 读入均为 str）。"""
+    if df is None or df.empty:
+        return []
+    d = df.copy()
+    for c in d.columns:
+        d[c] = d[c].fillna("").astype(str)
+    return d.to_dict("records")
 
 
-def _render(name: str, context: dict | None = None) -> str:
-    ctx = _static_context(context)
-    tpl = env.get_template(name)
-    return tpl.render(**ctx)
+def _write_json(path: Path, obj) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(obj, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    print(f"  {path.relative_to(DOCS_DIR)}  ({path.stat().st_size // 1024} KB)")
 
 
-# ------------------------------------------------------------------
-# URL 后处理：将绝对路径转换为静态站点的相对路径
-# ------------------------------------------------------------------
+def _copy_static_assets() -> None:
+    """拷贝静态壳、CSS、JS、字体、favicon、图表。"""
+    print("静态资源:")
 
+    # 静态壳 HTML
+    for f in sorted(SITE_DIR.glob("*.html")):
+        shutil.copy2(f, DOCS_DIR / f.name)
+        print(f"  {f.name}")
 
-def _fix_urls(html: str) -> str:
-    """将动态路由 URL 转为静态 .html 相对路径，保留 date 参数。"""
-    # 图表图片路径
-    html = html.replace('src="/out/charts/', 'src="charts/')
-    html = html.replace("src='/out/charts/", "src='charts/")
-
-    # 通用规则：路径?date=YYYYMMDD 在 URL 转换时保留 date 参数
-
-    # 首页 / 或 /?date=YYYYMMDD -> index.html 或 index.html?date=YYYYMMDD
-    html = re.sub(r'href=["\']\/(\?date=\d{8})?["\']', r'href="index.html\1"', html)
-
-    # /pipeline 或 /pipeline?date=YYYYMMDD -> pipeline.html
-    html = re.sub(r'href=["\']\/pipeline(\?date=\d{8})?["\']', r'href="pipeline.html\1"', html)
-
-    # /signals 或 /signals?date=YYYYMMDD -> signals.html
-    html = re.sub(r'href=["\']\/signals(\?date=\d{8})?["\']', r'href="signals.html\1"', html)
-    # /signals?date=YYYYMMDD&type=XXX -> signals.html?date=YYYYMMDD (丢弃 type)
-    html = re.sub(r'href=["\']\/signals\?date=(\d{8})&type=[^"\']*["\']', r'href="signals.html?date=\1"', html)
-    # /signals?type=XXX -> signals.html (丢弃过滤参数)
-    html = re.sub(r'href=["\']\/signals\?type=[^"\']*["\']', 'href="signals.html"', html)
-
-    # /holdings 或 /holdings?date=YYYYMMDD -> holdings.html
-    html = re.sub(r'href=["\']\/holdings(\?date=\d{8})?["\']', r'href="holdings.html\1"', html)
-
-    # /managers 或 /managers?date=YYYYMMDD -> managers.html
-    html = re.sub(r'href=["\']\/managers(\?date=\d{8})?["\']', r'href="managers.html\1"', html)
-    # /managers?page=1 -> managers.html
-    html = re.sub(r'href=["\']\/managers\?page=1["\']', 'href="managers.html"', html)
-    # /managers?date=YYYYMMDD&page=1 -> managers.html?date=YYYYMMDD
-    html = re.sub(r'href=["\']\/managers\?date=(\d{8})&page=1["\']', r'href="managers.html?date=\1"', html)
-    # /managers?page=N (N>1) -> managers_pageN.html
-    html = re.sub(r'href=["\']\/managers\?page=(\d+)["\']', r'href="managers_page\1.html"', html)
-    # /managers?date=YYYYMMDD&page=N (N>1) -> managers_pageN.html?date=YYYYMMDD
-    html = re.sub(r'href=["\']\/managers\?date=(\d{8})&page=(\d+)["\']', r'href="managers_page\2.html?date=\1"', html)
-
-    # /funds 或 /funds?date=YYYYMMDD -> funds.html
-    html = re.sub(r'href=["\']\/funds(\?date=\d{8})?["\']', r'href="funds.html\1"', html)
-    # /funds?min_days=XXX -> funds.html
-    html = re.sub(r'href=["\']\/funds\?min_days=\d+["\']', 'href="funds.html"', html)
-    # /funds?date=YYYYMMDD&min_days=XXX -> funds.html?date=YYYYMMDD
-    html = re.sub(r'href=["\']\/funds\?date=(\d{8})&min_days=\d+["\']', r'href="funds.html?date=\1"', html)
-    # /funds?page=1&min_days=XXX -> funds.html
-    html = re.sub(r'href=["\']\/funds\?page=1&min_days=\d+["\']', 'href="funds.html"', html)
-    # /funds?date=YYYYMMDD&page=1&min_days=XXX -> funds.html?date=YYYYMMDD
-    html = re.sub(r'href=["\']\/funds\?date=(\d{8})&page=1&min_days=\d+["\']', r'href="funds.html?date=\1"', html)
-    # /funds?page=N&min_days=XXX (N>1) -> funds_pageN.html
-    html = re.sub(r'href=["\']\/funds\?page=(\d+)&min_days=\d+["\']', r'href="funds_page\1.html"', html)
-    # /funds?date=YYYYMMDD&page=N&min_days=XXX (N>1) -> funds_pageN.html?date=YYYYMMDD
-    html = re.sub(r'href=["\']\/funds\?date=(\d{8})&page=(\d+)&min_days=\d+["\']', r'href="funds_page\2.html?date=\1"', html)
-
-    # /elite 或 /elite?date=YYYYMMDD -> elite.html
-    html = re.sub(r'href=["\']\/elite(\?date=\d{8})?["\']', r'href="elite.html\1"', html)
-
-    # /backtest 或 /backtest?date=YYYYMMDD -> backtest.html
-    html = re.sub(r'href=["\']\/backtest(\?date=\d{8})?["\']', r'href="backtest.html\1"', html)
-    # /backtest?view=XXX -> backtest_XXX.html
-    html = re.sub(r'href=["\']\/backtest\?view=([^"\']+)["\']', r'href="backtest_\1.html"', html)
-    # /backtest?date=YYYYMMDD&view=XXX -> backtest_XXX.html?date=YYYYMMDD
-    html = re.sub(r'href=["\']\/backtest\?date=(\d{8})&view=([^"\']+)["\']', r'href="backtest_\2.html?date=\1"', html)
-
-    # CSS /static/style.css -> style.css
-    html = html.replace('href="/static/style.css"', 'href="style.css"')
-    html = html.replace("href='/static/style.css'", "href='style.css'")
-
-    return html
-
-
-# ------------------------------------------------------------------
-# 帮助函数
-# ------------------------------------------------------------------
-
-
-# 记录本次生成的所有文件名，用于清理过期页面
-_generated_files: set[str] = set()
-
-
-def _write(filename: str, html: str) -> None:
-    html = _fix_urls(html)
-    path = DOCS_DIR / filename
-    path.write_text(html, encoding="utf-8")
-    _generated_files.add(filename)
-    print(f"  {filename}")
-
-
-def _copy_assets() -> None:
-    """复制 CSS 和图表图片到 docs/。"""
-    # CSS
-    css_src = TPL_DIR.parent / "static" / "style.css"
-    shutil.copy2(css_src, DOCS_DIR / "style.css")
+    # CSS / JS
+    static_dir = Path(__file__).resolve().parent / "webui" / "static"
+    shutil.copy2(static_dir / "style.css", DOCS_DIR / "style.css")
+    shutil.copy2(static_dir / "app.js", DOCS_DIR / "app.js")
     print("  style.css")
+    print("  app.js")
 
     # 字体（ET Book）
-    fonts_src = TPL_DIR.parent / "static" / "fonts"
+    fonts_src = static_dir / "fonts"
     if fonts_src.is_dir():
         (DOCS_DIR / "fonts").mkdir(exist_ok=True)
         for woff in fonts_src.rglob("*.woff"):
@@ -184,42 +102,72 @@ def _copy_assets() -> None:
         print("  fonts/")
 
     # Favicon
-    favicon_src = TPL_DIR.parent / "static" / "favicon.svg"
+    favicon_src = static_dir / "favicon.svg"
     if favicon_src.is_file():
         shutil.copy2(favicon_src, DOCS_DIR / "favicon.svg")
         print("  favicon.svg")
 
-    # 图表图片
+    # 图表图片（全部日期的 PNG，供回测详情页按日期引用）
     charts_dir = DOCS_DIR / "charts"
     charts_dir.mkdir(exist_ok=True)
+    n = 0
     for png in ds.out_dir.glob("回测_*图表*.png"):
         shutil.copy2(png, charts_dir / png.name)
-        _generated_files.add(f"charts/{png.name}")
-        print(f"  charts/{png.name}")
+        n += 1
+    print(f"  charts/ ({n} 个 PNG)")
 
 
 # ------------------------------------------------------------------
-# 页面生成
+# 经济周期（全局，与日期无关）
 # ------------------------------------------------------------------
 
-PER_PAGE = 50
+
+def _cycle_info() -> dict | None:
+    if not _HAS_CYCLE:
+        return None
+    try:
+        ca = detect_cycle_phase()
+        return {
+            "phase": ca.phase.value,
+            "phase_label": {
+                "early_expansion": "早期扩张",
+                "late_expansion": "后期扩张",
+                "overheating": "过热",
+                "contraction": "收缩",
+                "deleveraging": "去杠杆",
+                "unknown": "无法判断",
+            }.get(ca.phase.value, ca.phase.value),
+            "confidence": f"{ca.confidence:.0%}",
+            "description": ca.description,
+            "weights": ca.adjusted_weights,
+        }
+    except Exception:
+        return None
 
 
-def generate_index() -> None:
-    """总览页（/ -> index.html）"""
+# ------------------------------------------------------------------
+# 各日期数据 JSON
+# ------------------------------------------------------------------
+
+FUNDS_MAX_ROWS = 2000  # 基金排名只保留前 N 名（按 CSV 已排序顺序）
+
+
+def generate_data_for_date(date: str) -> None:
+    """为一个日期生成全部数据 JSON 到 docs/data/{date}/。"""
+    out = DATA_DIR / date
+
+    # --- dashboard：信号统计 + 持仓 + Top5 经理 + 周期 ---
+    signals = ds.get_signals(date)
     holdings = ds.get_holdings()
-    signals = ds.get_signals()
-    managers = ds.get_manager_rankings()
+    managers = ds.get_manager_rankings(date)
 
-    # 信号统计
     signal_stats = {"buy": 0, "sell": 0, "hold": 0, "total": 0}
-    if signals is not None and not signals.empty:
-        if "建议标签(非投资建议)" in signals.columns:
-            tag_col = "建议标签(非投资建议)"
-            signal_stats["buy"] = int((signals[tag_col] == "关注买入").sum())
-            signal_stats["sell"] = int((signals[tag_col] == "关注卖出").sum())
-            signal_stats["hold"] = int((signals[tag_col] == "继续关注").sum())
-            signal_stats["total"] = len(signals)
+    if signals is not None and not signals.empty and "建议标签(非投资建议)" in signals.columns:
+        tag_col = "建议标签(非投资建议)"
+        signal_stats["buy"] = int((signals[tag_col] == "关注买入").sum())
+        signal_stats["sell"] = int((signals[tag_col] == "关注卖出").sum())
+        signal_stats["hold"] = int((signals[tag_col] == "继续关注").sum())
+        signal_stats["total"] = len(signals)
 
     stock_sum = fund_sum = 0.0
     if not holdings.empty and "比例(%)" in holdings.columns:
@@ -228,207 +176,100 @@ def generate_index() -> None:
         stock_sum = float(h[h["类型"] == "股票"]["比例(%)"].sum())
         fund_sum = float(h[h["类型"] == "基金"]["比例(%)"].sum())
 
-    top_managers = managers.head(5).to_dict("records") if not managers.empty else []
-
-    # 经济周期检测
-    cycle_info = None
-    if _HAS_CYCLE:
-        try:
-            ca = detect_cycle_phase()
-            cycle_info = {
-                "phase": ca.phase.value,
-                "phase_label": {
-                    "early_expansion": "早期扩张",
-                    "late_expansion": "后期扩张",
-                    "overheating": "过热",
-                    "contraction": "收缩",
-                    "deleveraging": "去杠杆",
-                    "unknown": "无法判断",
-                }.get(ca.phase.value, ca.phase.value),
-                "confidence": f"{ca.confidence:.0%}",
-                "description": ca.description,
-                "weights": ca.adjusted_weights,
-            }
-        except Exception:
-            cycle_info = None
-
-    html = _render("dashboard.html", {
-        "active_page": "dashboard",
+    top_managers = managers.head(5)
+    dashboard = {
+        "date": date,
         "signal_stats": signal_stats,
-        "holdings": holdings.to_dict("records"),
-        "stock_sum": stock_sum,
-        "fund_sum": fund_sum,
-        "top_managers": top_managers,
-        "cycle_info": cycle_info,
+        "holdings": _records(holdings),
+        "stock_sum": round(stock_sum, 2),
+        "fund_sum": round(fund_sum, 2),
+        "top_managers": _records(top_managers),
+        "cycle_info": _cycle_info(),
+    }
+    _write_json(out / "dashboard.json", dashboard)
+
+    # --- signals ---
+    _write_json(out / "signals.json", {"rows": _records(signals)})
+
+    # --- managers（全部行，前端分页）---
+    _write_json(out / "managers.json", {"rows": _records(managers)})
+
+    # --- funds（成立天数>=90，取前 2000 名，前端再做 min_days 筛选）---
+    funds = ds.get_fund_annual_returns(min_days=90, date=date)
+    if funds is not None and not funds.empty and len(funds) > FUNDS_MAX_ROWS:
+        funds = funds.iloc[:FUNDS_MAX_ROWS]
+    _write_json(out / "funds.json", {"rows": _records(funds), "max_rows": FUNDS_MAX_ROWS})
+
+    # --- elite ---
+    _write_json(out / "elite.json", {
+        "funds": _records(ds.get_elite_funds(date)),
+        "stocks": _records(ds.get_elite_stocks(date)),
     })
-    _write("index.html", html)
 
-
-def generate_signals() -> None:
-    """每日调仓信号页"""
-    signals = ds.get_signals()
-    rows = signals.to_dict("records") if signals is not None and not signals.empty else []
-    has_data = signals is not None and not signals.empty
-    html = _render("signals.html", {
-        "active_page": "signals",
-        "signals": rows,
-        "has_data": has_data,
-        "filter_type": "",
-    })
-    _write("signals.html", html)
-
-
-def generate_holdings() -> None:
-    """我的持仓页"""
-    holdings = ds.get_holdings()
-    html = _render("holdings.html", {
-        "active_page": "holdings",
-        "holdings": holdings.to_dict("records"),
-    })
-    _write("holdings.html", html)
-
-
-def generate_managers() -> None:
-    """经理排名页（含分页）"""
-    managers = ds.get_manager_rankings()
-    total = len(managers)
-    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
-    for page in range(1, total_pages + 1):
-        start = (page - 1) * PER_PAGE
-        paged = managers.iloc[start:start + PER_PAGE].to_dict("records")
-        filename = "managers.html" if page == 1 else f"managers_page{page}.html"
-        html = _render("managers.html", {
-            "active_page": "managers",
-            "managers": paged,
-            "page": page,
-            "total_pages": total_pages,
-            "total": total,
-        })
-        _write(filename, html)
-
-
-def generate_funds() -> None:
-    """基金排名页（默认 min_days=180）"""
-    min_days = 180
-    funds = ds.get_fund_annual_returns(min_days=min_days)
-    total = len(funds)
-    total_pages = max(1, (total + PER_PAGE - 1) // PER_PAGE)
-    for page in range(1, total_pages + 1):
-        start = (page - 1) * PER_PAGE
-        paged = funds.iloc[start:start + PER_PAGE].to_dict("records")
-        filename = "funds.html" if page == 1 else f"funds_page{page}.html"
-        html = _render("funds.html", {
-            "active_page": "funds",
-            "funds": paged,
-            "page": page,
-            "total_pages": total_pages,
-            "total": total,
-            "min_days": min_days,
-        })
-        _write(filename, html)
-
-
-def generate_elite() -> None:
-    """绩优标的页"""
-    funds = ds.get_elite_funds()
-    stocks = ds.get_elite_stocks()
-    html = _render("elite.html", {
-        "active_page": "elite",
-        "elite_funds": funds.to_dict("records"),
-        "elite_stocks": stocks.to_dict("records"),
-    })
-    _write("elite.html", html)
-
-
-def generate_backtest() -> None:
-    """回测列表页 + 各回测详情页"""
-    results = ds.get_backtest_results()
-
-    # 回测列表页
-    html = _render("backtest.html", {
-        "active_page": "backtest",
-        "results": results,
-        "view_id": "",
-        "summary_html": "",
-        "chart_file": "",
-    })
-    _write("backtest.html", html)
-
-    # 每个回测的详情页
-    backtest_tpl = env.get_template("backtest.html")
+    # --- backtest（含 md 预渲染 HTML）---
+    results = ds.get_backtest_results(date)
     for r in results:
-        summary_html = ""
-        if "md" in r:
-            md_text = ds.read_md_file(r["md"])
-            summary_html = _md_to_html(md_text)
-        chart_file = r.get("chart", "")
-        detail_html = backtest_tpl.render(**_static_context({
-            "active_page": "backtest",
-            "results": results,
-            "view_id": r["id"],
-            "summary_html": summary_html,
-            "chart_file": chart_file,
-        }))
-        _write(f"backtest_{r['id']}.html", detail_html)
+        r["summary_html"] = _md_to_html(ds.read_md_file(r["md"])) if "md" in r else ""
+    _write_json(out / "backtest.json", {"results": results})
 
 
-def generate_pipeline() -> None:
-    """流水线页（静态版）"""
-    html = _render("pipeline_static.html", {
-        "active_page": "pipeline",
-    })
-    _write("pipeline.html", html)
+def generate_global_data() -> None:
+    """无日期概念的全局数据。"""
+    print("全局数据:")
+    _write_json(DATA_DIR / "holdings.json", {"rows": _records(ds.get_holdings())})
+
+
+def generate_manifest(dates: list[str]) -> None:
+    manifest = {
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "dates": dates,
+        "latest": dates[0] if dates else "",
+        "retain": RETAIN_DATES,
+    }
+    _write_json(DATA_DIR / "manifest.json", manifest)
 
 
 # ------------------------------------------------------------------
-# 清理过期页面
+# 清理过期文件（旧分页/详情页、超保留期的数据、过期图表）
 # ------------------------------------------------------------------
 
 
-def _cleanup_stale_pages() -> None:
-    """删除 docs/ 中由之前生成但本次不再需要的分页/回测文件及图表。"""
+def _cleanup_stale(retained_dates: set[str]) -> None:
+    print("清理过期文件:")
     removed = 0
 
-    # 1) docs/ 根目录下的分页 HTML 和回测详情页
+    # 1) 旧版分页 HTML / 回测详情 HTML
     for f in DOCS_DIR.iterdir():
         if not f.is_file():
             continue
         name = f.name
-        is_generated = (
+        is_old = (
             (name.startswith("funds_page") or name.startswith("managers_page"))
             and name.endswith(".html")
         ) or (
-            name.startswith("backtest_") and not name == "backtest.html" and name.endswith(".html")
+            name.startswith("backtest_") and name != "backtest.html" and name.endswith(".html")
         )
-        if not is_generated:
-            continue
-        if name not in _generated_files:
-            try:
-                f.unlink()
-                removed += 1
-                print(f"  [删除过期] {name}")
-            except OSError:
-                pass
+        if is_old:
+            f.unlink()
+            removed += 1
 
-    # 2) docs/charts/ 下的图表 PNG
+    # 2) data/ 下超出保留期的日期目录
+    if DATA_DIR.is_dir():
+        for d in DATA_DIR.iterdir():
+            if d.is_dir() and d.name not in retained_dates:
+                shutil.rmtree(d)
+                removed += 1
+
+    # 3) charts/ 下日期不在保留期的 PNG
     charts_dir = DOCS_DIR / "charts"
     if charts_dir.is_dir():
         for f in charts_dir.iterdir():
-            if not f.is_file():
-                continue
-            key = f"charts/{f.name}"
-            if key not in _generated_files:
-                try:
-                    f.unlink()
-                    removed += 1
-                    print(f"  [删除过期] {key}")
-                except OSError:
-                    pass
+            m = re.search(r"(\d{8})$", f.stem)
+            if m and m.group(1) not in retained_dates:
+                f.unlink()
+                removed += 1
 
-    if removed:
-        print(f"  共删除 {removed} 个过期文件")
-    else:
-        print(f"  没有需要清理的过期文件")
+    print(f"  共删除 {removed} 个过期文件")
 
 
 # ------------------------------------------------------------------
@@ -439,29 +280,33 @@ def _cleanup_stale_pages() -> None:
 def main() -> None:
     DOCS_DIR.mkdir(exist_ok=True)
 
-    print("生成静态页面 → docs/")
+    print("生成纯静态站点 → docs/")
     print()
 
-    print("页面:")
-    generate_index()
-    generate_signals()
-    generate_holdings()
-    generate_managers()
-    generate_funds()
-    generate_elite()
-    generate_backtest()
-    generate_pipeline()
+    dates = ds.available_dates()
+    retained = dates[:RETAIN_DATES]
+
+    print(f"数据日期: {len(dates)} 个，保留最近 {len(retained)} 个（{retained[0] if retained else '无'} 起）")
+    print()
+    print("页面: 8 个静态壳（src/static_site/ 原样拷贝）")
+    print()
+
+    if retained:
+        print("数据 JSON:")
+        for i, d in enumerate(retained):
+            print(f"  [{d}]")
+            generate_data_for_date(d)
+        generate_global_data()
+        generate_manifest(retained)
+        print()
+
+    _copy_static_assets()
+    print()
+
+    _cleanup_stale(set(retained))
 
     print()
-    print("静态资源:")
-    _copy_assets()
-
-    print()
-    print("清理过期页面:")
-    _cleanup_stale_pages()
-
-    print()
-    print(f"完成。打开 docs/index.html 即可预览。")
+    print("完成。打开 docs/index.html 即可预览（数据由前端 fetch JSON 渲染）。")
 
 
 if __name__ == "__main__":
