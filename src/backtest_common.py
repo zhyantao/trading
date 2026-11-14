@@ -290,7 +290,8 @@ def plot_backtest_result(
     title: str = "回测结果",
 ) -> None:
     """
-    生成 2x2 组合图：净值走势、回撤曲线、年度收益、月度收益热力图。
+    生成纵向组合图：每行一张图（净值走势 / 回撤曲线 / 年度收益 / 绩效指标）。
+    相比 2x2 网格，每张图都占满画布宽度，字号也相应放大，缩放到页面宽度后依旧清晰。
     """
     import matplotlib
     matplotlib.use("Agg")
@@ -298,15 +299,14 @@ def plot_backtest_result(
     import matplotlib.ticker as mticker
     import matplotlib.dates as mdates
 
-    # 页面会把图片缩放到容器宽度，默认字号（10pt）缩小后几乎看不清。
-    # 适当放大字号并缩小画布物理尺寸，保证缩放后文字依旧清晰。
+    # 页面会把图片缩放到容器宽度（约 1400px），字号必须按缩放比放大
     plt.rcParams.update({
-        "font.size": 13,
-        "axes.titlesize": 15,
-        "axes.labelsize": 13,
-        "xtick.labelsize": 11,
-        "ytick.labelsize": 11,
-        "legend.fontsize": 11,
+        "font.size": 16,
+        "axes.titlesize": 19,
+        "axes.labelsize": 16,
+        "xtick.labelsize": 14,
+        "ytick.labelsize": 14,
+        "legend.fontsize": 15,
     })
 
     # 中文字体
@@ -316,65 +316,69 @@ def plot_backtest_result(
     eq["日期"] = pd.to_datetime(eq["日期"])
     eq = eq.sort_values("日期")
 
-    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    fig.suptitle(title, fontsize=19, fontweight="bold")
+    # 4 行 × 1 列：每行一张图，单图宽度由原来的 ~7in 提升到 16in
+    fig, axes = plt.subplots(
+        4, 1, figsize=(16, 18),
+        gridspec_kw={"height_ratios": [1.0, 0.8, 0.8, 0.55]},
+    )
+    fig.suptitle(title, fontsize=24, fontweight="bold", y=0.995)
 
-    # 日期轴只保留 5~6 个刻度，避免标签挤在一起
+    # 日期轴按可用宽度自动选刻度，避免标签挤在一起
     def _date_axis(ax):
-        loc = mdates.AutoDateLocator(minticks=4, maxticks=6)
+        loc = mdates.AutoDateLocator(minticks=5, maxticks=9)
         ax.xaxis.set_major_locator(loc)
         ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(loc))
 
-    # ---- (0,0) 净值走势 ----
-    ax0 = axes[0, 0]
-    ax0.plot(eq["日期"], eq["总资产"] / metrics.initial_cash, color="#1f77b4", linewidth=1.2, label="策略净值")
+    # ---- 第 1 行：净值走势 ----
+    ax0 = axes[0]
+    ax0.plot(eq["日期"], eq["总资产"] / metrics.initial_cash, color="#1f77b4", linewidth=1.8, label="策略净值")
     if benchmark_s is not None and not benchmark_s.empty:
         bm = benchmark_s.reset_index()
         bm.columns = ["日期", "基准净值"]
         bm["日期"] = pd.to_datetime(bm["日期"])
         bm = bm.sort_values("日期")
         bm["基准净值"] = bm["基准净值"] / bm["基准净值"].iloc[0]
-        ax0.plot(bm["日期"], bm["基准净值"], color="#ff7f0e", linewidth=0.8, linestyle="--", label="基准净值")
-    ax0.axhline(y=1.0, color="gray", linewidth=0.5, linestyle=":")
-    ax0.set_title("净值走势")
-    ax0.legend(loc="upper left", fontsize=11)
+        ax0.plot(bm["日期"], bm["基准净值"], color="#ff7f0e", linewidth=1.2, linestyle="--", label="基准净值")
+    ax0.axhline(y=1.0, color="gray", linewidth=0.7, linestyle=":")
+    ax0.set_title("净值走势", pad=10)
+    ax0.legend(loc="upper left", fontsize=15, framealpha=0.9)
     ax0.set_ylabel("净值")
-    ax0.grid(True, alpha=0.3)
+    ax0.grid(True, alpha=0.35)
     _date_axis(ax0)
 
-    # ---- (0,1) 回撤曲线 ----
-    ax1 = axes[0, 1]
+    # ---- 第 2 行：回撤曲线 ----
+    ax1 = axes[1]
     if "回撤" in eq.columns:
         ax1.fill_between(eq["日期"], 0, eq["回撤"] * 100, color="#d62728", alpha=0.3, linewidth=0)
-        ax1.plot(eq["日期"], eq["回撤"] * 100, color="#d62728", linewidth=0.8)
-    ax1.set_title("回撤曲线")
+        ax1.plot(eq["日期"], eq["回撤"] * 100, color="#d62728", linewidth=1.2)
+    ax1.set_title("回撤曲线", pad=10)
     ax1.set_ylabel("回撤 (%)")
     ax1.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.0f%%"))
-    ax1.grid(True, alpha=0.3)
+    ax1.grid(True, alpha=0.35)
     _date_axis(ax1)
     ax1.invert_yaxis()
 
-    # ---- (1,0) 年度收益柱状图 ----
-    ax2 = axes[1, 0]
+    # ---- 第 3 行：年度收益柱状图 ----
+    ax2 = axes[2]
     yrs = sorted(metrics.yearly_returns.keys())
     if yrs:
         vals = [metrics.yearly_returns[y] * 100 for y in yrs]
         colors = ["#2ca02c" if v >= 0 else "#d62728" for v in vals]
-        bars = ax2.bar([str(y) for y in yrs], vals, color=colors, edgecolor="white")
-        ax2.axhline(y=0, color="gray", linewidth=0.5)
-        ax2.set_title("年度收益")
+        bars = ax2.bar([str(y) for y in yrs], vals, width=0.55, color=colors, edgecolor="white")
+        ax2.axhline(y=0, color="gray", linewidth=0.7)
+        ax2.set_title("年度收益", pad=10)
         ax2.set_ylabel("收益率 (%)")
         ax2.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.0f%%"))
-        # 柱顶标注
+        # 柱顶标注（图注字号一并放大）
         for bar, val in zip(bars, vals):
-            ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.5 if val >= 0 else -1.5),
-                     f"{val:.1f}%", ha="center", fontsize=11)
+            ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.8 if val >= 0 else -2.5),
+                     f"{val:.1f}%", ha="center", fontsize=15, fontweight="bold")
     else:
         ax2.text(0.5, 0.5, "不足一年", transform=ax2.transAxes, ha="center", va="center")
-    ax2.grid(True, alpha=0.3, axis="y")
+    ax2.grid(True, alpha=0.35, axis="y")
 
-    # ---- (1,1) 信息/指标表 ----
-    ax3 = axes[1, 1]
+    # ---- 第 4 行：绩效指标（铺满宽度，分 4 列排布） ----
+    ax3 = axes[3]
     ax3.axis("off")
     lines = [
         f"累计收益: {metrics.total_return*100:.2f}%",
@@ -394,14 +398,19 @@ def plot_backtest_result(
             f"Alpha:    {metrics.alpha*100:.2f}%",
             f"信息比率: {metrics.information_ratio:.2f}",
         ]
-    # 左对齐
-    text = "\n".join(lines)
-    ax3.text(0.05, 0.95, text, transform=ax3.transAxes, fontsize=13, verticalalignment="top", fontfamily="sans-serif")
-    ax3.set_title("绩效指标")
+    cols = 4
+    per = (len(lines) + cols - 1) // cols
+    for i in range(cols):
+        chunk = lines[i * per:(i + 1) * per]
+        if not chunk:
+            continue
+        ax3.text(0.02 + i * 0.25, 0.88, "\n".join(chunk), transform=ax3.transAxes,
+                 fontsize=15, verticalalignment="top", fontfamily="sans-serif", linespacing=1.7)
+    ax3.set_title("绩效指标", pad=10)
 
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, dpi=220, bbox_inches="tight")
+    fig.savefig(out_path, dpi=200, bbox_inches="tight")
     plt.close(fig)
     print(f"图表已保存：{out_path}")
 
