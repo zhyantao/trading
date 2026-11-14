@@ -22,11 +22,19 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# 绕过 macOS 系统代理
+# 代理策略：若环境显式配置了 HTTP(S)_PROXY（本地代理 / 企业网络），尊重它；
+# 否则屏蔽 macOS 系统代理探测，避免子进程被一个失效的系统代理拖住。
+# GitHub Actions runner 没有代理变量，此分支无副作用。
 import urllib.request as _ur
-_ur.getproxies = lambda: {}
-os.environ["no_proxy"] = "*"
-os.environ["NO_PROXY"] = "*"
+
+_explicit_proxy = any(
+    os.environ.get(k)
+    for k in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy")
+)
+if not _explicit_proxy:
+    _ur.getproxies = lambda: {}
+    os.environ["no_proxy"] = "*"
+    os.environ["NO_PROXY"] = "*"
 
 
 def run(cmd: list[str], retries: int = 3, delay: float = 5.0) -> None:

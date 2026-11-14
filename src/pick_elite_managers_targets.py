@@ -30,6 +30,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from fund_holdings_source import get_holdings
+
 
 def _latest(out_dir: Path, pattern: str) -> Path:
     files = sorted(out_dir.glob(pattern))
@@ -68,35 +70,16 @@ def _quarter_key(s: str) -> tuple[int, int]:
     return (int(m.group(1)), int(m.group(2)))
 
 
-def fetch_latest_stock_holding(fund_code: str, years_back: int = 6, sleep_s: float = 0.2) -> pd.DataFrame:
-    """
-    抓取基金最新季度股票持仓（重仓股）。
-    返回字段：股票代码, 股票名称, 占净值比例
-    """
-    import akshare as ak
+def fetch_latest_stock_holding(fund_code: str, years_back: int = 3, sleep_s: float = 0.3) -> pd.DataFrame:
+    """抓取基金最新季度重仓股。
 
-    this_year = datetime.now().year
-    last_exc: Exception | None = None
-    for y in range(this_year, this_year - years_back, -1):
-        try:
-            df = ak.fund_portfolio_hold_em(symbol=fund_code, date=str(y))
-            time.sleep(sleep_s)
-            if df is None or df.empty:
-                continue
-            # 取最新季度
-            df = df.copy()
-            df["_qkey"] = df["季度"].map(_quarter_key)
-            latest = df["_qkey"].max()
-            df = df[df["_qkey"] == latest].copy()
-            df["占净值比例"] = pd.to_numeric(df["占净值比例"], errors="coerce")
-            df = df.dropna(subset=["占净值比例"])
-            return df[["股票代码", "股票名称", "占净值比例", "季度"]].reset_index(drop=True)
-        except Exception:
-            last_exc = sys.exc_info()
-            continue
-    if last_exc:
-        raise last_exc[1].with_traceback(last_exc[2])
-    return pd.DataFrame(columns=["股票代码", "股票名称", "占净值比例", "季度"])
+    实际实现见 ``fund_holdings_source``：带 Referer 的 F10 直连 + 超时/重试 +
+    季度缓存兜底。保留此函数只是为了兼容旧调用方。
+    """
+    from fund_holdings_source import get_holdings
+
+    df, _src = get_holdings(fund_code, years_back=years_back, sleep_s=sleep_s)
+    return df
 
 
 def main() -> None:
@@ -163,6 +146,14 @@ def main() -> None:
     if picked_mgr.empty:
         raise RuntimeError("未筛选到满足条件的基金经理（可能过滤条件过严或数据缺失）")
 
+    # 输出列固定，即使某类数据为空也要写出表头，避免下游 read_csv 抛 EmptyDataError
+    fund_cols = (["数据生成时间", "经理排名"] + mgr_cols +
+                 ["基金Top", "基金代码", "基金简称", "基金年化排名", "成立日",
+                  "成立天数", "成立来", "成立来年化", "近1年"])
+    stock_cols = (["数据生成时间", "经理排名"] + mgr_cols +
+                  ["股票Top", "股票代码", "股票名称", "汇总占净值比例",
+                   "出现基金数", "最新季度", "Top3基金列表"])
+
     # 输出：基金Top3
     stamp = datetime.now().strftime("%Y%m%d")
     funds_out = out_dir / f"绩优基金经理_基金Top3_{stamp}.csv"
@@ -170,6 +161,7 @@ def main() -> None:
 
     fund_rows: list[dict] = []
     stock_rows: list[dict] = []
+    source_stats: dict[str, int] = {}
 
     # 避免重复抓取同一基金持仓
     holding_cache: dict[str, pd.DataFrame] = {}
@@ -180,31 +172,14 @@ def main() -> None:
         for c, v in zip(mgr_cols, mgr_key):
             sub = sub[sub[c] == v]
 
-        # 候选基金：按成立来年化降序，同一基金不同份额只保留最优
+        # 候选基金：按成立来年化降序，同一基金不同份额只保留最优。
+        # 基金标的只依赖本地关联表，不再依赖重仓股抓取是否成功。
         sub = sub.drop_duplicates(subset=["基金代码"])
         sub = _pick_best_share(sub)
         sub = sub.sort_values(["成立来年化", "基金年化排名"], ascending=[False, True])
-
-        chosen_funds = []
-        for _, fr in sub.iterrows():
-            code = str(fr["基金代码"]).zfill(6)
-            if code in holding_cache:
-                ok = not holding_cache[code].empty
-            else:
-                try:
-                    holding_cache[code] = fetch_latest_stock_holding(code, sleep_s=args.sleep)
-                    ok = not holding_cache[code].empty
-                except Exception:
-                    holding_cache[code] = pd.DataFrame()
-                    ok = False
-            if not ok:
-                continue
-            chosen_funds.append(fr)
-            if len(chosen_funds) >= args.fund_topk:
-                break
+        chosen_funds = [fr for _, fr in sub.head(args.fund_topk).iterrows()]
 
         if not chosen_funds:
-            # 该经理无法抓到持仓数据，跳过
             continue
 
         # 记录基金 Top3
@@ -230,7 +205,11 @@ def main() -> None:
         all_hold = []
         for fr in chosen_funds:
             code = str(fr["基金代码"]).zfill(6)
-            h = holding_cache.get(code)
+            if code not in holding_cache:
+                h, src = get_holdings(code, years_back=3, sleep_s=args.sleep)
+                holding_cache[code] = h
+                source_stats[src] = source_stats.get(src, 0) + 1
+            h = holding_cache[code]
             if h is None or h.empty:
                 continue
             tmp = h.copy()
@@ -268,13 +247,16 @@ def main() -> None:
                 }
             )
 
-    fund_df = pd.DataFrame(fund_rows)
-    stock_df = pd.DataFrame(stock_rows)
+    fund_df = pd.DataFrame(fund_rows, columns=fund_cols)
+    stock_df = pd.DataFrame(stock_rows, columns=stock_cols)
 
     fund_df.to_csv(funds_out, index=False, encoding="utf-8-sig")
     stock_df.to_csv(stocks_out, index=False, encoding="utf-8-sig")
     print(f"完成：{funds_out}  行数={len(fund_df):,}")
     print(f"完成：{stocks_out}  行数={len(stock_df):,}")
+    print(f"[holdings] 抓取来源统计: {source_stats or '{}'}")
+    if stock_df.empty:
+        print("[warn] 未抓到任何基金重仓股，股票标的为空；基金标的仍正常输出", file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -283,20 +283,22 @@ def _date_is_complete(date: str) -> bool:
     本地或 CI 里管道中途失败时，out/ 会留下半成品日期（例如只有排名、
     没有调仓信号与绩优标的）。若不跳过，前端会把残缺日期当成「最新数据」。
     """
-    required = [
+    # 信号 / 基金排名 / 基金标的必须有数据行；股票标的允许只有表头
+    # （重仓股接口临时不可用时，缓存回退可能为空，但基金标的仍应正常发布）
+    with_rows = [
         f"每日调仓信号_{date}.csv",
         f"基金年化收益率排序_{date}.csv",
         f"绩优基金经理_基金Top3_{date}.csv",
-        f"绩优基金经理_股票Top10_{date}.csv",
     ]
-    for name in required:
+    must_exist = [f"绩优基金经理_股票Top10_{date}.csv"]
+    for name in with_rows:
         fp = ds.out_dir / name
         if not fp.is_file():
             return False
         with fp.open("r", encoding="utf-8-sig", errors="ignore") as f:
             if sum(1 for _ in f) < 2:  # 只有表头 → 视为空数据
                 return False
-    return True
+    return all((ds.out_dir / name).is_file() for name in must_exist)
 
 
 def main() -> None:

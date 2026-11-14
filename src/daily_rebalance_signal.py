@@ -43,43 +43,20 @@ def _quarter_key(s: str) -> tuple[int, int]:
 def fetch_latest_change_one_fund(
     fund_code: str,
     indicator: str,
-    years_back: int = 6,
+    years_back: int = 3,
     sleep_s: float = 0.2,
 ) -> pd.DataFrame:
-    """
-    获取某基金“重大变动”最新季度数据（累计买入/累计卖出）。
-    """
-    import akshare as ak
+    """获取某基金“重大变动”最新季度数据（累计买入/累计卖出）。
 
-    this_year = datetime.now().year
-    last_exc: Exception | None = None
-    for y in range(this_year, this_year - years_back, -1):
-        try:
-            df = ak.fund_portfolio_change_em(symbol=fund_code, indicator=indicator, date=str(y))
-            time.sleep(sleep_s)
-            if df is None or df.empty:
-                continue
-            df = df.copy()
-            df["_qkey"] = df["季度"].map(_quarter_key)
-            latest = df["_qkey"].max()
-            df = df[df["_qkey"] == latest].copy()
-            # 统一数值字段
-            if "占期初基金资产净值比例" in df.columns:
-                df["占期初基金资产净值比例"] = pd.to_numeric(df["占期初基金资产净值比例"], errors="coerce")
-            if "本期累计买入金额" in df.columns:
-                df["本期累计买入金额"] = pd.to_numeric(df["本期累计买入金额"], errors="coerce")
-            if "本期累计卖出金额" in df.columns:
-                df["本期累计卖出金额"] = pd.to_numeric(df["本期累计卖出金额"], errors="coerce")
-            return df.reset_index(drop=True)
-        except KeyError:
-            # akshare 对 API 返回空数据的基金可能 KeyError('序号')（内部 bug），视为无数据
-            continue
-        except Exception:
-            last_exc = sys.exc_info()
-            continue
-    if last_exc:
-        raise last_exc[1].with_traceback(last_exc[2])
-    return pd.DataFrame()
+    改用 ``fund_holdings_source``：F10 直连带 Referer + 超时 + 季度缓存兜底，
+    不再依赖 akshare 那个缺少 Referer 而返回 404 的旧接口。
+    """
+    from fund_holdings_source import get_fund_changes
+
+    df, _src = get_fund_changes(
+        fund_code, indicator, years_back=years_back, sleep_s=sleep_s
+    )
+    return df
 
 
 def main() -> None:

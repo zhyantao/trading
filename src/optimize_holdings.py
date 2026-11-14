@@ -18,10 +18,24 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
+
+
+def _read_csv_safe(path: Path, dtype: dict, required_cols: list[str]) -> pd.DataFrame:
+    """空文件/只有表头时返回带正确列的空表，避免 EmptyDataError 拖垮整条流水线。"""
+    try:
+        df = pd.read_csv(path, dtype=dtype)
+    except pd.errors.EmptyDataError:
+        print(f"[warn] {path.name} 为空，按空表处理（该日股票标的可能缺失）", file=sys.stderr)
+        df = pd.DataFrame()
+    for col in required_cols:
+        if col not in df.columns:
+            df[col] = ""
+    return df
 
 
 def _latest(out_dir: Path, pattern: str) -> Path:
@@ -125,8 +139,14 @@ def main() -> None:
     if not stocks_path.is_absolute():
         stocks_path = (root / stocks_path).resolve()
 
-    funds = pd.read_csv(funds_path, dtype={"基金代码": str})
-    stocks = pd.read_csv(stocks_path, dtype={"股票代码": str})
+    funds = _read_csv_safe(
+        funds_path, {"基金代码": str},
+        ["基金代码", "基金简称", "成立来年化"],
+    )
+    stocks = _read_csv_safe(
+        stocks_path, {"股票代码": str},
+        ["股票代码", "股票名称", "汇总占净值比例", "经理排名"],
+    )
 
     # 股票得分：汇总占净值比例（越高越好）
     stocks["汇总占净值比例"] = pd.to_numeric(stocks.get("汇总占净值比例"), errors="coerce").fillna(0.0)

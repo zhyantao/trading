@@ -35,6 +35,9 @@ jobs:
         env:
           MPLBACKEND: Agg
           TZ: Asia/Shanghai
+          PYTHONUNBUFFERED: "1"
+          # F10 持仓缓存有效期（天）；持仓按季度披露，不必每天重抓
+          HOLDINGS_MAX_AGE_DAYS: "7"
         run: python src/daily_run.py
 
       - name: Generate static site
@@ -44,7 +47,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs
+          git add docs data
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
