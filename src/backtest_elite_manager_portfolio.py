@@ -13,7 +13,7 @@
 - 基准对比：沪深300（默认），可通过 --benchmark 切换
 
 数据来源（公开接口，AkShare 封装）：
-- 基金季度持仓：fund_portfolio_hold_em（天天基金）
+- 基金季度持仓：fund_holdings_source（天天基金 F10 直连，带 Referer + 季度缓存）
 - 股票日行情：stock_zh_a_hist（东方财富，建议前复权 qfq）
 - 交易日历：tool_trade_date_hist_sina（新浪）
 - 基准指数：stock_zh_index_daily（东方财富）
@@ -135,55 +135,22 @@ def fetch_fund_quarter_holdings(
     sleep_s: float = 0.2,
     cache_dir: Path | None = None,
 ) -> dict[date, pd.DataFrame]:
-    """返回：{季度末日期 -> DataFrame(股票代码, 股票名称, 占净值比例)}"""
-    import akshare as ak
-    import requests as _requests
+    """返回：{季度末日期 -> DataFrame(股票代码, 股票名称, 占净值比例)}。
+
+    原先调用 akshare 的 ``fund_portfolio_hold_em``，该接口缺少 Referer 会被
+    天天基金返回 404。现改为 ``fund_holdings_source`` 的带 Referer / 超时 /
+    仓库缓存实现；``cache_dir`` 仅为兼容旧调用签名保留。
+    """
+    from fund_holdings_source import get_holdings_history
 
     out: dict[date, pd.DataFrame] = {}
-    for y in range(end_year, start_year - 1, -1):
-        # ── 磁盘缓存 ──
-        if cache_dir is not None:
-            cache_dir.mkdir(parents=True, exist_ok=True)
-            fp = cache_dir / f"holdings_{fund_code}_{y}.csv"
-            if fp.exists() and fp.stat().st_size > 0:
-                cached = pd.read_csv(fp)
-                if not cached.empty and "季度" in cached.columns and "占净值比例" in cached.columns and "股票代码" in cached.columns:
-                    _process_quarter_holdings(cached, out)
-                    continue
-            if fp.exists():
-                fp.unlink()
-
-        # ── 下载（3 次重试）──
-        df = None
-        last_exc: Exception | None = None
-        for _ in range(3):
-            try:
-                df = ak.fund_portfolio_hold_em(symbol=fund_code, date=str(y))
-                last_exc = None
-                break
-            except KeyError:
-                # akshare bug：API 返回空数据时内部 del big_df["序号"] 失败
-                df = None
-                break
-            except _requests.exceptions.ConnectionError:
-                last_exc = sys.exc_info()[1]
-                time.sleep(max(1.0, sleep_s) * 2)
-            except Exception:
-                last_exc = sys.exc_info()[1]
-                time.sleep(max(1.0, sleep_s) * 2)
-
-        time.sleep(sleep_s)
-
-        if df is None or df.empty:
-            if last_exc is not None:
-                print(f"[WARN] fund {fund_code} year {y}: download failed after retries: {last_exc}")
-            continue
-
-        # ── 写缓存 ──
-        if cache_dir is not None:
-            df.to_csv(fp, index=False, encoding="utf-8")
-
-        _process_quarter_holdings(df, out)
+    raw = get_holdings_history(
+        fund_code, start_year=start_year, end_year=end_year, sleep_s=sleep_s
+    )
+    if raw is None or raw.empty:
+        print(f"[WARN] fund {fund_code}: 未获取到任何季度持仓（线上与缓存均无数据）")
+        return out
+    _process_quarter_holdings(raw, out)
     return out
 
 

@@ -57,12 +57,12 @@ def _empty(cols: list[str] | None = None) -> pd.DataFrame:
 
 
 def _load_cache() -> dict:
-    empty = {"updated_at": "", "entries": {}, "changes": {}}
+    empty = {"updated_at": "", "entries": {}, "changes": {}, "history": {}}
     if not CACHE_PATH.is_file():
         return empty
     try:
         data = json.loads(CACHE_PATH.read_text(encoding="utf-8"))
-        for key in ("entries", "changes"):
+        for key in ("entries", "changes", "history"):
             if not isinstance(data.get(key), dict):
                 data[key] = {}
         return data
@@ -136,7 +136,8 @@ def _quarter(quarters: list[str], idx: int) -> str:
     return quarters[0] if quarters else ""
 
 
-def _parse_holdings(payload: dict) -> pd.DataFrame:
+def _parse_holdings_all(payload: dict) -> pd.DataFrame:
+    """解析某一年响应中的全部季度持仓表。"""
     quarters, tables = _parse_tables(payload)
     frames = []
     for idx, tbl in enumerate(tables):
@@ -154,8 +155,14 @@ def _parse_holdings(payload: dict) -> pd.DataFrame:
     if not frames:
         return _empty(HOLD_COLS)
     all_df = pd.concat(frames, ignore_index=True).dropna(subset=["占净值比例"])
+    return all_df[HOLD_COLS].reset_index(drop=True)
+
+
+def _parse_holdings(payload: dict) -> pd.DataFrame:
+    """只保留最新季度（用于「绩优标的」页面）。"""
+    all_df = _parse_holdings_all(payload)
     if all_df.empty:
-        return _empty(HOLD_COLS)
+        return all_df
     latest = max(str(q) for q in all_df["季度"].unique())
     return all_df[all_df["季度"] == latest][HOLD_COLS].reset_index(drop=True)
 
@@ -311,3 +318,54 @@ def get_fund_changes(
         print(f"[f10] {key} 回退重大变动缓存（{entry.get('quarter', '?')}）", file=sys.stderr)
         return _rows_to_df(entry["rows"], CHANGE_COLS, "占期初基金资产净值比例"), "stale-cache"
     return _empty(CHANGE_COLS), "failed"
+
+
+def get_holdings_history(
+    code: str,
+    start_year: int,
+    end_year: int,
+    sleep_s: float = 0.2,
+    force: bool = False,
+) -> pd.DataFrame:
+    """返回基金在 [start_year, end_year] 各季度的全部重仓股（供回测使用）。
+
+    历史季度数据一旦披露就不会变化，按 ``基金:年份`` 缓存；抓取失败时回退缓存。
+    返回列：股票代码 / 股票名称 / 占净值比例 / 季度。
+    """
+    code = str(code).zfill(6)
+    cache = _load_cache()
+    history = cache["history"]
+    session = requests.Session()
+    session.headers.update(HEADERS)
+    frames: list[pd.DataFrame] = []
+
+    for year in range(start_year, end_year + 1):
+        key = f"{code}:{year}"
+        entry = history.get(key)
+        if entry and not force and _cache_fresh(entry):
+            df = _rows_to_df(entry.get("rows") or [], HOLD_COLS, "占净值比例")
+        else:
+            try:
+                payload = _request_payload(session, {
+                    "type": "jjcc", "code": code, "topline": "10000",
+                    "year": str(year), "month": "", "rt": f"{time.time():.6f}",
+                })
+                df = _parse_holdings_all(payload)
+                history[key] = {
+                    "fetched_at": date.today().isoformat(),
+                    "rows": df[HOLD_COLS].to_dict("records"),
+                }
+                _save_cache(cache)
+            except Exception as exc:
+                print(f"[f10] {key} 历史持仓抓取失败：{type(exc).__name__}: {exc}", file=sys.stderr)
+                df = _rows_to_df(
+                    (entry or {}).get("rows") or [], HOLD_COLS, "占净值比例"
+                )
+            time.sleep(sleep_s)
+        if not df.empty:
+            frames.append(df)
+
+    if not frames:
+        return _empty(HOLD_COLS)
+    merged = pd.concat(frames, ignore_index=True)
+    return merged.drop_duplicates(subset=["季度", "股票代码"]).reset_index(drop=True)

@@ -51,6 +51,18 @@ def run(cmd: list[str], retries: int = 3, delay: float = 5.0) -> None:
             time.sleep(wait)
 
 
+def run_optional(cmd: list[str]) -> None:
+    """回测等「锦上添花」步骤：失败只告警，不阻断当天核心数据发布。"""
+    try:
+        run(cmd, retries=2, delay=5.0)
+    except subprocess.CalledProcessError as exc:
+        print(
+            f"[WARN] 可选步骤失败，跳过（不影响当日信号/排名数据）：{' '.join(cmd)} "
+            f"(exit {exc.returncode})",
+            file=sys.stderr,
+        )
+
+
 def cleanup_old_files(out_dir: Path, keep_days: int = 3) -> None:
     """删除 out/ 中超过 keep_days 天的旧数据文件，避免仓库无限膨胀。"""
     # 收集所有文件中的日期戳
@@ -106,8 +118,9 @@ def main() -> None:
     run([py, str(root / "src" / "pick_elite_managers_targets.py"), "--top-n", "20", "--min-days", "180"])
     run([py, str(root / "src" / "optimize_holdings.py")])
     run([py, str(root / "src" / "daily_rebalance_signal.py"), "--holdings", "out/我的持仓.csv"])
-    run([py, str(root / "src" / "backtest_fund_portfolio.py")])
-    run([py, str(root / "src" / "backtest_elite_manager_portfolio.py")])
+    # 回测依赖行情接口（push2his 等），偶尔不可用；失败不应拖垮当天的核心数据
+    run_optional([py, str(root / "src" / "backtest_fund_portfolio.py")])
+    run_optional([py, str(root / "src" / "backtest_elite_manager_portfolio.py")])
 
     # 清理 3 天前的旧数据文件，避免仓库膨胀
     cleanup_old_files(out_dir, keep_days=3)
