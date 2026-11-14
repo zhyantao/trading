@@ -43,6 +43,28 @@
     if (f === null) return '';
     return f > 0 ? 'color:var(--green);' : (f < 0 ? 'color:var(--red);' : '');
   }
+  /* ---------------- 外链：天天基金 / 雪球 ---------------- */
+  function stockPrefix(code) {
+    var c = String(code || '');
+    if (/^(6|9)/.test(c)) return 'SH';
+    if (/^(0|2|3)/.test(c)) return 'SZ';
+    if (/^(4|8)/.test(c)) return 'BJ';
+    return '';
+  }
+  function codeLink(type, code) {
+    if (!code) return '';
+    var url;
+    if (type === '股票') {
+      var p = stockPrefix(code);
+      if (!p) return esc(code);
+      url = 'https://xueqiu.com/S/' + p + code;
+    } else {
+      url = 'https://fund.eastmoney.com/' + code + '.html';
+    }
+    return '<a class="code-link" href="' + url + '" target="_blank" rel="noopener noreferrer" title="查看行情">' +
+      esc(code) + '</a>';
+  }
+
   function pageUrl(page, extra) {
     var p = new URLSearchParams(location.search);
     p.set('page', String(page));
@@ -274,7 +296,7 @@
           (tag.indexOf('继续') >= 0 ? 'tag-hold' : 'tag-nosig'));
       return '<tr>' +
         '<td><span class="tag ' + (s['资产类型'] === '股票' ? 'tag-stock' : 'tag-fund') + '">' + esc(s['资产类型']) + '</span></td>' +
-        '<td>' + esc(s['代码']) + '</td>' +
+        '<td>' + codeLink(s['资产类型'], s['代码']) + '</td>' +
         '<td>' + esc(s['名称']) + '</td>' +
         '<td>' + esc(s['是否持有']) + '</td>' +
         '<td><span class="tag ' + tagCls + '">' + esc(tag) + '</span></td>' +
@@ -312,7 +334,7 @@
       var color = h['类型'] === '股票' ? 'var(--accent)' : 'var(--green)';
       return '<tr>' +
         '<td><span class="tag ' + (h['类型'] === '股票' ? 'tag-stock' : 'tag-fund') + '">' + esc(h['类型']) + '</span></td>' +
-        '<td>' + esc(h['代码']) + '</td>' +
+        '<td>' + codeLink(h['类型'], h['代码']) + '</td>' +
         '<td>' + esc(h['名称']) + '</td>' +
         '<td style="font-weight:600;">' + num2(pct) + '%</td>' +
         '<td style="width:120px;"><div style="height:8px; background:#e0e0e0; overflow:hidden;">' +
@@ -370,7 +392,7 @@
     var body = pageSlice(filtered).map(function (f) {
       return '<tr>' +
         '<td style="font-weight:600;">' + esc(f['排名']) + '</td>' +
-        '<td>' + esc(f['基金代码']) + '</td>' +
+        '<td>' + codeLink('基金', f['基金代码']) + '</td>' +
         '<td>' + esc(f['基金简称']) + '</td>' +
         '<td style="' + pc(f['成立来年化']) + ' font-weight:600;">' + num2(f['成立来年化']) + '</td>' +
         '<td>' + num2(f['成立来']) + '</td>' +
@@ -404,14 +426,14 @@
     var fundRows = ef.map(function (f) {
       return '<tr>' +
         '<td>' + esc(f['经理排名']) + '</td><td>' + esc(f['姓名']) + '</td><td>' + esc(f['所属公司']) + '</td>' +
-        '<td>' + esc(f['基金代码']) + '</td><td>' + esc(f['基金简称']) + '</td>' +
+        '<td>' + codeLink('基金', f['基金代码']) + '</td><td>' + esc(f['基金简称']) + '</td>' +
         '<td style="' + pc(f['成立来年化']) + ' font-weight:600;">' + num2(f['成立来年化']) + '</td>' +
         '<td>' + num2(f['成立来']) + '</td><td>' + num2(f['近1年']) + '</td></tr>';
     }).join('');
     var stockRows = es.map(function (s) {
       return '<tr>' +
         '<td>' + esc(s['经理排名']) + '</td><td>' + esc(s['姓名']) + '</td><td>' + esc(s['所属公司']) + '</td>' +
-        '<td>' + esc(s['股票代码']) + '</td><td>' + esc(s['股票名称']) + '</td>' +
+        '<td>' + codeLink('股票', s['股票代码']) + '</td><td>' + esc(s['股票名称']) + '</td>' +
         '<td style="font-weight:600;">' + num2(s['汇总占净值比例']) + '</td>' +
         '<td>' + num2(s['出现基金数']) + '</td><td>' + esc(s['最新季度']) + '</td></tr>';
     }).join('');
