@@ -277,13 +277,39 @@ def _cleanup_stale(retained_dates: set[str]) -> None:
 # ------------------------------------------------------------------
 
 
+def _date_is_complete(date: str) -> bool:
+    """数据管道是否跑完整：核心文件必须存在且有数据行。
+
+    本地或 CI 里管道中途失败时，out/ 会留下半成品日期（例如只有排名、
+    没有调仓信号与绩优标的）。若不跳过，前端会把残缺日期当成「最新数据」。
+    """
+    required = [
+        f"每日调仓信号_{date}.csv",
+        f"基金年化收益率排序_{date}.csv",
+        f"绩优基金经理_基金Top3_{date}.csv",
+        f"绩优基金经理_股票Top10_{date}.csv",
+    ]
+    for name in required:
+        fp = ds.out_dir / name
+        if not fp.is_file():
+            return False
+        with fp.open("r", encoding="utf-8-sig", errors="ignore") as f:
+            if sum(1 for _ in f) < 2:  # 只有表头 → 视为空数据
+                return False
+    return True
+
+
 def main() -> None:
     DOCS_DIR.mkdir(exist_ok=True)
 
     print("生成纯静态站点 → docs/")
     print()
 
-    dates = ds.available_dates()
+    all_dates = ds.available_dates()
+    dates = [d for d in all_dates if _date_is_complete(d)]
+    skipped = [d for d in all_dates if d not in dates]
+    if skipped:
+        print(f"跳过数据不完整的日期: {', '.join(skipped)}")
     retained = dates[:RETAIN_DATES]
 
     print(f"数据日期: {len(dates)} 个，保留最近 {len(retained)} 个（{retained[0] if retained else '无'} 起）")

@@ -296,6 +296,18 @@ def plot_backtest_result(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     import matplotlib.ticker as mticker
+    import matplotlib.dates as mdates
+
+    # 页面会把图片缩放到容器宽度，默认字号（10pt）缩小后几乎看不清。
+    # 适当放大字号并缩小画布物理尺寸，保证缩放后文字依旧清晰。
+    plt.rcParams.update({
+        "font.size": 13,
+        "axes.titlesize": 15,
+        "axes.labelsize": 13,
+        "xtick.labelsize": 11,
+        "ytick.labelsize": 11,
+        "legend.fontsize": 11,
+    })
 
     # 中文字体
     _setup_chinese_font()
@@ -304,8 +316,14 @@ def plot_backtest_result(
     eq["日期"] = pd.to_datetime(eq["日期"])
     eq = eq.sort_values("日期")
 
-    fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-    fig.suptitle(title, fontsize=16, fontweight="bold")
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    fig.suptitle(title, fontsize=19, fontweight="bold")
+
+    # 日期轴只保留 5~6 个刻度，避免标签挤在一起
+    def _date_axis(ax):
+        loc = mdates.AutoDateLocator(minticks=4, maxticks=6)
+        ax.xaxis.set_major_locator(loc)
+        ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(loc))
 
     # ---- (0,0) 净值走势 ----
     ax0 = axes[0, 0]
@@ -319,9 +337,10 @@ def plot_backtest_result(
         ax0.plot(bm["日期"], bm["基准净值"], color="#ff7f0e", linewidth=0.8, linestyle="--", label="基准净值")
     ax0.axhline(y=1.0, color="gray", linewidth=0.5, linestyle=":")
     ax0.set_title("净值走势")
-    ax0.legend(loc="upper left", fontsize=8)
+    ax0.legend(loc="upper left", fontsize=11)
     ax0.set_ylabel("净值")
     ax0.grid(True, alpha=0.3)
+    _date_axis(ax0)
 
     # ---- (0,1) 回撤曲线 ----
     ax1 = axes[0, 1]
@@ -332,6 +351,7 @@ def plot_backtest_result(
     ax1.set_ylabel("回撤 (%)")
     ax1.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.0f%%"))
     ax1.grid(True, alpha=0.3)
+    _date_axis(ax1)
     ax1.invert_yaxis()
 
     # ---- (1,0) 年度收益柱状图 ----
@@ -348,7 +368,7 @@ def plot_backtest_result(
         # 柱顶标注
         for bar, val in zip(bars, vals):
             ax2.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (0.5 if val >= 0 else -1.5),
-                     f"{val:.1f}%", ha="center", fontsize=8)
+                     f"{val:.1f}%", ha="center", fontsize=11)
     else:
         ax2.text(0.5, 0.5, "不足一年", transform=ax2.transAxes, ha="center", va="center")
     ax2.grid(True, alpha=0.3, axis="y")
@@ -376,12 +396,12 @@ def plot_backtest_result(
         ]
     # 左对齐
     text = "\n".join(lines)
-    ax3.text(0.05, 0.95, text, transform=ax3.transAxes, fontsize=9, verticalalignment="top", fontfamily="sans-serif")
+    ax3.text(0.05, 0.95, text, transform=ax3.transAxes, fontsize=13, verticalalignment="top", fontfamily="sans-serif")
     ax3.set_title("绩效指标")
 
     plt.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_path, dpi=150, bbox_inches="tight")
+    fig.savefig(out_path, dpi=220, bbox_inches="tight")
     plt.close(fig)
     print(f"图表已保存：{out_path}")
 

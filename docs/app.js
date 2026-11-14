@@ -131,6 +131,9 @@
       navLink('pipeline.html', 'pipeline', '流水线', state.date) +
       '</div>' +
       '<div class="nav-actions">' +
+      '<button id="ci-run" class="btn btn-sm btn-outline ci-btn" title="打开 GitHub Actions 手动运行数据更新">' +
+      '&#10227; 更新数据</button>' +
+      '<span id="ci-status" class="ci-status" title="最近一次数据更新（GitHub Actions）"></span>' +
       (dates.length
         ? '<select id="date-select" class="nav-date-select" aria-label="选择数据日期">' + dateOpts + '</select>'
         : '') +
@@ -144,6 +147,36 @@
       p.delete('page');
       location.href = location.pathname + '?' + p.toString();
     });
+
+    /* 数据更新按钮：打开 Actions 触发页 + 显示最近一次运行状态 */
+    var runBtn = document.getElementById('ci-run');
+    if (runBtn) runBtn.addEventListener('click', function () {
+      window.open('https://github.com/zhyantao/trading/actions/workflows/update.yml', '_blank');
+    });
+    refreshCiStatus();
+    setInterval(refreshCiStatus, 60 * 1000);
+  }
+
+  function refreshCiStatus() {
+    var el = document.getElementById('ci-status');
+    if (!el) return;
+    fetch('https://api.github.com/repos/zhyantao/trading/actions/workflows/update.yml/runs?per_page=1')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var run = d && d.workflow_runs && d.workflow_runs[0];
+        if (!run) { el.textContent = ''; return; }
+        var when = new Date(run.created_at).toLocaleString('zh-CN', {
+          month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+        });
+        if (run.status === 'completed') {
+          el.textContent = (run.conclusion === 'success' ? '✓ ' : '✗ ') + when;
+          el.className = 'ci-status ' + (run.conclusion === 'success' ? 'ok' : 'fail');
+        } else {
+          el.textContent = '⟳ 更新中';
+          el.className = 'ci-status running';
+        }
+      })
+      .catch(function () { el.textContent = ''; });
   }
 
   /* ---------------- 通用渲染 ---------------- */
@@ -461,6 +494,57 @@
     document.getElementById('tab-btn-stocks').addEventListener('click', function () { tab('stocks'); });
   }
 
+  /* ---------------- 回测：汇总在上、逐笔明细在下 ---------------- */
+  /* 摘要 md 转成的 HTML 里汇总指标与「交易明细」混在一起，这里按 h2 拆开重排 */
+  function splitBacktestSummary(html) {
+    var intro = '', sections = [];
+    var re = /<h2>([\s\S]*?)<\/h2>([\s\S]*?)(?=<h2>|$)/g;
+    var m;
+    while ((m = re.exec(html)) !== null) {
+      if (!intro && !sections.length) intro = html.slice(0, m.index);
+      sections.push({ title: m[1].replace(/<[^>]+>/g, '').trim(), body: m[0] });
+    }
+    if (!sections.length) intro = html;
+    var summary = intro, trades = '', notes = '';
+    sections.forEach(function (s) {
+      if (/交易明细|逐笔|交易记录/.test(s.title)) trades += s.body;
+      else if (/输出文件|局限|注意/.test(s.title)) notes += s.body;
+      else summary += s.body;
+    });
+    return { summary: summary, trades: trades, notes: notes };
+  }
+
+  /* 明细表里的证券代码也加上行情外链 */
+  function linkifyCodes(html, assetType) {
+    return html.replace(/<td>(\d{6})<\/td>/g, function (_, code) {
+      return '<td>' + codeLink(assetType, code) + '</td>';
+    });
+  }
+
+  function tradeDetails(tradesHtml, current) {
+    if (!tradesHtml) return '';
+    var assetType = current.type === 'fund' ? '基金' : '股票';
+    var m = tradesHtml.match(/<div class="table-wrap"><table>([\s\S]*?)<\/table><\/div>/);
+    var count = (tradesHtml.match(/<p>[^<]*?(\d+)\s*笔交易[^<]*<\/p>/) || [])[1] || '';
+    if (!m) {
+      return card('交易明细', '<div class="md-content">' + linkifyCodes(tradesHtml, assetType) + '</div>');
+    }
+    var rows = m[1].match(/<tr>[\s\S]*?<\/tr>/g) || [];
+    var head = rows.length ? rows.shift() : '';
+    var headCells = (head.match(/<th>[\s\S]*?<\/th>/g) || []).join('');
+    var bodyRows = rows.filter(function (r) { return /<td>/.test(r); })
+      .map(function (r) { return linkifyCodes(r, assetType); });
+    var title = '交易明细' + (count
+      ? ' <span style="font-size:12px;font-weight:400;color:var(--text-secondary);">共 ' + count + ' 笔</span>' : '');
+    return card(title,
+      '<div class="md-content">' +
+      table(headCells,
+        bodyRows.length ? pageSlice(bodyRows).join('') : '<tr><td colspan="8">暂无交易记录</td></tr>',
+        'trade-table') +
+      pager(bodyRows.length, { view: current.id }) +
+      '</div>');
+  }
+
   /* ---------------- 页面：回测 ---------------- */
   function renderBacktest(data) {
     var results = data.results || [];
@@ -482,27 +566,50 @@
       sel.className = 'nav-date-select';
       sel.setAttribute('aria-label', '选择回测记录');
       sel.innerHTML = results.map(function (r) {
-        var label = (r.id.indexOf('fund') === 0 ? '基金回测' : '股票回测') + ' ' + fmtDate(r.stamp);
+        var label = (r.id.indexOf('fund') === 0 ? '基金回测' : '股票回测');
         return '<option value="' + esc(r.id) + '"' + (r.id === current.id ? ' selected' : '') + '>' +
           label + '</option>';
       }).join('');
       sel.addEventListener('change', function () {
         state.view = sel.value;
+        state.page = 1;
         setParam('view', sel.value);
+        setParam('page', null);
         renderBacktest(data);
       });
       navActions.insertBefore(sel, navActions.firstChild);
     }
 
+    var parts = splitBacktestSummary(current.summary_html || '');
+    var assetType = current.type === 'fund' ? '基金' : '股票';
     var detail = '';
-    if (current.summary_html) {
-      detail += card('回测摘要',
-        '<div class="md-content" id="summary-content">' + current.summary_html + '</div>');
-    }
+
+    /* 1) 图表在最上方（点击可查看原始大图） */
     if (current.chart) {
+      var chartUrl = 'charts/' + encodeURIComponent(current.chart);
       detail += card('回测图表',
-        '<img src="charts/' + encodeURIComponent(current.chart) + '" class="backtest-chart" alt="回测图表">');
+        '<a href="' + chartUrl + '" target="_blank" rel="noopener noreferrer" title="点击查看原图">' +
+        '<img src="' + chartUrl + '" class="backtest-chart" alt="回测图表"></a>' +
+        '<p style="font-size:12px;color:var(--text-secondary);margin:6px 0 0;">点击查看原图（高清）</p>');
     }
+
+    /* 2) 汇总数据：参数 / 绩效指标 / 年度收益 / 标的交易汇总 */
+    if (parts.summary.trim()) {
+      /* 卡片标题已是「回测汇总」，去掉 md 自带的同义大标题与重复日期 */
+      var summaryHtml = linkifyCodes(
+        parts.summary.replace(/<h1>[\s\S]*?<\/h1>/, ''), assetType);
+      if (parts.notes.trim()) {
+        summaryHtml += '<details class="md-notes"><summary>说明与输出文件</summary>' +
+          linkifyCodes(parts.notes, assetType) + '</details>';
+      }
+      detail += card('回测汇总', '<div class="md-content" id="summary-content">' + summaryHtml + '</div>');
+    } else if (parts.notes.trim()) {
+      detail += card('回测说明', '<div class="md-content">' + parts.notes + '</div>');
+    }
+
+    /* 3) 每笔交易记录细节放在最下方，分页展示 */
+    detail += tradeDetails(parts.trades, current);
+
     if (!detail) detail = '<div class="card"><div class="empty-state"><div class="empty-text">该回测无摘要与图表</div></div></div>';
 
     root.innerHTML = detail;

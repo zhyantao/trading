@@ -841,3 +841,34 @@ a.code-link {
   font-family: var(--mono, inherit);
 }
 a.code-link:hover { color: #7c0000; }
+
+/* 数据更新按钮与 CI 状态 */
+nav.app-nav .ci-btn {
+    padding: 5px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+.ci-status {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.ci-status.ok { color: var(--green); }
+.ci-status.fail { color: var(--red); }
+.ci-status.running { color: var(--gold, #b7950b); }
+@media (max-width: 720px) {
+    .ci-status { display: none; }
+}
+
+/* 回测页：汇总在上、逐笔明细在下 */
+.backtest-chart { display: block; }
+.md-notes {
+    margin-top: 18px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.md-notes summary { cursor: pointer; margin-bottom: 6px; }
+.md-notes h2 { font-size: 14px; margin-top: 12px; }
+table.trade-table td { white-space: nowrap; }
