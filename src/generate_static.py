@@ -151,16 +151,11 @@ def _cycle_info() -> dict | None:
         ca = detect_cycle_phase()
         return {
             "phase": ca.phase.value,
-            "phase_label": {
-                "early_expansion": "早期扩张",
-                "late_expansion": "后期扩张",
-                "overheating": "过热",
-                "contraction": "收缩",
-                "deleveraging": "去杠杆",
-                "unknown": "无法判断",
-            }.get(ca.phase.value, ca.phase.value),
+            "phase_label": ca.phase_label,
             "confidence": f"{ca.confidence:.0%}",
             "description": ca.description,
+            "metrics": ca.metrics,
+            "reasons": ca.reasons,
             "weights": ca.adjusted_weights,
         }
     except Exception:
@@ -207,10 +202,18 @@ def generate_data_for_date(date: str) -> None:
     stock_codes |= {str(r.get("代码", "")).zfill(6) for r in signal_records if r.get("资产类型") == "股票"}
     stock_codes.discard("000000")
 
-    # 抓取/刷新股票前复权日线（腾讯财经，本地已有新鲜序列则跳过）。
+    # 代码 → 名称映射：行情抓取用名称校验区分 A 股 / 港股 / 韩股 / 美股
+    # （基金季报里 000700 是腾讯控股、000TSM 是台积电 ADR，须消歧）。
+    stock_names = {str(r.get("股票代码", "")).zfill(6): str(r.get("股票名称", ""))
+                   for r in elite_stock_records}
+    for r in holding_records + signal_records:
+        if str(r.get("类型", r.get("资产类型", ""))) == "股票":
+            stock_names[str(r.get("代码", "")).zfill(6)] = str(r.get("名称", ""))
+
+    # 抓取/刷新股票前复权日线（东财 A/HK/US + 雅虎 KR，本地已有新鲜序列则跳过）。
     # 失败个股自动回退「重仓基金净值代理」口径，不影响整站生成。
     try:
-        ensure_stock_series(sorted(stock_codes))
+        ensure_stock_series({c: stock_names.get(c, "") for c in sorted(stock_codes)})
     except Exception as exc:  # 网络全挂也不阻断静态站产出
         print(f"  [行情] 股票日线抓取跳过：{exc}")
 

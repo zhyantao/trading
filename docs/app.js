@@ -358,7 +358,31 @@
           { value: num(w.stability) || 0, color: 'var(--accent)', label: '稳定性' },
           { value: num(w.quality) || 0, color: 'var(--yellow)', label: '质量' },
         ], '权重') +
-        '<div class="sum-cycle-desc">' + esc(c.description) + '</div></div>';
+        cycleDesc(c) + '</div>';
+    }
+    /* 周期判据：指标逐项分行 + 判断依据短句。
+       metrics 缺失时回退到单行 description（兼容旧数据 JSON）。 */
+    function cycleDesc(c) {
+      var ms = c.metrics || [];
+      if (!ms.length) {
+        return '<div class="sum-cycle-desc">' + esc(c.description || '') + '</div>';
+      }
+      var h = '<div class="cycle-metrics">';
+      for (var i = 0; i < ms.length; i++) {
+        h += '<div' + (ms[i].note ? ' title="' + esc(ms[i].note) + '"' : '') + '>' +
+          '<span class="cm-label">' + esc(ms[i].label) + '</span>' +
+          '<span class="cm-value">' + esc(ms[i].value) + '</span></div>';
+      }
+      h += '</div>';
+      var rs = c.reasons || [];
+      if (rs.length) {
+        h += '<div class="cycle-reasons">';
+        for (var j = 0; j < rs.length; j++) {
+          h += '<span class="cr-item">' + esc(rs[j]) + '</span>';
+        }
+        h += '</div>';
+      }
+      return h;
     }
     var body = '';
     if (st.total > 0) {

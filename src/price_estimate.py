@@ -59,6 +59,21 @@ STOCK_SIGMA_PRIOR = 0.022    # 无序列时的股票日波动先验（约 2.2%�
 PERIOD_NEFF = 21.0           # 区间收益率口径的等效样本量
 STOCK_STALE_DAYS = 15        # 股票行情序列最近日期超过该天数视为过期（退市/长停）
 
+# 基金持仓/信号表里境外股偶用 ISIN 编码：韩股 ISIN 内嵌 KRX 6 位码
+# （KR7 + 000660 + 001 → SK海力士），可规则提取；美股 CUSIP ISIN 与代码
+# 无规则映射，遇到新的手工加一条即可。
+_ISIN_ALIASES_STATIC: dict[str, str] = {
+    "US80004C2008": "00SNDK",  # 闪迪 Sandisk Corp
+}
+
+
+def _alias_target(code: str) -> str | None:
+    """ISIN 风格代码 → 站内内部代码（如 KR7000660001 → 000660）。"""
+    m = re.fullmatch(r"KR7(\d{6})\d{3}", code)
+    if m:
+        return m.group(1)
+    return _ISIN_ALIASES_STATIC.get(code)
+
 PRICE_PARAMS: dict[str, Any] = {
     "lambda": PRICE_LAMBDA,
     "shrinkage_k": SHRINKAGE_K,
@@ -137,12 +152,19 @@ def _collect_series(root: Path) -> tuple[dict[str, tuple[list[str], list[float]]
     legacy_dir = root / "out" / "cache_prices"
 
     if series_dir.is_dir():
+        # 先收 A 股（{code}_qfq.csv），再收港/韩/美股（{code}_hk/_kr/_us_qfq.csv，
+        # 同码覆盖，防止错市场的旧缓存抢优先级，如 000700 港股口径腾讯控股）
+        for f in sorted(series_dir.glob("*_hk_qfq.csv")) + sorted(series_dir.glob("*_kr_qfq.csv")) \
+                + sorted(series_dir.glob("*_us_qfq.csv")):
+            m_os = re.fullmatch(r"(\w+?)_(hk|kr|us)_qfq\.csv", f.name)
+            if m_os:
+                put(stocks, m_os.group(1), _read_series(f))
         for f in series_dir.glob("*.csv"):
             m_nav = re.fullmatch(r"nav_(\d{6})\.csv", f.name)
             m_stock = re.fullmatch(r"(\d{6})_qfq\.csv", f.name)
             if m_nav:
                 put(funds, m_nav.group(1), _read_series(f))
-            elif m_stock:
+            elif m_stock and m_stock.group(1) not in stocks:
                 put(stocks, m_stock.group(1), _read_series(f))
     if legacy_dir.is_dir():
         for f in legacy_dir.glob("*.csv"):
@@ -320,8 +342,9 @@ def build_price_estimates(
     proxy = _stock_proxy(stock_proxy_records or [], funds)
     priced = 0
     proxied = 0
-    for code in sorted({_text(c).zfill(6) for c in stock_codes}):
-        if not re.fullmatch(r"\d{6}", code):
+    for code in sorted({_text(c).zfill(6) for c in stock_codes if _text(c)}):
+        # 6 位纯数字 = A 股/港股/韩股口径；含字母（如 000TSM）= 美股口径
+        if not re.fullmatch(r"\w{4,8}", code):
             continue
         s = stock_series.get(code)
         # 退市/长期停牌股票的序列停在多年以前，拿旧价外推 T+1 会误导，
@@ -336,6 +359,15 @@ def build_price_estimates(
             proxied += 1
         if est:
             stocks[code] = est
+
+    # ISIN 别名（KR7000660001 → 000660）：页面按原代码查找，复制同一估算结果
+    all_codes = {_text(c).zfill(6) for c in stock_codes if _text(c)}
+    for code in sorted(all_codes):
+        if re.fullmatch(r"\w{4,8}", code):
+            continue
+        target = _alias_target(code)
+        if target and target in stocks:
+            stocks[code] = dict(stocks[target])
 
     return {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

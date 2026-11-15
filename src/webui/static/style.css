@@ -1181,6 +1181,53 @@ td.est-cell {
     color: var(--text-secondary);
     line-height: 1.5;
 }
+/* 周期判据：指标两列网格，逐项分行，避免挤成一串 */
+.cycle-metrics {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 10px;
+    font-family: var(--sans);
+    font-size: 12px;
+    line-height: 1.45;
+}
+.cycle-metrics > div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.025);
+    border-radius: 4px;
+    cursor: default;
+}
+.cycle-metrics .cm-label {
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+.cycle-metrics .cm-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+/* 判断依据：短句独立成行，用圆点分隔 */
+.cycle-reasons {
+    margin-top: 6px;
+    font-family: var(--sans);
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+.cycle-reasons .cr-item { display: block; }
+.cycle-reasons .cr-item::before {
+    content: "·";
+    margin-right: 5px;
+    color: var(--accent);
+    font-weight: 700;
+}
+@media (max-width: 620px) {
+    .cycle-metrics { grid-template-columns: minmax(0, 1fr); }
+}
 /* 持仓汇总行（替代已删除的环形图） */
 .hold-sum-note {
     font-family: var(--sans);

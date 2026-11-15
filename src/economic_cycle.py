@@ -20,7 +20,7 @@ Dalio 的三大驱动力：
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 from enum import Enum
 from typing import Optional
@@ -87,13 +87,33 @@ CYCLE_FACTOR_WEIGHTS: dict[CyclePhase, dict[str, float]] = {
 }
 
 
+# 阶段中文名（页面与 CLI 共用，避免各处重复维护映射表）
+PHASE_LABELS: dict[CyclePhase, str] = {
+    CyclePhase.EARLY_EXPANSION: "早期扩张",
+    CyclePhase.LATE_EXPANSION: "后期扩张",
+    CyclePhase.OVERHEATING: "过热",
+    CyclePhase.CONTRACTION: "收缩",
+    CyclePhase.DELEVERAGING: "去杠杆",
+    CyclePhase.UNKNOWN: "无法判断",
+}
+
+
 @dataclass
 class CycleAssessment:
     """周期评估结果。"""
     phase: CyclePhase
     confidence: float          # 0-1，判断置信度
-    description: str           # 中文描述
+    description: str           # 中文描述（单行，CLI 与兼容旧页面用）
     adjusted_weights: dict[str, float]  # 调整后的因子权重
+    # 结构化展示字段：页面按「指标名 → 数值」逐项分行渲染，不再挤成一串。
+    # metrics 为有序列表 [{"label": ..., "value": ...}, ...]；
+    # reasons 为判断依据的短句列表。
+    metrics: list[dict[str, str]] = field(default_factory=list)
+    reasons: list[str] = field(default_factory=list)
+
+    @property
+    def phase_label(self) -> str:
+        return PHASE_LABELS.get(self.phase, self.phase.value)
 
 
 def _fetch_benchmark_prices(
@@ -133,20 +153,24 @@ def detect_cycle_phase(
     """
     df = _fetch_benchmark_prices(benchmark_symbol)
     if df is None or df.empty:
+        msg = "无法获取基准指数数据，使用默认均衡权重"
         return CycleAssessment(
             phase=CyclePhase.UNKNOWN,
             confidence=0.0,
-            description="无法获取基准指数数据，使用默认均衡权重",
+            description=msg,
             adjusted_weights=CYCLE_FACTOR_WEIGHTS[CyclePhase.UNKNOWN],
+            reasons=[msg],
         )
 
     close = df["close"]
     if len(close) < lookback_long:
+        msg = f"数据不足（{len(close)} 天 < {lookback_long}），使用默认权重"
         return CycleAssessment(
             phase=CyclePhase.UNKNOWN,
             confidence=0.1,
-            description=f"数据不足（{len(close)} 天 < {lookback_long}），使用默认权重",
+            description=msg,
             adjusted_weights=CYCLE_FACTOR_WEIGHTS[CyclePhase.UNKNOWN],
+            reasons=[msg],
         )
 
     # 1. 长期趋势：价格相对 252 日均线
@@ -202,23 +226,31 @@ def detect_cycle_phase(
             confidence = 0.65
             reasons = ["指数在长期均线下方", "处于收缩阶段"]
 
-    # 构建描述
-    desc = (
-        f"趋势={trend_ratio*100:.1f}% "
-        f"3月收益={ret_3m*100:.1f}% "
-        f"6月收益={ret_6m*100:.1f}% "
-        f"20日波动率={vol_20d*100:.1f}% "
-        f"回撤={drawdown*100:.1f}% → "
-        f"{phase.value}（置信度 {confidence:.0%}）"
-    )
+    # 构建展示内容。
+    # metrics 供页面按「指标 → 数值」逐项分行渲染；description 保留为
+    # 带标点的单行文本，供 CLI 与旧版页面直接使用（阶段名用中文，
+    # 不再输出 contraction 这类枚举值）。
+    phase_label = PHASE_LABELS.get(phase, phase.value)
+    metrics = [
+        {"label": "长期趋势", "value": f"{trend_ratio*100:+.1f}%",
+         "note": f"相对 {lookback_long} 日均线"},
+        {"label": "近3月收益", "value": f"{ret_3m*100:+.1f}%"},
+        {"label": "近6月收益", "value": f"{ret_6m*100:+.1f}%"},
+        {"label": "20日波动率", "value": f"{vol_20d*100:.1f}%", "note": "年化"},
+        {"label": "高点回撤", "value": f"{drawdown*100:+.1f}%"},
+    ]
+    desc = "，".join(f"{m['label']} {m['value']}" for m in metrics)
+    desc += f"；判定为{phase_label}（置信度 {confidence:.0%}）"
     if reasons:
-        desc += f"：{'、'.join(reasons)}"
+        desc += f"——{'，'.join(reasons)}。"
 
     return CycleAssessment(
         phase=phase,
         confidence=confidence,
         description=desc,
         adjusted_weights=CYCLE_FACTOR_WEIGHTS[phase],
+        metrics=metrics,
+        reasons=list(reasons),
     )
 
 

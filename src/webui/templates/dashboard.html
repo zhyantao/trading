@@ -99,7 +99,23 @@
                     <div><span class="donut-dot" style="background:#b7950b;"></span>质量 {{ (w.quality*100)|int }}%</div>
                 </div>
             </div>
+            {% if cycle_info.metrics %}
+            <div class="cycle-metrics">
+                {% for m in cycle_info.metrics %}
+                <div{% if m.note %} title="{{ m.note }}"{% endif %}>
+                    <span class="cm-label">{{ m.label }}</span>
+                    <span class="cm-value">{{ m.value }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% if cycle_info.reasons %}
+            <div class="cycle-reasons">
+                {% for r in cycle_info.reasons %}<span class="cr-item">{{ r }}</span>{% endfor %}
+            </div>
+            {% endif %}
+            {% else %}
             <div class="sum-cycle-desc">{{ cycle_info.description }}</div>
+            {% endif %}
         </div>
         {% endif %}
     </div>

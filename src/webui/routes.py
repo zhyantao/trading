@@ -27,6 +27,7 @@ from .data_service import DataService
 from formula_doc import render_formula_doc
 from manager_index import build_manager_index
 from selection_formula import TOP_FUNDS, TOP_STOCKS, select_global_funds, select_global_stocks
+from stock_links import stock_url
 from stock_rankings import build_stock_rankings
 
 # 周期检测（可选，失败则降级）
@@ -131,6 +132,27 @@ def _mgr_cell(text: Any, date: str = "") -> Markup:
 
 _jinja_env.filters["mgrcell"] = _mgr_cell
 _jinja_env.filters["mgrlink"] = _mgr_link
+
+
+def _stock_link(code: Any) -> Markup:
+    """股票代码单元格链接（动态站），与静态站 app.js 的 codeLink() 同口径。
+
+    支持 A 股 / 港股 / 韩股 / 美股；无法定位时返回纯文本代码。
+    """
+    c = str(code or "").strip()
+    if not c:
+        return Markup("")
+    url = stock_url(c)
+    if not url:
+        return Markup(_html_escape(c))
+    return Markup(
+        '<a class="code-link" href="' + _html_escape(url, quote=True) +
+        '" target="_blank" rel="noopener noreferrer" title="查看行情">' +
+        _html_escape(c) + '</a>'
+    )
+
+
+_jinja_env.filters["stocklink"] = _stock_link
 
 
 def _est_cell(code: Any, kind: str = "基金") -> Markup:
@@ -281,16 +303,11 @@ async def dashboard(request: Request) -> Any:
             ca = detect_cycle_phase()
             cycle_info = {
                 "phase": ca.phase.value,
-                "phase_label": {
-                    "early_expansion": "早期扩张",
-                    "late_expansion": "后期扩张",
-                    "overheating": "过热",
-                    "contraction": "收缩",
-                    "deleveraging": "去杠杆",
-                    "unknown": "无法判断",
-                }.get(ca.phase.value, ca.phase.value),
+                "phase_label": ca.phase_label,
                 "confidence": f"{ca.confidence:.0%}",
                 "description": ca.description,
+                "metrics": ca.metrics,
+                "reasons": ca.reasons,
                 "weights": ca.adjusted_weights,
             }
         except Exception:
@@ -414,12 +431,7 @@ async def stocks_page(request: Request) -> Any:
     page = min(positive_int("page"), total_pages)
     shown = rows[(page - 1) * per_page: page * per_page]
     for r in shown:
-        code = str(r.get("股票代码", ""))
-        prefix = ("SH" if code[:1] in ("6", "9") else
-                  "SZ" if code[:1] in ("0", "2", "3") else
-                  "BJ" if code[:1] in ("4", "8") else "")
-        r["_url"] = (f"https://xueqiu.com/S/{prefix}{code}"
-                     if prefix and len(code) == 6 and code.isdigit() else "")
+        r["_url"] = stock_url(r.get("股票代码", ""))
 
     return _render("stocks.html", _base_context(request, {
         "active_page": "stocks",
@@ -445,12 +457,7 @@ async def elite_page(request: Request) -> Any:
     top_funds = select_global_funds(fund_pool, TOP_FUNDS)
     top_stocks = select_global_stocks(stock_pool, TOP_STOCKS)
     for r in top_stocks:
-        code = str(r.get("股票代码", ""))
-        prefix = ("SH" if code[:1] in ("6", "9") else
-                  "SZ" if code[:1] in ("0", "2", "3") else
-                  "BJ" if code[:1] in ("4", "8") else "")
-        r["_url"] = (f"https://xueqiu.com/S/{prefix}{code}"
-                     if prefix and len(code) == 6 and code.isdigit() else "")
+        r["_url"] = stock_url(r.get("股票代码", ""))
     manager_count = len({str(r.get("经理排名")) for r in fund_pool + stock_pool})
 
     return _render("elite.html", _base_context(request, {
