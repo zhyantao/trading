@@ -217,6 +217,14 @@ def generate_data_for_date(date: str) -> None:
     except Exception as exc:  # 网络全挂也不阻断静态站产出
         print(f"  [行情] 股票日线抓取跳过：{exc}")
 
+    # 市场分类随数据下发：静态站前端按代码生成多市场行情外链
+    # （A/HK/US → 雪球，KR → Naver）。依赖上面刚刷新的 _stock_meta.json 消歧。
+    try:
+        from stock_links import stock_link_map
+        _write_json(out / "stock_markets.json", {"markets": stock_link_map(stock_codes)})
+    except Exception as exc:
+        print(f"  [外链] 市场映射生成跳过：{exc}")
+
     price_book = build_price_estimates(
         ROOT, fund_est_rows, sorted(stock_codes), stock_proxy_records=elite_stock_records
     )

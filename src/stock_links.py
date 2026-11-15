@@ -112,6 +112,8 @@ def resolve_market(code: str, meta: dict[str, Any] | None = None) -> str | None:
 
 
 def _a_share_prefix(code: str) -> str:
+    if code.startswith("92"):
+        return "BJ"  # 920xxx 北交所新代码段（920045 蘅东光等）
     head = code[:1]
     if head in ("6", "9"):
         return "SH"
@@ -122,15 +124,21 @@ def _a_share_prefix(code: str) -> str:
     return ""
 
 
-def stock_url(code: Any, meta: dict[str, Any] | None = None) -> str:
-    """股票行情外链；无法可靠定位时返回空串（页面按纯文本显示）。
+def stock_target(code: Any, meta: dict[str, Any] | None = None) -> dict[str, str] | None:
+    """代码 → {'market': 'A/HK/KR/US', 'target': URL 用标的代码}；无法定位返回 None。
+
+    target 口径：
+      * A：交易所前缀 + 6 位代码（000063 → SZ000063、600519 → SH600519）；
+      * HK：5 位港股代码（内部码 009988 → 09988）；
+      * US：美股 ticker（000TSM → TSM、00SNDK → SNDK）；
+      * KR：6 位 KRX 代码（KR7000660001 → 000660）。
 
     宁可不给链接，也不给指向错误标的的链接——港股/A 股撞码时
     若无 meta 且形态无法区分，交由调用方决定是否降级。
     """
     c = str(code or "").strip()
     if not c or c == "000000":
-        return ""
+        return None
     # ISIN 口径（KR7000660001 / US80004C2008）先还原成站内代码，
     # 复用 price_estimate 的别名机制，避免两处各维护一份映射。
     if len(c) > 8:
@@ -140,37 +148,49 @@ def stock_url(code: Any, meta: dict[str, Any] | None = None) -> str:
         except Exception:
             target = None
         if not target:
-            return ""
+            return None
         c = target
     market = resolve_market(c, meta)
     if market == "US":
         t = us_ticker(c)
-        return XUEQIU_URL.format(symbol=t) if t else ""
+        return {"market": "US", "target": t} if t else None
     if market == "KR":
-        return NAVER_STOCK_URL.format(code=c) if re.fullmatch(r"\d{6}", c) else ""
+        return {"market": "KR", "target": c} if re.fullmatch(r"\d{6}", c) else None
     if market == "HK":
         # 内部码 "0" + 5 位港股码 → 雪球用 5 位（009988 → 09988）
-        return XUEQIU_URL.format(symbol=c[1:]) if re.fullmatch(r"0\d{5}", c) else ""
+        return {"market": "HK", "target": c[1:]} if re.fullmatch(r"0\d{5}", c) else None
     if market == "A":
         if not re.fullmatch(r"\d{6}", c):
-            return ""
+            return None
         p = _a_share_prefix(c)
-        return XUEQIU_URL.format(symbol=p + c) if p else ""
-    return ""
+        return {"market": "A", "target": p + c} if p else None
+    return None
 
 
-def stock_market_map(codes: Any) -> dict[str, str]:
-    """给静态站数据下发用的精简「代码 → 市场」映射。
+def stock_url(code: Any, meta: dict[str, Any] | None = None) -> str:
+    """股票行情外链；无法可靠定位时返回空串（页面按纯文本显示）。"""
+    t = stock_target(code, meta)
+    if not t:
+        return ""
+    if t["market"] == "KR":
+        # 雪球不收录 KRX 个股，用 Naver Finance 原生行情页
+        return NAVER_STOCK_URL.format(code=t["target"])
+    return XUEQIU_URL.format(symbol=t["target"])
 
-    只保留能定位到市场的代码，供前端在 out/ 不可用时仍能正确消歧。
+
+def stock_link_map(codes: Any) -> dict[str, dict[str, str]]:
+    """静态站数据下发用：代码 → {'market', 'target'}。
+
+    前端据此生成多市场行情外链（out/ 不进版本库，静态 JSON 必须自带分类）；
+    含 ISIN 别名解析，找不到可靠口径的代码不入表。
     """
     meta = load_stock_meta()
-    out: dict[str, str] = {}
+    out: dict[str, dict[str, str]] = {}
     for code in codes or []:
         c = str(code).strip()
         if not c:
             continue
-        market = resolve_market(c, meta)
-        if market:
-            out[c] = market
+        t = stock_target(c, meta)
+        if t:
+            out[c] = t
     return out

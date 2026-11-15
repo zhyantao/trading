@@ -42,23 +42,47 @@
     if (f === null) return '';
     return f > 0 ? 'color:var(--green);' : (f < 0 ? 'color:var(--red);' : '');
   }
-  /* ---------------- 外链：天天基金 / 雪球 ---------------- */
+  /* ---------------- 外链：天天基金 / 雪球 / Naver ----------------
+     股票代码来自基金季报重仓，含 A 股 / 港股 / 韩股 / 美股四种口径，
+     与后端 src/stock_links.py 保持同一规则。市场分类由数据自带的
+     data/{date}/stock_markets.json 下发（抓取时按证券名称校验过，
+     能消解 000700 腾讯控股 vs A 股模塑科技这类撞码）；该文件缺失
+     （旧日期数据）时回退形态推断：A 股仍可链接，港/韩/美按纯文本。 */
+  var STOCK_MARKETS = null;
   function stockPrefix(code) {
     var c = String(code || '');
+    if (/^92/.test(c)) return 'BJ';  /* 920xxx 北交所新代码段 */
     if (/^(6|9)/.test(c)) return 'SH';
     if (/^(0|2|3)/.test(c)) return 'SZ';
     if (/^(4|8)/.test(c)) return 'BJ';
     return '';
   }
+  function stockTarget(code) {
+    var c = String(code || '');
+    if (!c || c === '000000') return null;
+    if (STOCK_MARKETS && STOCK_MARKETS[c]) return STOCK_MARKETS[c]; /* {market, target} */
+    /* 形态推断回退（与 stock_links.guess_market 同口径）：含字母 →
+       美股 ticker；6 位纯数字 → A 股。6 位纯数字不推断港股（与
+       A 股撞码），无分类数据时不猜。 */
+    if (/[A-Za-z]/.test(c)) {
+      var t = c.replace(/^0+/, '');
+      return /^[A-Za-z0-9]{1,5}$/.test(t) ? { market: 'US', target: t } : null;
+    }
+    if (/^\d{6}$/.test(c)) {
+      var p = stockPrefix(c);
+      return p ? { market: 'A', target: p + c } : null;
+    }
+    return null;
+  }
   function codeLink(type, code) {
     if (!code) return '';
     var url;
     if (type === '股票') {
-      /* 只有 6 位纯数字的 A 股代码才能生成雪球链接；美股/港股代码原样显示 */
-      if (!/^\d{6}$/.test(String(code))) return esc(code);
-      var p = stockPrefix(code);
-      if (!p) return esc(code);
-      url = 'https://xueqiu.com/S/' + p + code;
+      var t = stockTarget(code);
+      if (!t) return esc(code);
+      url = t.market === 'KR'
+        ? 'https://finance.naver.com/item/main.naver?code=' + encodeURIComponent(t.target)
+        : 'https://xueqiu.com/S/' + encodeURIComponent(t.target);
     } else {
       url = 'https://fund.eastmoney.com/' + code + '.html';
     }
@@ -986,11 +1010,17 @@
           return;
         }
 
-        /* 估算价格册先于各页面渲染加载；旧站点没有该文件时降级为空册 */
-        return getJSON('data/' + state.date + '/price_estimates.json')
-          .catch(function () { return { funds: {}, stocks: {} }; })
-          .then(function (book) {
-            PRICE_BOOK = book || { funds: {}, stocks: {} };
+        /* 估算价格册与股票市场分类先于各页面渲染加载；
+           旧站点没有对应文件时降级为空册 / 形态推断 */
+        return Promise.all([
+          getJSON('data/' + state.date + '/price_estimates.json')
+            .catch(function () { return { funds: {}, stocks: {} }; }),
+          getJSON('data/' + state.date + '/stock_markets.json')
+            .catch(function () { return null; }),
+        ])
+          .then(function (rs) {
+            PRICE_BOOK = rs[0] || { funds: {}, stocks: {} };
+            STOCK_MARKETS = (rs[1] && rs[1].markets) || {};
             var loaders = {
               dashboard: function () {
                 return getJSON('data/' + state.date + '/dashboard.json').then(renderDashboard);

@@ -34,7 +34,7 @@
             {% set tag_class = 'tag-buy' if '买入' in tag else ('tag-sell' if '卖出' in tag else ('tag-hold' if '继续' in tag else 'tag-nosig')) %}
             <tr>
                 <td><span class="tag {{ 'tag-stock' if s.get('资产类型') == '股票' else 'tag-fund' }}">{{ s.get('资产类型', '') }}</span></td>
-                <td>{{ s.get('代码', '') }}</td>
+                <td>{% if s.get('资产类型') == '股票' %}{{ s.get('代码', '')|stocklink }}{% else %}<a class="code-link" href="https://fund.eastmoney.com/{{ s.get('代码', '') }}.html" target="_blank" rel="noopener noreferrer">{{ s.get('代码', '') }}</a>{% endif %}</td>
                 <td>{{ s.get('名称', '') }}</td>
                 <td>{{ s.get('是否持有', '') }}</td>
                 <td><span class="tag {{ tag_class }}">{{ tag }}</span></td>

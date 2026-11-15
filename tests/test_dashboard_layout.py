@@ -14,6 +14,7 @@ env = Environment(
 )
 env.filters["num2"] = lambda v: ("%.2f" % float(v)) if v not in (None, "", "-") else v
 env.filters["mgrlink"] = lambda name, date: '<a class="mgr-link" href="#">%s</a>' % name
+env.filters["stocklink"] = lambda code: '<a class="code-link" href="#">%s</a>' % code
 
 tpl = env.get_template("dashboard.html")
 

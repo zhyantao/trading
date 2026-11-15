@@ -24,7 +24,7 @@
                 {% set bar_val = (pct_raw / ns_max.v * 100) if ns_max.v > 0 else 0 %}
                 <tr>
                     <td><span class="tag {{ 'tag-stock' if h.get('类型') == '股票' else 'tag-fund' }}">{{ h.get('类型', '') }}</span></td>
-                    <td>{{ h.get('代码', '') }}</td>
+                    <td>{% if h.get('类型') == '股票' %}{{ h.get('代码', '')|stocklink }}{% else %}<a class="code-link" href="https://fund.eastmoney.com/{{ h.get('代码', '') }}.html" target="_blank" rel="noopener noreferrer">{{ h.get('代码', '') }}</a>{% endif %}</td>
                     <td>{{ h.get('名称', '') }}</td>
                     <td>{{ h.get('比例(%)', 0)|num2 }}</td>
                     <td><div class="bar-track" title="占比 {{ '%.2f'|format(pct_raw) }}%"><div class="bar-fill {{ 'is-stock' if h.get('类型') == '股票' else 'is-fund' }}" style="width:{{ '%.1f'|format(bar_val) }}%;"></div></div></td>
@@ -137,7 +137,7 @@
                 {% for s in top_stocks %}
                 <tr>
                     <td>{{ s.get('排名', '') }}</td>
-                    <td>{{ s.get('股票代码', '') }}</td>
+                    <td>{{ s.get('股票代码', '')|stocklink }}</td>
                     <td>{{ s.get('股票名称', '') }}</td>
                     <td>{{ s.get('入选经理数', '') }}</td>
                     <td style="color:var(--accent);font-weight:600;">{{ s.get('综合得分', 0)|num2 }}</td>
