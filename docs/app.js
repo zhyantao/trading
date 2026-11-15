@@ -18,6 +18,7 @@
     type: params.get('type') || '',
     view: params.get('view') || '',
     minDays: parseInt(params.get('min_days') || '180', 10) || 180,
+    minMgr: Math.max(1, parseInt(params.get('min_mgr') || '1', 10) || 1),
   };
 
   /* ---------------- 工具 ---------------- */
@@ -52,6 +53,8 @@
     if (!code) return '';
     var url;
     if (type === '股票') {
+      /* 只有 6 位纯数字的 A 股代码才能生成雪球链接；美股/港股代码原样显示 */
+      if (!/^\d{6}$/.test(String(code))) return esc(code);
       var p = stockPrefix(code);
       if (!p) return esc(code);
       url = 'https://xueqiu.com/S/' + p + code;
@@ -141,6 +144,7 @@
       navLink('holdings.html', 'holdings', '我的持仓', state.date) +
       navLink('managers.html', 'managers', '经理排名', state.date) +
       navLink('funds.html', 'funds', '基金排名', state.date) +
+      navLink('stocks.html', 'stocks', '股票排名', state.date) +
       navLink('elite.html', 'elite', '绩优标的', state.date) +
       navLink('backtest.html', 'backtest', '回测', state.date) +
       navLink('pipeline.html', 'pipeline', '流水线', state.date) +
@@ -457,6 +461,57 @@
     });
   }
 
+  /* ---------------- 页面：股票排名 ---------------- */
+  /* 数据由「每位绩优经理的股票 Top10」聚合，按被多少位经理同时重仓排序 */
+  function renderStocks(data) {
+    var rows = data.rows || [];
+    if (!rows.length) {
+      root.innerHTML = emptyState('🏆', '暂无股票排名数据', '请先运行流水线生成绩优经理标的');
+      return;
+    }
+    var levels = [1, 2, 3, 5];
+    var labels = ['全部', '≥2 位经理', '≥3 位经理', '≥5 位经理'];
+    var btns = levels.map(function (m, i) {
+      return '<button class="btn btn-sm ' + (state.minMgr === m ? 'btn-primary' : 'btn-outline') +
+        '" data-mgr="' + m + '">' + labels[i] + '</button>';
+    }).join('');
+    var filtered = rows.filter(function (r) { return num(r['入选经理数']) >= state.minMgr; });
+    var body = pageSlice(filtered).map(function (r) {
+      return '<tr>' +
+        '<td style="font-weight:600;">' + esc(r['排名']) + '</td>' +
+        '<td>' + codeLink('股票', r['股票代码']) + '</td>' +
+        '<td>' + esc(r['股票名称']) + '</td>' +
+        '<td style="font-weight:600;">' + esc(r['入选经理数']) + '</td>' +
+        '<td>' + esc(r['出现基金数']) + '</td>' +
+        '<td>' + num2(r['平均占净值比例']) + '</td>' +
+        '<td>' + esc(r['最高名次']) + '</td>' +
+        '<td style="font-size:12px; max-width:260px;">' + esc(r['关联经理']) + '</td>' +
+        '<td>' + esc(r['最新季度']) + '</td></tr>';
+    }).join('');
+
+    root.innerHTML = card('',
+      '<p class="rank-note">由 ' + esc(data.manager_count) + ' 位绩优经理各自的股票 Top10（共 ' +
+      esc(data.record_count) + ' 条）汇总，按被多少位经理同时重仓排序；占比为各经理 Top3 基金重仓股占净值比例之和的均值。共 ' +
+      esc(data.stock_count) + ' 只股票</p>' +
+      '<div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;" id="stocks-filter">' +
+      '<span style="font-size:13px; color:var(--text-secondary);">入选经理数 &ge;</span>' + btns +
+      '<span style="font-size:13px; color:var(--text-secondary); margin-left:16px;">筛选出 ' + filtered.length + ' 只股票</span></div>' +
+      (filtered.length
+        ? table('<th>排名</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th><th>出现基金数</th><th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th>', body)
+        : '<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">没有符合条件的股票</div></div>') +
+      pager(filtered.length, { min_mgr: String(state.minMgr) }));
+
+    document.getElementById('stocks-filter').addEventListener('click', function (e) {
+      var m = e.target.getAttribute && e.target.getAttribute('data-mgr');
+      if (!m) return;
+      state.minMgr = parseInt(m, 10);
+      state.page = 1;
+      setParam('min_mgr', m);
+      setParam('page', null);
+      renderStocks(data);
+    });
+  }
+
   /* ---------------- 页面：绩优标的 ---------------- */
   /* 数据文件是「每位绩优经理的 Top3 基金 / Top10 股票」，20 位经理共约 37/200 行。
      页面按 tab 名称只展示排名最前的 3 只基金 / 10 只股票，其余明细折叠保留。 */
@@ -706,6 +761,9 @@
           },
           funds: function () {
             return getJSON('data/' + state.date + '/funds.json').then(renderFunds);
+          },
+          stocks: function () {
+            return getJSON('data/' + state.date + '/stocks.json').then(renderStocks);
           },
           elite: function () {
             return getJSON('data/' + state.date + '/elite.json').then(renderElite);

@@ -30,6 +30,7 @@ if _src_dir not in sys.path:
 from webui.data_service import DataService
 from webui.routes import _md_to_html
 from backtest_series import build_series
+from stock_rankings import build_stock_rankings
 
 # 周期检测（可选，失败则降级）
 try:
@@ -204,11 +205,13 @@ def generate_data_for_date(date: str) -> None:
         funds = funds.iloc[:FUNDS_MAX_ROWS]
     _write_json(out / "funds.json", {"rows": _records(funds), "max_rows": FUNDS_MAX_ROWS})
 
-    # --- elite ---
+    # --- elite + 全站股票排名（同一份数据，两处口径一致）---
+    elite_stocks = _records(ds.get_elite_stocks(date))
     _write_json(out / "elite.json", {
         "funds": _records(ds.get_elite_funds(date)),
-        "stocks": _records(ds.get_elite_stocks(date)),
+        "stocks": elite_stocks,
     })
+    _write_json(out / "stocks.json", build_stock_rankings(elite_stocks))
 
     # --- backtest（含 md 预渲染 HTML + 交互图表数据）---
     # 曲线数据单独成文件，前端只在用户查看对应回测时按需加载，
@@ -327,7 +330,7 @@ def main() -> None:
         print(f"跳过数据不完整的日期: {', '.join(skipped)}")
 
     # 若最新日期残缺，绝不能「退而求其次」把旧日期当成最新发布，
-    # 否则页眉日期下拉会退回到几个月前。此时保持上一版站点原样不动。
+    # 否则站点数据会退回到几个月前。此时保持上一版站点原样不动。
     if not all_dates or not complete or complete[0] != all_dates[0]:
         print("[WARN] 最新日期数据不完整（或 out/ 无数据）：保留上一版站点，不生成、不清理")
         return
@@ -335,7 +338,7 @@ def main() -> None:
 
     print(f"数据日期: {len(complete)} 个完整日期，只保留最近 {len(retained)} 个（{retained[0]} 起）")
     print()
-    print("页面: 8 个静态壳（src/static_site/ 原样拷贝）")
+    print(f"页面: {len(list(SITE_DIR.glob('*.html')))} 个静态壳（src/static_site/ 原样拷贝）")
     print()
 
     if retained:

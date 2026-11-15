@@ -247,6 +247,46 @@ async def funds_page(request: Request) -> Any:
     }))
 
 
+@router.get("/stocks", response_class=HTMLResponse)
+async def stocks_page(request: Request) -> Any:
+    """全站股票排名：由每位绩优经理的股票 Top10 聚合，按共识度排序。"""
+    from stock_rankings import build_stock_rankings
+
+    def positive_int(key: str, default: int = 1) -> int:
+        try:
+            return max(1, int(request.query_params.get(key, str(default))))
+        except (TypeError, ValueError):
+            return default
+
+    date = _get_date(request)
+    ranking = build_stock_rankings(ds.get_elite_stocks(date=date).to_dict("records"))
+    min_mgr = positive_int("min_mgr")
+    rows = [r for r in ranking["rows"] if r["入选经理数"] >= min_mgr]
+    per_page = 50
+    total_pages = max(1, (len(rows) + per_page - 1) // per_page)
+    page = min(positive_int("page"), total_pages)
+    shown = rows[(page - 1) * per_page: page * per_page]
+    for r in shown:
+        code = str(r.get("股票代码", ""))
+        prefix = ("SH" if code[:1] in ("6", "9") else
+                  "SZ" if code[:1] in ("0", "2", "3") else
+                  "BJ" if code[:1] in ("4", "8") else "")
+        r["_url"] = (f"https://xueqiu.com/S/{prefix}{code}"
+                     if prefix and len(code) == 6 and code.isdigit() else "")
+
+    return _render("stocks.html", _base_context(request, {
+        "active_page": "stocks",
+        "stocks": shown,
+        "total": len(rows),
+        "page": page,
+        "total_pages": total_pages,
+        "min_mgr": min_mgr,
+        "manager_count": ranking["manager_count"],
+        "stock_count": ranking["stock_count"],
+        "record_count": ranking["record_count"],
+    }))
+
+
 @router.get("/elite", response_class=HTMLResponse)
 async def elite_page(request: Request) -> Any:
     date = _get_date(request)
