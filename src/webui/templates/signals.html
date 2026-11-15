@@ -41,7 +41,7 @@
                 <td style="color:{{ 'var(--green)' if s.get('净强度')|float > 0 else 'var(--red)' }}; font-weight:600;">{{ s.get('净强度', '')|num2 }}</td>
                 <td>{{ s.get('买入强度', '')|num2 }}</td>
                 <td>{{ s.get('卖出强度', '')|num2 }}</td>
-                <td style="font-size:11px; max-width:250px;">{{ s.get('关联经理Top3(净强度)', '') }}</td>
+                {{ s.get('关联经理Top3(净强度)', '')|mgrcell(selected_date) }}
             </tr>
             {% endfor %}
             </tbody>

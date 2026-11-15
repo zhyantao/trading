@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ name or '基金经理' }} · 个人页 - 量化交易研究{% endblock %}
+
+{% block content %}
+<p class="mgr-crumb">
+    <a href="/signals?date={{ selected_date }}">← 每日信号</a> ·
+    <a href="/managers?date={{ selected_date }}">经理排名</a> ·
+    <a href="/stocks?date={{ selected_date }}">股票排名</a> ·
+    <a href="/elite?date={{ selected_date }}">绩优标的</a>
+</p>
+
+{% if not name %}
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">未指定基金经理</div>
+        <div class="empty-hint">请从「关联经理」列点选经理姓名，或前往 <a href="/managers?date={{ selected_date }}">经理排名</a></div>
+    </div>
+</div>
+{% else %}
+<div class="mgr-hero">
+    <h1>{{ name }}</h1>
+    {% if profile.get('所属公司') %}<span class="mgr-company">{{ profile['所属公司'] }}</span>{% endif %}
+</div>
+<p class="mgr-note">资料由本站流水线从公开的基金季度持仓、基金业绩与经理排名聚合而成，仅作研究记录，不构成投资建议。</p>
+<div class="mgr-ext">
+    <a class="btn btn-sm btn-outline" href="https://so.eastmoney.com/web/s?keyword={{ url_quote(name) }}" target="_blank" rel="noopener noreferrer">东方财富搜索该经理 ↗</a>
+    <a class="btn btn-sm btn-outline" href="https://www.baidu.com/s?wd={{ url_quote(name ~ ' 基金经理') }}" target="_blank" rel="noopener noreferrer">百度搜索 ↗</a>
+    <a class="btn btn-sm btn-outline" href="https://fund.eastmoney.com/manager/" target="_blank" rel="noopener noreferrer">天天基金经理大全 ↗</a>
+</div>
+
+{% if rank.get('排名') %}
+<h2 class="mgr-section-title">业绩排名 <span style="font-size:12px;font-weight:400;color:var(--text-secondary);">口径：{{ rank.get('排名指标', '') }}</span></h2>
+<div class="mgr-stats">
+    <div class="mgr-stat"><div class="k">排名</div><div class="v">#{{ rank.get('排名', '—') }}</div></div>
+    <div class="mgr-stat"><div class="k">平均收益率</div><div class="v" style="color:{{ 'var(--green)' if rank.get('平均收益率')|float >= 0 else 'var(--red)' }};">{{ rank.get('平均收益率')|num2s }}%</div></div>
+    <div class="mgr-stat"><div class="k">中位数收益率</div><div class="v" style="color:{{ 'var(--green)' if rank.get('中位数收益率')|float >= 0 else 'var(--red)' }};">{{ rank.get('中位数收益率')|num2s }}%</div></div>
+    <div class="mgr-stat"><div class="k">最佳收益率</div><div class="v" style="color:var(--green);">{{ rank.get('最佳收益率')|num2s }}%</div></div>
+    <div class="mgr-stat"><div class="k">最差收益率</div><div class="v" style="color:var(--red);">{{ rank.get('最差收益率')|num2s }}%</div></div>
+    <div class="mgr-stat"><div class="k">管理 / 有效基金</div><div class="v">{{ rank.get('管理基金数', '—') }} / {{ rank.get('有效基金数', '—') }}</div></div>
+</div>
+{% endif %}
+
+{% set funds = profile.get('funds', []) %}
+{% set stocks = profile.get('stocks', []) %}
+{% set signals = profile.get('signals', []) %}
+
+{% if funds %}
+<h2 class="mgr-section-title">绩优基金 Top3（{{ funds|length }}）</h2>
+<div class="table-wrap"><table>
+    <thead><tr><th>名次</th><th>基金代码</th><th>基金简称</th><th>年化排名</th><th>成立来年化(%)</th><th>近1年(%)</th><th>成立天数</th></tr></thead>
+    <tbody>
+    {% for f in funds %}
+    <tr>
+        <td>{{ f.get('基金Top', '') }}</td>
+        <td><a class="code-link" href="https://fund.eastmoney.com/{{ f.get('基金代码', '') }}.html" target="_blank" rel="noopener noreferrer">{{ f.get('基金代码', '') }}</a></td>
+        <td>{{ f.get('基金简称', '') }}</td>
+        <td>{{ f.get('基金年化排名', '') }}</td>
+        <td style="color:{{ 'var(--green)' if f.get('成立来年化')|float >= 0 else 'var(--red)' }};">{{ f.get('成立来年化')|num2s }}%</td>
+        <td style="color:{{ 'var(--green)' if f.get('近1年')|float >= 0 else 'var(--red)' }};">{{ f.get('近1年')|num2s }}%</td>
+        <td>{{ f.get('成立天数', '') }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+{% endif %}
+
+{% if stocks %}
+<h2 class="mgr-section-title">重仓股票 Top10（{{ stocks|length }}）</h2>
+<div class="table-wrap"><table>
+    <thead><tr><th>名次</th><th>股票代码</th><th>股票名称</th><th>汇总占净值比例(%)</th><th>出现基金数</th><th>最新季度</th><th>Top3 基金</th></tr></thead>
+    <tbody>
+    {% for s in stocks %}
+    {% set c = s.get('股票代码', '') %}
+    {% set p = 'SH' if c[:1] in ['6', '9'] else ('SZ' if c[:1] in ['0', '2', '3'] else ('BJ' if c[:1] in ['4', '8'] else '')) %}
+    <tr>
+        <td>{{ s.get('股票Top', '') }}</td>
+        <td>{% if p %}<a class="code-link" href="https://xueqiu.com/S/{{ p }}{{ c }}" target="_blank" rel="noopener noreferrer">{{ c }}</a>{% else %}{{ c }}{% endif %}</td>
+        <td>{{ s.get('股票名称', '') }}</td>
+        <td>{{ s.get('汇总占净值比例')|num2s }}%</td>
+        <td>{{ s.get('出现基金数', '') }}</td>
+        <td>{{ s.get('最新季度', '') }}</td>
+        <td class="mgr-cell">{{ s.get('Top3基金列表', '') }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+{% endif %}
+
+{% if signals %}
+<h2 class="mgr-section-title">相关每日信号（{{ signals|length }}）</h2>
+<div class="table-wrap"><table>
+    <thead><tr><th>资产类型</th><th>代码</th><th>名称</th><th>建议标签</th><th>净强度</th><th>关联经理</th></tr></thead>
+    <tbody>
+    {% for g in signals %}
+    {% set c = g.get('代码', '') %}
+    {% set p = 'SH' if c[:1] in ['6', '9'] else ('SZ' if c[:1] in ['0', '2', '3'] else ('BJ' if c[:1] in ['4', '8'] else '')) %}
+    <tr>
+        <td>{{ g.get('资产类型', '') }}</td>
+        <td>{% if g.get('资产类型') == '股票' and p %}<a class="code-link" href="https://xueqiu.com/S/{{ p }}{{ c }}" target="_blank" rel="noopener noreferrer">{{ c }}</a>{% elif g.get('资产类型') == '基金' %}<a class="code-link" href="https://fund.eastmoney.com/{{ c }}.html" target="_blank" rel="noopener noreferrer">{{ c }}</a>{% else %}{{ c }}{% endif %}</td>
+        <td>{{ g.get('名称', '') }}</td>
+        <td>{{ g.get('建议标签(非投资建议)', '') }}</td>
+        <td style="color:{{ 'var(--green)' if g.get('净强度')|float >= 0 else 'var(--red)' }};">{{ g.get('净强度')|num2s }}</td>
+        {{ g.get('关联经理Top3(净强度)', '')|mgrcell(selected_date) }}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table></div>
+{% endif %}
+
+{% if not funds and not stocks and not signals %}
+<p class="mgr-note">该经理暂未出现在当前日期的绩优标的与调仓信号中，可在 <a href="/managers?date={{ selected_date }}">经理排名</a> 查看其业绩指标。</p>
+{% endif %}
+{% endif %}
+{% endblock %}

@@ -1052,6 +1052,52 @@ table.trade-table td { white-space: nowrap; }
     color: var(--accent); text-decoration: none;
     border-bottom: 1px dotted currentColor; margin-right: 10px;
 }
+
+/* ================================================================
+   关联经理单元格 & 基金经理个人页
+   ================================================================ */
+/* 通用表格默认 white-space: nowrap；后端拼出的「姓名(公司):数值; …」很长，
+   会把整张表撑出卡片边界。这里逐条换行、允许任意位置断行并限制宽度。 */
+td.mgr-cell {
+    white-space: normal;
+    min-width: 145px;
+    max-width: 260px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.45;
+    vertical-align: top;
+    font-size: 11px;
+}
+.mgr-item { display: block; margin: 2px 0; }
+.mgr-link {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px dotted currentColor;
+}
+.mgr-link:hover { color: #7c0000; border-bottom-style: solid; }
+.mgr-meta, .mgr-more {
+    margin-left: 5px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+.mgr-more { font-style: italic; }
+
+.mgr-crumb { font-size: 12px; margin: 0 0 14px; }
+.mgr-crumb a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted currentColor; }
+.mgr-hero { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin: 0 0 6px; }
+.mgr-hero h1 { font-size: 1.9rem; margin: 0; font-weight: 600; }
+.mgr-company { color: var(--text-secondary); font-size: 14px; }
+.mgr-ext { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+.mgr-ext .btn { font-size: 12px; padding: 6px 12px; }
+.mgr-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 14px 0 20px; }
+.mgr-stat { border: 1px solid var(--border); background: var(--card-bg); padding: 10px 12px; }
+.mgr-stat .k { font-size: 11px; letter-spacing: .04em; color: var(--text-secondary); }
+.mgr-stat .v { font-size: 19px; font-weight: 700; margin-top: 4px; line-height: 1.25; }
+.mgr-section-title { font-size: 15px; font-weight: 600; margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+.mgr-note { font-size: 12px; color: var(--text-secondary); line-height: 1.7; margin: 6px 0 12px; }
 @media (max-width: 720px) {
     .formula-block { padding: 10px; }
     .formula-block math { font-size: 0.92rem; }

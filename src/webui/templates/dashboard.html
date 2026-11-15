@@ -128,7 +128,7 @@
                 {% for m in top_managers %}
                 <tr>
                     <td>{{ m.get('排名', '') }}</td>
-                    <td>{{ m.get('姓名', '') }}</td>
+                    <td>{{ m.get('姓名', '')|mgrlink(selected_date) }}</td>
                     <td>{{ m.get('所属公司', '') }}</td>
                     <td>{{ m.get('管理基金数', '')|num2 }}</td>
                     <td style="color:{{ 'var(--green)' if m.get('平均收益率')|float > 0 else 'var(--red)' }};">{{ m.get('平均收益率', '')|num2 }}</td>

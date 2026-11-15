@@ -35,7 +35,7 @@
                     <td><a class="code-link" href="https://fund.eastmoney.com/{{ f.get('基金代码', '') }}.html" target="_blank" rel="noopener noreferrer">{{ f.get('基金代码', '') }}</a></td>
                     <td>{{ f.get('基金简称', '') }}</td>
                     <td>{{ f.get('入选经理数', '') }}</td>
-                    <td>{{ f.get('姓名', '') }} <span style="font-size:11px;color:var(--text-secondary);">{{ f.get('经理排名', '') }}</span></td>
+                    <td>{{ f.get('姓名', '')|mgrlink(selected_date) }} <span style="font-size:11px;color:var(--text-secondary);">{{ f.get('经理排名', '') }}</span></td>
                     <td style="color:{{ 'var(--green)' if f.get('成立来年化')|float > 0 else 'var(--red)' }};">{{ f.get('成立来年化', '')|num2 }}</td>
                     <td>{{ f.get('近1年', '')|num2 }}</td>
                     <td>{{ f.get('成立天数', '')|num2 }}</td>
@@ -70,7 +70,7 @@
                     <td>{{ s.get('出现基金数', '') }}</td>
                     <td>{{ s.get('平均占净值比例', 0)|num2 }}</td>
                     <td>{{ s.get('最高名次', '') }}</td>
-                    <td style="font-size:12px;max-width:230px;">{{ s.get('关联经理', '') }}</td>
+                    {{ s.get('关联经理', '')|mgrcell(selected_date) }}
                     <td>{{ s.get('最新季度', '') }}</td>
                 </tr>
                 {% endfor %}

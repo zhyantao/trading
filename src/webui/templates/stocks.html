@@ -30,7 +30,7 @@
                 <td>{{ s.get('出现基金数', '') }}</td>
                 <td>{{ s.get('平均占净值比例', 0)|num2 }}</td>
                 <td>{{ s.get('最高名次', '') }}</td>
-                <td style="font-size:12px; max-width:260px;">{{ s.get('关联经理', '') }}</td>
+                {{ s.get('关联经理', '')|mgrcell(selected_date) }}
                 <td>{{ s.get('最新季度', '') }}</td>
             </tr>
             {% endfor %}

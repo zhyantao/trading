@@ -17,6 +17,7 @@
     page: Math.max(1, parseInt(params.get('page') || '1', 10) || 1),
     type: params.get('type') || '',
     view: params.get('view') || '',
+    name: params.get('name') || '',   /* 基金经理个人页 */
     minDays: parseInt(params.get('min_days') || '180', 10) || 180,
     minMgr: Math.max(1, parseInt(params.get('min_mgr') || '1', 10) || 1),
   };
@@ -65,6 +66,56 @@
       esc(code) + '</a>';
   }
 
+  /* ---------------- 基金经理个人页 ----------------
+     后端把「关联经理」拼成纯文本（信号列：姓名(公司):数值; …，股票列：
+     姓名、姓名 等 N 位）。这里把它拆成逐条经理链接，配合 .mgr-cell 的
+     自动换行，避免长文本把表格撑出卡片边界。 */
+  function managerUrl(name) {
+    return 'manager.html?date=' + encodeURIComponent(state.date) +
+      '&name=' + encodeURIComponent(name);
+  }
+  function managerLink(name, title) {
+    return '<a class="mgr-link" href="' + managerUrl(name) + '" title="' +
+      esc(title || ('查看 ' + name + ' 的个人页面')) + '">' + esc(name) + '</a>';
+  }
+  function managerCell(text) {
+    var raw = String(text == null ? '' : text).trim();
+    if (!raw) return '<td class="mgr-cell">—</td>';
+    var items = [];
+    raw.split(/\s*;\s*/).forEach(function (part) {
+      var p = part.trim();
+      if (!p) return;
+      /* "等 N 位" 单独成行，不作为经理名字 */
+      var more = '';
+      var mMore = p.match(/\s*等\s*\d+\s*位\s*$/);
+      if (mMore) {
+        more = mMore[0].trim();
+        p = p.slice(0, p.length - mMore[0].length).trim();
+      }
+      var entries = p.indexOf('、') >= 0 ? p.split(/\s*、\s*/) : [p];
+      entries.forEach(function (entry) {
+        var e = entry.trim();
+        if (!e) return;
+        /* 信号列：姓名(所属公司):净强度 / 姓名(所属公司) 经理排名=N */
+        var m = e.match(/^([^()]+?)\(([^)]*)\)\s*(.*)$/);
+        if (m && m[1].trim()) {
+          var meta = [m[2].trim(), m[3].replace(/^[:：]\s*/, '').trim()]
+            .filter(Boolean).join(' · ');
+          items.push('<div class="mgr-item">' + managerLink(m[1].trim()) +
+            (meta ? '<span class="mgr-meta">' + esc(meta) + '</span>' : '') + '</div>');
+        } else if (/^[^()：:；;、\s]{2,12}$/.test(e)) {
+          /* 股票列：纯姓名 */
+          items.push('<div class="mgr-item">' + managerLink(e) + '</div>');
+        } else {
+          /* 无法识别的片段保持纯文本，避免生成错误链接 */
+          items.push('<div class="mgr-item">' + esc(e) + '</div>');
+        }
+      });
+      if (more) items.push('<div class="mgr-item mgr-more">' + esc(more) + '</div>');
+    });
+    return '<td class="mgr-cell">' + items.join('') + '</td>';
+  }
+
   function pageUrl(page, extra) {
     var p = new URLSearchParams(location.search);
     p.set('page', String(page));
@@ -111,8 +162,10 @@
 
   /* ---------------- 页眉（站点导航 + 应用导航） ---------------- */
   function navLink(href, page, label, date) {
+    /* 经理个人页归属在「经理排名」栏目下 */
+    var active = PAGE === page || (page === 'managers' && PAGE === 'manager');
     return '<a href="' + href + '?date=' + date + '" class="' +
-      (PAGE === page ? 'active' : '') + '">' + label + '</a>';
+      (active ? 'active' : '') + '">' + label + '</a>';
   }
 
   function buildHeader(manifest) {
@@ -372,7 +425,7 @@
         '<td style="' + pc(s['净强度']) + ' font-weight:600;">' + num2(s['净强度']) + '</td>' +
         '<td>' + num2(s['买入强度']) + '</td>' +
         '<td>' + num2(s['卖出强度']) + '</td>' +
-        '<td style="font-size:11px; max-width:250px;">' + esc(s['关联经理Top3(净强度)']) + '</td></tr>';
+        managerCell(s['关联经理Top3(净强度)']) + '</tr>';
     }).join('');
 
     root.innerHTML = card('',
@@ -424,7 +477,7 @@
     var body = pageSlice(rows).map(function (m) {
       return '<tr>' +
         '<td style="font-weight:600;">' + esc(m['排名']) + '</td>' +
-        '<td>' + esc(m['姓名']) + '</td>' +
+        '<td>' + managerLink(m['姓名']) + '</td>' +
         '<td>' + esc(m['所属公司']) + '</td>' +
         '<td>' + num2(m['管理基金数']) + '</td>' +
         '<td>' + num2(m['有效基金数']) + '</td>' +
@@ -437,6 +490,92 @@
       '<div style="margin-bottom:12px; color:var(--text-secondary); font-size:13px;">共 ' + rows.length + ' 位经理</div>' +
       table('<th>排名</th><th>姓名</th><th>所属公司</th><th>管理基金数</th><th>有效基金数</th><th>平均收益率</th><th>中位数收益率</th><th>最佳收益率</th><th>最差收益率</th>', body) +
       pager(rows.length));
+  }
+
+  /* ---------------- 页面：基金经理个人页 ---------------- */
+  /* 数据来自 manager_index.json：按姓名聚合排名 / 绩优基金 / 重仓股 / 调仓信号 */
+  function renderManager(index) {
+    var name = (state.name || '').trim();
+    var crumb = '<p class="mgr-crumb">' +
+      '<a href="signals.html?date=' + state.date + '">← 每日信号</a> · ' +
+      '<a href="managers.html?date=' + state.date + '">经理排名</a> · ' +
+      '<a href="stocks.html?date=' + state.date + '">股票排名</a> · ' +
+      '<a href="elite.html?date=' + state.date + '">绩优标的</a></p>';
+    if (!name) {
+      root.innerHTML = crumb + emptyState('🔍', '未指定基金经理',
+        '请从「关联经理」列点选经理姓名，或前往经理排名页');
+      return;
+    }
+    var m = (index.managers || {})[name] || null;
+    var rank = (m && m.ranks && m.ranks[0]) || {};
+    var company = (m && m['所属公司']) || rank['所属公司'] || '';
+    function stat(label, value, style) {
+      return '<div class="mgr-stat"><div class="k">' + esc(label) + '</div>' +
+        '<div class="v" style="' + (style || '') + '">' + value + '</div></div>';
+    }
+    var html = crumb +
+      '<div class="mgr-hero"><h1>' + esc(name) + '</h1>' +
+      (company ? '<span class="mgr-company">' + esc(company) + '</span>' : '') + '</div>' +
+      '<p class="mgr-note">资料由本站流水线从公开的基金季度持仓、基金业绩与经理排名聚合而成，' +
+      '仅作研究记录，不构成投资建议。</p>' +
+      '<div class="mgr-ext">' +
+      '<a class="btn btn-sm btn-outline" href="https://so.eastmoney.com/web/s?keyword=' +
+      encodeURIComponent(name) + '" target="_blank" rel="noopener noreferrer">东方财富搜索该经理 ↗</a>' +
+      '<a class="btn btn-sm btn-outline" href="https://www.baidu.com/s?wd=' +
+      encodeURIComponent(name + ' 基金经理') + '" target="_blank" rel="noopener noreferrer">百度搜索 ↗</a>' +
+      '<a class="btn btn-sm btn-outline" href="https://fund.eastmoney.com/manager/" ' +
+      'target="_blank" rel="noopener noreferrer">天天基金经理大全 ↗</a></div>';
+
+    if (rank && rank['排名']) {
+      html += '<h2 class="mgr-section-title">业绩排名 <span style="font-size:12px;font-weight:400;' +
+        'color:var(--text-secondary);">口径：' + esc(rank['排名指标'] || '') + '</span></h2>' +
+        '<div class="mgr-stats">' +
+        stat('排名', '#' + esc(rank['排名'])) +
+        stat('平均收益率', num2(rank['平均收益率']) + '%', pc(rank['平均收益率'])) +
+        stat('中位数收益率', num2(rank['中位数收益率']) + '%', pc(rank['中位数收益率'])) +
+        stat('最佳收益率', num2(rank['最佳收益率']) + '%', 'color:var(--green);') +
+        stat('最差收益率', num2(rank['最差收益率']) + '%', 'color:var(--red);') +
+        stat('管理 / 有效基金', esc(rank['管理基金数']) + ' / ' + esc(rank['有效基金数'])) +
+        '</div>';
+    }
+
+    var funds = (m && m.funds) || [], stocks = (m && m.stocks) || [], signals = (m && m.signals) || [];
+    if (funds.length) {
+      var frows = funds.map(function (f) {
+        return '<tr><td>' + esc(f['基金Top']) + '</td><td>' + codeLink('基金', f['基金代码']) + '</td>' +
+          '<td>' + esc(f['基金简称']) + '</td><td>' + esc(f['基金年化排名']) + '</td>' +
+          '<td style="' + pc(f['成立来年化']) + ';">' + num2(f['成立来年化']) + '%</td>' +
+          '<td style="' + pc(f['近1年']) + ';">' + num2(f['近1年']) + '%</td>' +
+          '<td>' + esc(f['成立天数']) + '</td></tr>';
+      }).join('');
+      html += '<h2 class="mgr-section-title">绩优基金 Top3（' + funds.length + '）</h2>' +
+        table('<th>名次</th><th>基金代码</th><th>基金简称</th><th>年化排名</th><th>成立来年化(%)</th><th>近1年(%)</th><th>成立天数</th>', frows);
+    }
+    if (stocks.length) {
+      var krows = stocks.map(function (s) {
+        return '<tr><td>' + esc(s['股票Top']) + '</td><td>' + codeLink('股票', s['股票代码']) + '</td>' +
+          '<td>' + esc(s['股票名称']) + '</td><td>' + num2(s['汇总占净值比例']) + '%</td>' +
+          '<td>' + esc(s['出现基金数']) + '</td><td>' + esc(s['最新季度']) + '</td>' +
+          '<td class="mgr-cell">' + esc(s['Top3基金列表']) + '</td></tr>';
+      }).join('');
+      html += '<h2 class="mgr-section-title">重仓股票 Top10（' + stocks.length + '）</h2>' +
+        table('<th>名次</th><th>股票代码</th><th>股票名称</th><th>汇总占净值比例(%)</th><th>出现基金数</th><th>最新季度</th><th>Top3 基金</th>', krows);
+    }
+    if (signals.length) {
+      var grows = signals.map(function (g) {
+        return '<tr><td>' + esc(g['资产类型']) + '</td><td>' + codeLink(g['资产类型'], g['代码']) + '</td>' +
+          '<td>' + esc(g['名称']) + '</td><td>' + esc(g['建议标签(非投资建议)']) + '</td>' +
+          '<td style="' + pc(g['净强度']) + ';">' + num2(g['净强度']) + '</td>' +
+          managerCell(g['关联经理Top3(净强度)']) + '</tr>';
+      }).join('');
+      html += '<h2 class="mgr-section-title">相关每日信号（' + signals.length + '）</h2>' +
+        table('<th>资产类型</th><th>代码</th><th>名称</th><th>建议标签</th><th>净强度</th><th>关联经理</th>', grows);
+    }
+    if (!funds.length && !stocks.length && !signals.length) {
+      html += '<p class="mgr-note">该经理暂未出现在当前日期的绩优标的与调仓信号中，' +
+        '可在 <a href="managers.html?date=' + state.date + '">经理排名</a> 查看其业绩指标。</p>';
+    }
+    root.innerHTML = html;
   }
 
   /* ---------------- 页面：基金排名 ---------------- */
@@ -514,7 +653,7 @@
         '<td>' + esc(r['出现基金数']) + '</td>' +
         '<td>' + num2(r['平均占净值比例']) + '</td>' +
         '<td>' + esc(r['最高名次']) + '</td>' +
-        '<td style="font-size:12px; max-width:260px;">' + esc(r['关联经理']) + '</td>' +
+        managerCell(r['关联经理']) +
         '<td>' + esc(r['最新季度']) + '</td></tr>';
     }).join('');
 
@@ -556,7 +695,7 @@
         '<td style="font-weight:600;color:var(--accent);">' + num2(f['综合得分']) + '</td>' +
         '<td>' + codeLink('基金', f['基金代码']) + '</td><td>' + esc(f['基金简称']) + '</td>' +
         '<td>' + esc(f['入选经理数']) + '</td>' +
-        '<td>' + esc(f['姓名']) + ' <span style="font-size:11px;color:var(--text-secondary);">' +
+        '<td>' + managerLink(f['姓名']) + ' <span style="font-size:11px;color:var(--text-secondary);">' +
         esc(f['经理排名']) + '</span></td>' +
         '<td style="' + pc(f['成立来年化']) + ';">' + num2(f['成立来年化']) + '</td>' +
         '<td style="' + pc(f['近1年']) + ';">' + num2(f['近1年']) + '</td>' +
@@ -569,7 +708,7 @@
         '<td>' + codeLink('股票', s['股票代码']) + '</td><td>' + esc(s['股票名称']) + '</td>' +
         '<td>' + esc(s['入选经理数']) + '</td><td>' + esc(s['出现基金数']) + '</td>' +
         '<td>' + num2(s['平均占净值比例']) + '</td><td>' + esc(s['最高名次']) + '</td>' +
-        '<td style="font-size:12px;max-width:230px;">' + esc(s['关联经理']) + '</td>' +
+        managerCell(s['关联经理']) +
         '<td>' + esc(s['最新季度']) + '</td></tr>';
     }).join('');
 
@@ -784,6 +923,9 @@
           },
           managers: function () {
             return getJSON('data/' + state.date + '/managers.json').then(renderManagers);
+          },
+          manager: function () {
+            return getJSON('data/' + state.date + '/manager_index.json').then(renderManager);
           },
           funds: function () {
             return getJSON('data/' + state.date + '/funds.json').then(renderFunds);

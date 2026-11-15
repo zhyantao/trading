@@ -31,6 +31,7 @@ from webui.data_service import DataService
 from webui.routes import _md_to_html
 from backtest_series import build_series
 from formula_doc import render_formula_doc
+from manager_index import build_manager_index
 from selection_formula import (
     TOP_FUNDS,
     TOP_STOCKS,
@@ -221,6 +222,11 @@ def generate_data_for_date(date: str) -> None:
 
     # --- managers（全部行，前端分页）---
     _write_json(out / "managers.json", {"rows": _records(managers)})
+
+    # --- 基金经理个人页索引：按姓名聚合排名 / 信号 / 基金 / 股票 ---
+    _write_json(out / "manager_index.json", build_manager_index(
+        _records(managers), _records(signals), elite_fund_records, elite_stock_records,
+    ))
 
     # --- funds（成立天数>=90，取前 2000 名，前端再做 min_days 筛选）---
     funds = ds.get_fund_annual_returns(min_days=90, date=date)

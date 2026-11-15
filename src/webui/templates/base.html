@@ -13,7 +13,7 @@
 <!-- 站点互跳导航（与 zhyantao.github.io 各站页眉一致） -->
 <nav class="site-nav" aria-label="站点导航">
     <div class="nav-inner">
-        <a href="/?date={{ selected_date }}"><img class="nav-badge" src="/static/favicon.svg" alt="BOT"></a>
+        <a href="/?date={{ selected_date }}"><img class="nav-badge" src="/static/favicon.svg" alt="TRADING"></a>
         <a href="https://zhyantao.github.io/">ZHYANTAO</a>
         <a href="https://zhyantao.github.io/docs/">DOCS</a>
         <a href="https://zhyantao.github.io/PS1-generator/">PS1</a>
@@ -31,7 +31,7 @@
             <a href="/?date={{ selected_date }}" class="{{ 'active' if active_page == 'dashboard' }}">总览</a>
             <a href="/signals?date={{ selected_date }}" class="{{ 'active' if active_page == 'signals' }}">每日信号</a>
             <a href="/holdings?date={{ selected_date }}" class="{{ 'active' if active_page == 'holdings' }}">我的持仓</a>
-            <a href="/managers?date={{ selected_date }}" class="{{ 'active' if active_page == 'managers' }}">经理排名</a>
+            <a href="/managers?date={{ selected_date }}" class="{{ 'active' if active_page in ['managers', 'manager'] }}">经理排名</a>
             <a href="/funds?date={{ selected_date }}" class="{{ 'active' if active_page == 'funds' }}">基金排名</a>
             <a href="/stocks?date={{ selected_date }}" class="{{ 'active' if active_page == 'stocks' }}">股票排名</a>
             <a href="/elite?date={{ selected_date }}" class="{{ 'active' if active_page == 'elite' }}">绩优标的</a>

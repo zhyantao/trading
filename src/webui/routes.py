@@ -10,8 +10,10 @@ import sys
 import threading
 import uuid
 from datetime import datetime
+from html import escape as _html_escape
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote as _url_quote
 
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
@@ -19,9 +21,11 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 import pandas as pd
 
 from jinja2 import Environment, FileSystemLoader
+from markupsafe import Markup
 
 from .data_service import DataService
 from formula_doc import render_formula_doc
+from manager_index import build_manager_index
 from selection_formula import TOP_FUNDS, TOP_STOCKS, select_global_funds, select_global_stocks
 from stock_rankings import build_stock_rankings
 
@@ -41,7 +45,92 @@ ds = DataService()
 
 _tpl_dir = Path(__file__).resolve().parent / "templates"
 _jinja_env = Environment(loader=FileSystemLoader(str(_tpl_dir)), auto_reload=True, cache_size=0)
-_jinja_env.filters["num2"] = lambda v: f"{float(v):.2f}"
+
+
+def _num2(v: Any) -> str:
+    """数值格式化；基金信号等场景可能没有数值，空值保持空白。"""
+    try:
+        return f"{float(v):.2f}"
+    except (TypeError, ValueError):
+        return ""
+
+
+def _num2safe(v: Any) -> str:
+    """个人页里的数值可能是空字符串（例如基金信号没有净强度）。"""
+    try:
+        return f"{float(v):.2f}"
+    except (TypeError, ValueError):
+        return "—"
+
+
+_jinja_env.filters["num2"] = _num2
+_jinja_env.filters["num2s"] = _num2safe
+
+
+def _mgr_link(name: Any, date: str = "") -> Markup:
+    """经理个人页链接（动态站 /manager）。"""
+    name = str(name or "").strip()
+    if not name:
+        return Markup("")
+    href = "/manager?date=" + _url_quote(str(date)) + "&name=" + _url_quote(name)
+    return Markup(
+        '<a class="mgr-link" href="' + _html_escape(href, quote=True) +
+        '" title="' + _html_escape(f"查看 {name} 的个人页面", quote=True) +
+        '">' + _html_escape(name) + '</a>'
+    )
+
+
+_MGR_WITH_COMPANY = re.compile(r"^([^()]+?)\(([^)]*)\)\s*(.*)$")
+_MGR_MORE = re.compile(r"\s*等\s*\d+\s*位\s*$")
+_MGR_PLAIN_NAME = re.compile(r"^[^()：:；;、\s]{2,12}$")
+
+
+def _mgr_cell(text: Any, date: str = "") -> Markup:
+    """把「关联经理」纯文本渲染成逐条链接的 <td>，与静态站 app.js 同口径。
+
+    信号列：`姓名(公司):数值; …`；股票/绩优列：`姓名、姓名 等 N 位`。
+    输出已全部转义，返回 Markup 以兼容 autoescape。
+    """
+    raw = str(text or "").strip()
+    if not raw:
+        return Markup('<td class="mgr-cell">—</td>')
+    items: list[str] = []
+    for part in re.split(r"\s*;\s*", raw):
+        p = part.strip()
+        if not p:
+            continue
+        more = ""
+        m_more = _MGR_MORE.search(p)
+        if m_more:
+            more = m_more.group(0).strip()
+            p = p[:m_more.start()].strip()
+        entries = re.split(r"\s*、\s*", p) if "、" in p else [p]
+        for entry in entries:
+            e = entry.strip()
+            if not e:
+                continue
+            m = _MGR_WITH_COMPANY.match(e)
+            if m and m.group(1).strip():
+                name = m.group(1).strip()
+                meta_bits = [m.group(2).strip(),
+                             re.sub(r"^[:：]\s*", "", m.group(3)).strip()]
+                meta = " · ".join(x for x in meta_bits if x)
+                items.append(
+                    '<div class="mgr-item">' + str(_mgr_link(name, date)) +
+                    ('<span class="mgr-meta">' + _html_escape(meta) + '</span>' if meta else '') +
+                    '</div>'
+                )
+            elif _MGR_PLAIN_NAME.match(e):
+                items.append('<div class="mgr-item">' + str(_mgr_link(e, date)) + '</div>')
+            else:
+                items.append('<div class="mgr-item">' + _html_escape(e) + '</div>')
+        if more:
+            items.append('<div class="mgr-item mgr-more">' + _html_escape(more) + '</div>')
+    return Markup('<td class="mgr-cell">' + "".join(items) + '</td>')
+
+
+_jinja_env.filters["mgrcell"] = _mgr_cell
+_jinja_env.filters["mgrlink"] = _mgr_link
 
 
 def _render(name: str, context: dict[str, Any] | None = None) -> HTMLResponse:
@@ -230,6 +319,32 @@ async def managers_page(request: Request) -> Any:
         "page": page,
         "total_pages": max(1, (total + per_page - 1) // per_page),
         "total": total,
+    }))
+
+
+@router.get("/manager", response_class=HTMLResponse)
+async def manager_page(request: Request) -> Any:
+    """基金经理个人页：按姓名聚合业绩排名、绩优基金、重仓股与调仓信号。"""
+    date = _get_date(request)
+    name = request.query_params.get("name", "").strip()
+    managers = ds.get_manager_rankings(date=date)
+    signals = ds.get_signals(date=date)
+    funds = ds.get_elite_funds(date=date)
+    stocks = ds.get_elite_stocks(date=date)
+    index = build_manager_index(
+        managers.to_dict("records") if not managers.empty else [],
+        signals.to_dict("records") if signals is not None and not signals.empty else [],
+        funds.to_dict("records") if not funds.empty else [],
+        stocks.to_dict("records") if not stocks.empty else [],
+    )
+    profile = index["managers"].get(name) if name else None
+    ranks = (profile or {}).get("ranks", [])
+    return _render("manager.html", _base_context(request, {
+        "active_page": "manager",
+        "name": name,
+        "profile": profile or {},
+        "rank": ranks[0] if ranks else {},
+        "url_quote": _url_quote,
     }))
 
 

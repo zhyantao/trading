@@ -226,7 +226,8 @@ python3 src/webui/app.py          # http://localhost:8000
 | 总览 | `index.html` | `/` | 信号摘要、紧凑环形图、**股票排名 Top5**、经理 Top5、持仓明细 |
 | 每日信号 | `signals.html` | `/signals` | 按标签过滤、分页 |
 | 我的持仓 | `holdings.html` | `/holdings` | 当前配置、触发重算 |
-| 经理排名 | `managers.html` | `/managers` | 分页 |
+| 经理排名 | `managers.html` | `/managers` | 分页，姓名可进入个人页 |
+| **基金经理个人页** | `manager.html?name=姓名` | `/manager?name=姓名` | 业绩排名、绩优基金 Top3、重仓股 Top10、相关每日信号、外部经理搜索 |
 | 基金排名 | `funds.html` | `/funds` | 成立天数过滤 |
 | 股票排名 | `stocks.html` | `/stocks` | 按 S_s 排序的完整去重股票池，支持入选经理数筛选 |
 | 绩优标的 | `elite.html` | `/elite` | 全局唯一 Top3 / Top10，含综合得分 |
@@ -250,7 +251,7 @@ python3 src/webui/app.py          # http://localhost:8000
 python3 src/generate_static.py
 ```
 
-从 `out/` 读取 CSV/MD → 写 `docs/data/{date}/*.json` + `docs/` 页面壳与资源。若最新日期数据不完整，生成器会**保持上一版站点不动**，绝不退回发布旧日期。
+从 `out/` 读取 CSV/MD → 写 `docs/data/{date}/*.json` + `docs/` 页面壳与资源。其中 `manager_index.json` 由 `src/manager_index.py` 按姓名聚合经理排名、绩优基金、重仓股与调仓信号，供基金经理个人页使用（静态站与动态站共用同一口径）。页面里的「关联经理」姓名均为指向个人页的超链接，长文本逐条换行，不会撑破表格。若最新日期数据不完整，生成器会**保持上一版站点不动**，绝不退回发布旧日期。
 
 ### 8.2 Pages 设置
 
