@@ -324,22 +324,39 @@
 
   /* ---------------- 页面：总览 ---------------- */
   /* 紧凑布局：环形图缩到 92px，两个 Top5 榜单并排，避免大图把表格挤到下方 */
+  /* 信号统计块：大数字 + 占比说明 */
+  function sigStat(value, label, color, total) {
+    var pct = total > 0 ? Math.round(value / total * 1000) / 10 : 0;
+    return '<div class="sig-stat"><span class="sig-num" style="color:' + color + ';">' +
+      (value || 0) + '</span><span class="sig-label">' + label + ' · ' + pct + '%</span></div>';
+  }
+  /* 持仓占比横条：轨道总长 = 100%，填充宽度 = 该标的比例(%) */
+  function barCell(pct, isStock) {
+    var w = Math.max(0, Math.min(100, num(pct) || 0));
+    return '<td><div class="bar-track" title="占比 ' + num2(pct) + '%"><div class="bar-fill ' +
+      (isStock ? 'is-stock' : 'is-fund') + '" style="width:' + w + '%;"></div></div></td>';
+  }
   function renderDashboard(data) {
     var st = data.signal_stats || {};
     var ci = data.cycle_info;
     var html = '';
 
-    /* 信号摘要 + 市场周期定位：合并为一张卡片 */
+    /* 信号摘要：两列 —— 左列环形图（信号分布），右列关注买入/卖出统计 */
     var body = '';
     if (st.total > 0) {
-      body += '<div class="stat-strip" style="max-width:620px;">' +
-        '<div><div class="stat-num" style="color:var(--green);">' + st.buy +
-        '</div><div class="stat-label">关注买入</div></div>' +
-        '<div><div class="stat-num" style="color:var(--yellow);">' + st.hold +
-        '</div><div class="stat-label">继续关注</div></div>' +
-        '<div><div class="stat-num" style="color:var(--red);">' + st.sell +
-        '</div><div class="stat-label">关注卖出</div></div>' +
-        '</div>';
+      var tot = st.total || 1;
+      body += '<div class="summary-cols">' +
+        '<div class="summary-left">' +
+        donutSvg([
+          { value: (st.buy || 0) / tot, color: 'var(--green)', label: '关注买入' },
+          { value: (st.hold || 0) / tot, color: 'var(--yellow)', label: '继续关注' },
+          { value: (st.sell || 0) / tot, color: 'var(--red)', label: '关注卖出' },
+        ], String(st.total)) +
+        '</div>' +
+        '<div class="summary-stats">' +
+        sigStat(st.buy, '关注买入', 'var(--green)', tot) +
+        sigStat(st.sell, '关注卖出', 'var(--red)', tot) +
+        '</div></div>';
     } else {
       body += '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div>' +
         '<div class="empty-hint">数据由 GitHub Actions 每个交易日 22:00 自动更新</div></div>';
@@ -365,16 +382,17 @@
     var grid = '';
     if (data.holdings && data.holdings.length) {
       var hrows = data.holdings.map(function (h) {
-        return '<tr><td><span class="tag ' + (h['类型'] === '股票' ? 'tag-stock' : 'tag-fund') + '">' +
+        var isStock = h['类型'] === '股票';
+        return '<tr><td><span class="tag ' + (isStock ? 'tag-stock' : 'tag-fund') + '">' +
           esc(h['类型']) + '</span></td>' +
           '<td>' + codeLink(h['类型'], h['代码']) + '</td><td>' + esc(h['名称']) +
-          '</td><td>' + num2(h['比例(%)']) + '</td></tr>';
+          '</td><td>' + num2(h['比例(%)']) + '</td>' + barCell(h['比例(%)'], isStock) + '</tr>';
       }).join('');
       grid += card('持仓配置', donutSvg([
         { value: (data.stock_sum || 0) / ((data.stock_sum || 0) + (data.fund_sum || 0) || 1), color: 'var(--accent)', label: '股票' },
         { value: (data.fund_sum || 0) / ((data.stock_sum || 0) + (data.fund_sum || 0) || 1), color: 'var(--green)', label: '基金' },
       ], '比例') +
-        (hrows ? table('<th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th>', hrows, 'mini-table') : ''),
+        (hrows ? table('<th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>占比</th>', hrows, 'mini-table') : ''),
         'card-compact');
     }
     grid += card('今日信号摘要 · 市场周期 <a class="card-link" href="signals.html?date=' + state.date +

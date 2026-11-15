@@ -24,14 +24,18 @@
         </div>
         <div class="table-wrap">
             <table class="mini-table">
-                <thead><tr><th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th></tr></thead>
+                <thead><tr><th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>占比</th></tr></thead>
                 <tbody>
                 {% for h in holdings %}
+                {% set pct_raw = h.get('比例(%)', 0)|float %}
+                {% set pct_low = pct_raw if pct_raw > 0 else 0 %}
+                {% set pct_val = pct_low if pct_low < 100 else 100 %}
                 <tr>
                     <td><span class="tag {{ 'tag-stock' if h.get('类型') == '股票' else 'tag-fund' }}">{{ h.get('类型', '') }}</span></td>
                     <td>{{ h.get('代码', '') }}</td>
                     <td>{{ h.get('名称', '') }}</td>
                     <td>{{ h.get('比例(%)', 0)|num2 }}</td>
+                    <td><div class="bar-track" title="占比 {{ '%.2f'|format(pct_raw) }}%"><div class="bar-fill {{ 'is-stock' if h.get('类型') == '股票' else 'is-fund' }}" style="width:{{ pct_val }}%;"></div></div></td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -45,10 +49,33 @@
     <div class="card card-compact">
         <div class="card-header">今日信号摘要 · 市场周期 <a class="card-link" href="/signals?date={{ selected_date }}">信号明细 →</a></div>
     {% if signal_stats.total > 0 %}
-    <div class="stat-strip" style="max-width:620px;">
-        <div><div class="stat-num" style="color:var(--green);">{{ signal_stats.buy }}</div><div class="stat-label">关注买入</div></div>
-        <div><div class="stat-num" style="color:var(--yellow);">{{ signal_stats.hold }}</div><div class="stat-label">继续关注</div></div>
-        <div><div class="stat-num" style="color:var(--red);">{{ signal_stats.sell }}</div><div class="stat-label">关注卖出</div></div>
+    {% set tot = signal_stats.total if signal_stats.total > 0 else 1 %}
+    {% set circum = 2 * 3.1416 * 60 %}
+    {% set buy_dash = (signal_stats.buy / tot) * circum %}
+    {% set hold_dash = (signal_stats.hold / tot) * circum %}
+    {% set sell_dash = (signal_stats.sell / tot) * circum %}
+    <!-- 信号摘要两列：左列环形图（信号分布），右列关注买入/卖出统计 -->
+    <div class="summary-cols">
+        <div class="summary-left">
+            <div class="donut-wrap">
+                <svg width="92" height="92" viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
+                    {% if buy_dash > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24" stroke-dasharray="{{ buy_dash }} {{ circum - buy_dash }}" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>{% endif %}
+                    {% if hold_dash > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--yellow)" stroke-width="24" stroke-dasharray="{{ hold_dash }} {{ circum - hold_dash }}" stroke-dashoffset="{{ -buy_dash }}" transform="rotate(-90 80 80)"/>{% endif %}
+                    {% if sell_dash > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24" stroke-dasharray="{{ sell_dash }} {{ circum - sell_dash }}" stroke-dashoffset="{{ -(buy_dash + hold_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
+                    <text x="80" y="86" text-anchor="middle" font-size="20" fill="var(--text-secondary)">{{ signal_stats.total }}</text>
+                </svg>
+                <div class="donut-legend">
+                    <div><span class="donut-dot" style="background:var(--green);"></span>关注买入 {{ (signal_stats.buy / tot * 100)|round|int }}%</div>
+                    <div><span class="donut-dot" style="background:var(--yellow);"></span>继续关注 {{ (signal_stats.hold / tot * 100)|round|int }}%</div>
+                    <div><span class="donut-dot" style="background:var(--red);"></span>关注卖出 {{ (signal_stats.sell / tot * 100)|round|int }}%</div>
+                </div>
+            </div>
+        </div>
+        <div class="summary-stats">
+            <div class="sig-stat"><span class="sig-num" style="color:var(--green);">{{ signal_stats.buy }}</span><span class="sig-label">关注买入 · {{ '%.1f'|format(signal_stats.buy / tot * 100) }}%</span></div>
+            <div class="sig-stat"><span class="sig-num" style="color:var(--red);">{{ signal_stats.sell }}</span><span class="sig-label">关注卖出 · {{ '%.1f'|format(signal_stats.sell / tot * 100) }}%</span></div>
+        </div>
     </div>
     {% else %}
     <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成每日调仓信号</div></div>

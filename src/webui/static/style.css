@@ -1123,6 +1123,59 @@ td.est-cell {
     margin: 10px 0 12px;
 }
 
+/* ================================================================
+   总览：信号摘要两列布局（左环形图 / 右买卖统计）+ 持仓占比横条
+   ================================================================ */
+.summary-cols {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px 26px;
+}
+.summary-left { flex: 0 0 auto; }
+.summary-stats {
+    flex: 1 1 200px;
+    min-width: 190px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.sig-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+}
+.sig-stat .sig-num {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.15;
+    min-width: 34px;
+}
+.sig-stat .sig-label {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+/* 持仓表占比横条：轨道总长代表 100%，填充宽度 = 各标的比例(%) */
+.bar-track {
+    width: 110px;
+    max-width: 100%;
+    height: 10px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.bar-fill {
+    height: 100%;
+    border-radius: 2px 0 0 2px;
+}
+.bar-fill.is-stock { background: var(--accent); }
+.bar-fill.is-fund { background: var(--green); }
+
 @media (max-width: 720px) {
     .formula-block { padding: 10px; }
     .formula-block math { font-size: 0.92rem; }
