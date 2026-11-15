@@ -7,8 +7,59 @@
 </style>
 {% endblock %}
 
+{% macro fund_table(rows) %}
+<div class="table-wrap">
+    <table class="elite-table">
+        <thead><tr>
+            <th>经理排名</th><th>姓名</th><th>所属公司</th>
+            <th>基金代码</th><th>基金简称</th><th>成立来年化</th><th>成立来</th><th>近1年</th>
+        </tr></thead>
+        <tbody>
+        {% for f in rows %}
+        <tr>
+            <td>{{ f.get('经理排名', '') }}</td>
+            <td>{{ f.get('姓名', '') }}</td>
+            <td>{{ f.get('所属公司', '') }}</td>
+            <td>{{ f.get('基金代码', '') }}</td>
+            <td>{{ f.get('基金简称', '') }}</td>
+            <td style="color:{{ 'var(--green)' if f.get('成立来年化')|float > 0 else 'var(--red)' }}; font-weight:600;">{{ f.get('成立来年化', '')|num2 }}</td>
+            <td>{{ f.get('成立来', '')|num2 }}</td>
+            <td>{{ f.get('近1年', '')|num2 }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endmacro %}
+
+{% macro stock_table(rows) %}
+<div class="table-wrap">
+    <table class="elite-table">
+        <thead><tr>
+            <th>经理排名</th><th>姓名</th><th>所属公司</th>
+            <th>股票代码</th><th>股票名称</th><th>汇总占净值比例</th><th>出现基金数</th><th>最新季度</th>
+        </tr></thead>
+        <tbody>
+        {% for s in rows %}
+        <tr>
+            <td>{{ s.get('经理排名', '') }}</td>
+            <td>{{ s.get('姓名', '') }}</td>
+            <td>{{ s.get('所属公司', '') }}</td>
+            <td>{{ s.get('股票代码', '') }}</td>
+            <td>{{ s.get('股票名称', '') }}</td>
+            <td style="font-weight:600;">{{ s.get('汇总占净值比例', '')|num2 }}</td>
+            <td>{{ s.get('出现基金数', '')|num2 }}</td>
+            <td>{{ s.get('最新季度', '') }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endmacro %}
+
 {% block content %}
 <div class="card">
+    <p class="elite-scope">共 {{ manager_count }} 位绩优经理（基金 {{ fund_total }} 条 / 股票 {{ stock_total }} 条）— 下表按经理排名与标的名次，只展示最前的 3 只基金 / 10 只股票</p>
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('funds')">基金 Top3</button>
         <button class="tab-btn" onclick="switchTab('stocks')">股票 Top10</button>
@@ -16,29 +67,14 @@
 
     <!-- 基金 Top3 -->
     <div id="tab-funds" class="tab-panel active">
-        {% if elite_funds %}
-        <div class="table-wrap">
-            <table class="elite-table">
-                <thead><tr>
-                    <th>经理排名</th><th>姓名</th><th>所属公司</th>
-                    <th>基金代码</th><th>基金简称</th><th>成立来年化</th><th>成立来</th><th>近1年</th>
-                </tr></thead>
-                <tbody>
-                {% for f in elite_funds %}
-                <tr>
-                    <td>{{ f.get('经理排名', '') }}</td>
-                    <td>{{ f.get('姓名', '') }}</td>
-                    <td>{{ f.get('所属公司', '') }}</td>
-                    <td>{{ f.get('基金代码', '') }}</td>
-                    <td>{{ f.get('基金简称', '') }}</td>
-                    <td style="color:{{ 'var(--green)' if f.get('成立来年化')|float > 0 else 'var(--red)' }}; font-weight:600;">{{ f.get('成立来年化', '')|num2 }}</td>
-                    <td>{{ f.get('成立来', '')|num2 }}</td>
-                    <td>{{ f.get('近1年', '')|num2 }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        {% if top_funds %}
+        {{ fund_table(top_funds) }}
+        {% if rest_funds %}
+        <details class="md-notes elite-all">
+            <summary>展开其余基金明细（{{ rest_funds|length }} 条）</summary>
+            {{ fund_table(rest_funds) }}
+        </details>
+        {% endif %}
         {% else %}
         <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优基金数据</div><div class="empty-hint">请先 <a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成绩优经理标的</div></div>
         {% endif %}
@@ -46,29 +82,14 @@
 
     <!-- 股票 Top10 -->
     <div id="tab-stocks" class="tab-panel">
-        {% if elite_stocks %}
-        <div class="table-wrap">
-            <table class="elite-table">
-                <thead><tr>
-                    <th>经理排名</th><th>姓名</th><th>所属公司</th>
-                    <th>股票代码</th><th>股票名称</th><th>汇总占净值比例</th><th>出现基金数</th><th>最新季度</th>
-                </tr></thead>
-                <tbody>
-                {% for s in elite_stocks %}
-                <tr>
-                    <td>{{ s.get('经理排名', '') }}</td>
-                    <td>{{ s.get('姓名', '') }}</td>
-                    <td>{{ s.get('所属公司', '') }}</td>
-                    <td>{{ s.get('股票代码', '') }}</td>
-                    <td>{{ s.get('股票名称', '') }}</td>
-                    <td style="font-weight:600;">{{ s.get('汇总占净值比例', '')|num2 }}</td>
-                    <td>{{ s.get('出现基金数', '')|num2 }}</td>
-                    <td>{{ s.get('最新季度', '') }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        {% if top_stocks %}
+        {{ stock_table(top_stocks) }}
+        {% if rest_stocks %}
+        <details class="md-notes elite-all">
+            <summary>展开其余股票明细（{{ rest_stocks|length }} 条）</summary>
+            {{ stock_table(rest_stocks) }}
+        </details>
+        {% endif %}
         {% else %}
         <div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优股票数据</div><div class="empty-hint">请先 <a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成绩优经理标的</div></div>
         {% endif %}

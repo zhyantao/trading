@@ -250,12 +250,24 @@ async def funds_page(request: Request) -> Any:
 @router.get("/elite", response_class=HTMLResponse)
 async def elite_page(request: Request) -> Any:
     date = _get_date(request)
-    funds = ds.get_elite_funds(date=date)
-    stocks = ds.get_elite_stocks(date=date)
+    funds = ds.get_elite_funds(date=date).to_dict("records")
+    stocks = ds.get_elite_stocks(date=date).to_dict("records")
+
+    # CSV 是「每位绩优经理的 Top3 基金 / Top10 股票」，20 位经理共约 37/200 行。
+    # 页面按 tab 名称只展示排名最前的 3 只基金 / 10 只股票，其余明细折叠保留。
+    top_funds, rest_funds = funds[:3], funds[3:]
+    top_stocks, rest_stocks = stocks[:10], stocks[10:]
+    manager_count = len({str(r.get("经理排名")) for r in funds + stocks})
+
     return _render("elite.html", _base_context(request, {
         "active_page": "elite",
-        "elite_funds": funds.to_dict("records"),
-        "elite_stocks": stocks.to_dict("records"),
+        "top_funds": top_funds,
+        "top_stocks": top_stocks,
+        "rest_funds": rest_funds,
+        "rest_stocks": rest_stocks,
+        "fund_total": len(funds),
+        "stock_total": len(stocks),
+        "manager_count": manager_count,
     }))
 
 

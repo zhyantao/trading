@@ -458,34 +458,60 @@
   }
 
   /* ---------------- 页面：绩优标的 ---------------- */
+  /* 数据文件是「每位绩优经理的 Top3 基金 / Top10 股票」，20 位经理共约 37/200 行。
+     页面按 tab 名称只展示排名最前的 3 只基金 / 10 只股票，其余明细折叠保留。 */
   function renderElite(data) {
     var ef = data.funds || [], es = data.stocks || [];
-    var fundRows = ef.map(function (f) {
-      return '<tr>' +
-        '<td>' + esc(f['经理排名']) + '</td><td>' + esc(f['姓名']) + '</td><td>' + esc(f['所属公司']) + '</td>' +
-        '<td>' + codeLink('基金', f['基金代码']) + '</td><td>' + esc(f['基金简称']) + '</td>' +
-        '<td style="' + pc(f['成立来年化']) + ' font-weight:600;">' + num2(f['成立来年化']) + '</td>' +
-        '<td>' + num2(f['成立来']) + '</td><td>' + num2(f['近1年']) + '</td></tr>';
-    }).join('');
-    var stockRows = es.map(function (s) {
-      return '<tr>' +
-        '<td>' + esc(s['经理排名']) + '</td><td>' + esc(s['姓名']) + '</td><td>' + esc(s['所属公司']) + '</td>' +
-        '<td>' + codeLink('股票', s['股票代码']) + '</td><td>' + esc(s['股票名称']) + '</td>' +
-        '<td style="font-weight:600;">' + num2(s['汇总占净值比例']) + '</td>' +
-        '<td>' + num2(s['出现基金数']) + '</td><td>' + esc(s['最新季度']) + '</td></tr>';
-    }).join('');
+    var topFunds = ef.slice(0, 3);
+    var topStocks = es.slice(0, 10);
+    var restFunds = ef.slice(3);
+    var restStocks = es.slice(10);
+    var ranks = {};
+    ef.concat(es).forEach(function (r) { ranks[String(r['经理排名'])] = 1; });
+    var managerCount = Object.keys(ranks).length;
+
+    var fundHead = '<th>经理排名</th><th>姓名</th><th>所属公司</th><th>基金代码</th><th>基金简称</th><th>成立来年化</th><th>成立来</th><th>近1年</th>';
+    var stockHead = '<th>经理排名</th><th>姓名</th><th>所属公司</th><th>股票代码</th><th>股票名称</th><th>汇总占净值比例</th><th>出现基金数</th><th>最新季度</th>';
+    function fundRows(list) {
+      return list.map(function (f) {
+        return '<tr>' +
+          '<td>' + esc(f['经理排名']) + '</td><td>' + esc(f['姓名']) + '</td><td>' + esc(f['所属公司']) + '</td>' +
+          '<td>' + codeLink('基金', f['基金代码']) + '</td><td>' + esc(f['基金简称']) + '</td>' +
+          '<td style="' + pc(f['成立来年化']) + ' font-weight:600;">' + num2(f['成立来年化']) + '</td>' +
+          '<td>' + num2(f['成立来']) + '</td><td>' + num2(f['近1年']) + '</td></tr>';
+      }).join('');
+    }
+    function stockRows(list) {
+      return list.map(function (s) {
+        return '<tr>' +
+          '<td>' + esc(s['经理排名']) + '</td><td>' + esc(s['姓名']) + '</td><td>' + esc(s['所属公司']) + '</td>' +
+          '<td>' + codeLink('股票', s['股票代码']) + '</td><td>' + esc(s['股票名称']) + '</td>' +
+          '<td style="font-weight:600;">' + num2(s['汇总占净值比例']) + '</td>' +
+          '<td>' + num2(s['出现基金数']) + '</td><td>' + esc(s['最新季度']) + '</td></tr>';
+      }).join('');
+    }
+    function details(label, head, rows, cls) {
+      return '<details class="md-notes elite-all"><summary>' + label + '</summary>' +
+        table(head, rows, cls) + '</details>';
+    }
+
+    var scope = '<p class="elite-scope">共 ' + managerCount + ' 位绩优经理（基金 ' + ef.length +
+      ' 条 / 股票 ' + es.length + ' 条）— 下表按经理排名与标的名次，只展示最前的 3 只基金 / 10 只股票</p>';
 
     root.innerHTML = card('',
+      scope +
       '<div class="tabs">' +
       '<button class="tab-btn active" id="tab-btn-funds">基金 Top3</button>' +
       '<button class="tab-btn" id="tab-btn-stocks">股票 Top10</button></div>' +
       '<div id="tab-funds" class="tab-panel active">' +
-      (ef.length ? table('<th>经理排名</th><th>姓名</th><th>所属公司</th><th>基金代码</th><th>基金简称</th><th>成立来年化</th><th>成立来</th><th>近1年</th>', fundRows, 'elite-table')
+      (topFunds.length ? table(fundHead, fundRows(topFunds), 'elite-table')
         : '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优基金数据</div></div>') +
+      (restFunds.length ? details('展开其余基金明细（' + restFunds.length + ' 条）', fundHead, fundRows(restFunds), 'elite-table') : '') +
       '</div>' +
       '<div id="tab-stocks" class="tab-panel">' +
-      (es.length ? table('<th>经理排名</th><th>姓名</th><th>所属公司</th><th>股票代码</th><th>股票名称</th><th>汇总占净值比例</th><th>出现基金数</th><th>最新季度</th>', stockRows, 'elite-table')
+      (topStocks.length ? table(stockHead, stockRows(topStocks), 'elite-table')
         : '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优股票数据</div></div>') +
+      (restStocks.length ? details('展开其余股票明细（' + restStocks.length + ' 条）', stockHead, stockRows(restStocks), 'elite-table') : '') +
       '</div>');
 
     function tab(name) {
