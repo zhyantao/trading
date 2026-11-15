@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-筛选“绩优且无历史负业绩”的基金经理，并基于其管理基金的重仓股输出投资标的：
-  - 每位经理：前 10 个股票投资标的（来自其 Top3 基金的最新季度重仓股，持仓占比求和排序）
-  - 每位经理：3 个基金投资标的（按成立来年化排序）
+筛选“绩优且无历史负业绩”的基金经理，并基于其管理基金的重仓股构建候选池：
+  - 每位经理：前 10 个股票候选（来自其 Top3 基金的最新季度重仓股，持仓占比求和排序）
+  - 每位经理：3 个基金候选（按成立来年化排序）
 
 默认数据输入（均在 out/）：
   - 基金_经理_年化_排名关联_*.csv（包含：经理排名、基金成立来年化、近1年、成立来等）
@@ -11,12 +11,16 @@
 过滤/规则（默认与用户选择一致）：
   - 经理候选：经理排名靠前（默认取 Top 20）并且名下基金满足：近1年>=0 且 成立来>=0（在可用样本内）
   - 新基金过滤：成立天数 >= 180（从关联表已带出）
-  - 选基金：成立来年化最高的 Top3（若持仓抓取失败则顺延补足）
-  - 选股票：Top3 基金最新季度重仓股，按“占净值比例”求和排序取 Top10
+  - 候选基金：成立来年化最高的 Top3（若持仓抓取失败则顺延补足）
+  - 候选股票：Top3 基金最新季度重仓股，按“占净值比例”求和排序取 Top10
 
-输出（写入 out/）：
-  - 绩优基金经理_基金Top3_YYYYMMDD.csv
-  - 绩优基金经理_股票Top10_YYYYMMDD.csv
+输出（写入 out/，两类口径）：
+  1) 候选池（供股票排名、优化持仓、回测使用，按经理分组）
+     - 绩优基金经理_基金Top3_YYYYMMDD.csv
+     - 绩优基金经理_股票Top10_YYYYMMDD.csv
+  2) 全局绩优标的（跨所有经理按形式化综合得分 S_f / S_s 选出的唯一榜单）
+     - 绩优标的_全局基金Top3_YYYYMMDD.csv   （固定 3 只）
+     - 绩优标的_全局股票Top10_YYYYMMDD.csv  （固定 10 只）
 """
 
 from __future__ import annotations
@@ -31,6 +35,7 @@ from pathlib import Path
 import pandas as pd
 
 from fund_holdings_source import get_holdings
+from selection_formula import TOP_FUNDS, TOP_STOCKS, select_global_funds, select_global_stocks
 
 
 def _latest(out_dir: Path, pattern: str) -> Path:
@@ -254,6 +259,23 @@ def main() -> None:
     stock_df.to_csv(stocks_out, index=False, encoding="utf-8-sig")
     print(f"完成：{funds_out}  行数={len(fund_df):,}")
     print(f"完成：{stocks_out}  行数={len(stock_df):,}")
+
+    # 全局榜单：把所有经理的候选合并成一个候选池，按 S_f / S_s 只选 3 / 10 条。
+    # 与静态站、动态站、公式页共用 selection_formula，口径完全一致。
+    global_funds = select_global_funds(fund_df.to_dict("records"), TOP_FUNDS)
+    global_stocks = select_global_stocks(stock_df.to_dict("records"), TOP_STOCKS)
+    gf_cols = ["基金排名", "基金代码", "基金简称", "经理排名", "姓名", "所属公司",
+               "入选经理数", "经理质量分", "共识分", "年化分", "成立来年化",
+               "成立来", "近1年", "成立天数", "综合得分"]
+    gs_cols = ["排名", "股票代码", "股票名称", "入选经理数", "出现基金数",
+               "平均占净值比例", "最高名次", "关联经理", "最新季度",
+               "共识分", "覆盖分", "仓位分", "综合得分"]
+    gf_out = out_dir / f"绩优标的_全局基金Top{TOP_FUNDS}_{stamp}.csv"
+    gs_out = out_dir / f"绩优标的_全局股票Top{TOP_STOCKS}_{stamp}.csv"
+    pd.DataFrame(global_funds, columns=gf_cols).to_csv(gf_out, index=False, encoding="utf-8-sig")
+    pd.DataFrame(global_stocks, columns=gs_cols).to_csv(gs_out, index=False, encoding="utf-8-sig")
+    print(f"完成：{gf_out}  行数={len(global_funds)}（全局唯一榜单）")
+    print(f"完成：{gs_out}  行数={len(global_stocks)}（全局唯一榜单）")
     print(f"[holdings] 抓取来源统计: {source_stats or '{}'}")
     if stock_df.empty:
         print("[warn] 未抓到任何基金重仓股，股票标的为空；基金标的仍正常输出", file=sys.stderr)

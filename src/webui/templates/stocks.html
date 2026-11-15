@@ -2,7 +2,7 @@
 {% block title %}股票排名 - 量化交易研究{% endblock %}
 
 {% block content %}
-<p class="rank-note">由 {{ manager_count }} 位绩优经理各自的股票 Top10（共 {{ record_count }} 条）汇总，按被多少位经理同时重仓排序；占比为各经理 Top3 基金重仓股占净值比例之和的均值。共 {{ stock_count }} 只股票</p>
+<p class="rank-note">由 {{ manager_count }} 位绩优经理各自的股票 Top10（共 {{ record_count }} 条）去重汇总，按形式化综合得分 S<sub>s</sub> 降序排列（共识度 / 覆盖基金数 / 平均占净值比例 / 最好名次 / 经理质量），<a href="/formulas?date={{ selected_date }}">查看评分公式 →</a>。共 {{ stock_count }} 只股票</p>
 <div class="card">
     <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
         <span style="font-size:13px; color:var(--text-secondary);">入选经理数 &ge;</span>
@@ -16,13 +16,14 @@
     <div class="table-wrap">
         <table>
             <thead><tr>
-                <th>排名</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th><th>出现基金数</th>
+                <th>排名</th><th>综合得分</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th><th>出现基金数</th>
                 <th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th>
             </tr></thead>
             <tbody>
             {% for s in stocks %}
             <tr>
                 <td style="font-weight:600;">{{ s.get('排名', '') }}</td>
+                <td style="font-weight:600;color:var(--accent);">{{ s.get('综合得分', 0)|num2 }}</td>
                 <td>{% if s.get('_url') %}<a class="code-link" href="{{ s.get('_url') }}" target="_blank" rel="noopener noreferrer">{{ s.get('股票代码', '') }}</a>{% else %}{{ s.get('股票代码', '') }}{% endif %}</td>
                 <td>{{ s.get('股票名称', '') }}</td>
                 <td style="font-weight:600;">{{ s.get('入选经理数', '') }}</td>

@@ -4,22 +4,13 @@
 {% block content %}
 <!-- 今日信号摘要 -->
 {% if signal_stats.total > 0 %}<a href="/signals?date={{ selected_date }}" style="text-decoration:none; color:inherit;">{% endif %}
-<div class="card {{ 'card-clickable' if signal_stats.total > 0 else '' }}" style="margin-bottom:20px;">
+<div class="card card-compact {{ 'card-clickable' if signal_stats.total > 0 else '' }}" style="margin-bottom:14px;">
     <div class="card-header">今日信号摘要{% if signal_stats.total > 0 %} <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span>{% endif %}</div>
     {% if signal_stats.total > 0 %}
-    <div style="display:flex; gap:16px; text-align:center;">
-        <div style="flex:1; padding:12px; background:#e6f9f0; border-radius:8px;">
-            <div style="font-size:24px; font-weight:700; color:var(--green);">{{ signal_stats.buy }}</div>
-            <div style="font-size:13px; color:var(--text-secondary);">关注买入</div>
-        </div>
-        <div style="flex:1; padding:12px; background:#fef9e7; border-radius:8px;">
-            <div style="font-size:24px; font-weight:700; color:#b7950b;">{{ signal_stats.hold }}</div>
-            <div style="font-size:13px; color:var(--text-secondary);">继续关注</div>
-        </div>
-        <div style="flex:1; padding:12px; background:#fde8e8; border-radius:8px;">
-            <div style="font-size:24px; font-weight:700; color:var(--red);">{{ signal_stats.sell }}</div>
-            <div style="font-size:13px; color:var(--text-secondary);">关注卖出</div>
-        </div>
+    <div class="stat-strip">
+        <div><div class="stat-num" style="color:var(--green);">{{ signal_stats.buy }}</div><div class="stat-label">关注买入</div></div>
+        <div><div class="stat-num" style="color:var(--yellow);">{{ signal_stats.hold }}</div><div class="stat-label">继续关注</div></div>
+        <div><div class="stat-num" style="color:var(--red);">{{ signal_stats.sell }}</div><div class="stat-label">关注卖出</div></div>
     </div>
     {% else %}
     <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成每日调仓信号</div></div>
@@ -27,51 +18,29 @@
 </div>
 {% if signal_stats.total > 0 %}</a>{% endif %}
 
-<!-- 经济周期 + 持仓配置 -->
+<!-- 经济周期 + 持仓配置：两张小环形图并排 -->
 <div class="dashboard-grid">
     {% if cycle_info %}
-    <div class="card">
+    {% set w = cycle_info.weights %}
+    {% set circum = 2 * 3.1416 * 60 %}
+    {% set r_dash = w.return * circum %}
+    {% set risk_dash = w.risk * circum %}
+    {% set s_dash = w.stability * circum %}
+    {% set q_dash = w.quality * circum %}
+    <div class="card card-compact">
         <div class="card-header">市场周期定位（Dalio 框架）</div>
-        <div style="display:flex; gap:16px; margin-bottom:20px; text-align:center;">
-            <div style="flex:1; padding:10px; background:#f0f4ff; border-radius:8px;">
-                <div style="font-size:13px; color:var(--text-secondary);">当前阶段</div>
-                <div style="font-size:16px; font-weight:700; color:var(--accent);">{{ cycle_info.phase_label }}</div>
-            </div>
-            <div style="flex:1; padding:10px; background:#f0f4ff; border-radius:8px;">
-                <div style="font-size:13px; color:var(--text-secondary);">置信度</div>
-                <div style="font-size:16px; font-weight:700;">{{ cycle_info.confidence }}</div>
-            </div>
+        <div class="stat-strip" style="margin-bottom:8px;">
+            <div><div class="stat-label">当前阶段</div><div style="font-size:15px;font-weight:700;color:var(--accent);">{{ cycle_info.phase_label }}</div></div>
+            <div><div class="stat-label">置信度</div><div style="font-size:15px;font-weight:700;">{{ cycle_info.confidence }}</div></div>
         </div>
-        {% set w = cycle_info.weights %}
         <div class="donut-wrap">
-            <svg width="160" height="160" viewBox="0 0 160 160">
-                {% set circum = 2 * 3.1416 * 60 %}
-                {% set r_dash = w.return * circum %}
-                {% set risk_dash = w.risk * circum %}
-                {% set s_dash = w.stability * circum %}
-                {% set q_dash = w.quality * circum %}
+            <svg width="92" height="92" viewBox="0 0 160 160">
                 <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
-                {% if w.return > 0 %}
-                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24"
-                    stroke-dasharray="{{ r_dash }} {{ circum - r_dash }}"
-                    stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
-                {% endif %}
-                {% if w.risk > 0 %}
-                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24"
-                    stroke-dasharray="{{ risk_dash }} {{ circum - risk_dash }}"
-                    stroke-dashoffset="{{ -r_dash }}" transform="rotate(-90 80 80)"/>
-                {% endif %}
-                {% if w.stability > 0 %}
-                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24"
-                    stroke-dasharray="{{ s_dash }} {{ circum - s_dash }}"
-                    stroke-dashoffset="{{ -(r_dash + risk_dash) }}" transform="rotate(-90 80 80)"/>
-                {% endif %}
-                {% if w.quality > 0 %}
-                <circle cx="80" cy="80" r="60" fill="none" stroke="#b7950b" stroke-width="24"
-                    stroke-dasharray="{{ q_dash }} {{ circum - q_dash }}"
-                    stroke-dashoffset="{{ -(r_dash + risk_dash + s_dash) }}" transform="rotate(-90 80 80)"/>
-                {% endif %}
-                <text x="80" y="84" text-anchor="middle" font-size="13" fill="var(--text-secondary)">因子权重</text>
+                {% if w.return > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24" stroke-dasharray="{{ r_dash }} {{ circum - r_dash }}" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>{% endif %}
+                {% if w.risk > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24" stroke-dasharray="{{ risk_dash }} {{ circum - risk_dash }}" stroke-dashoffset="{{ -r_dash }}" transform="rotate(-90 80 80)"/>{% endif %}
+                {% if w.stability > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24" stroke-dasharray="{{ s_dash }} {{ circum - s_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
+                {% if w.quality > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="#b7950b" stroke-width="24" stroke-dasharray="{{ q_dash }} {{ circum - q_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash + s_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
+                <text x="80" y="86" text-anchor="middle" font-size="20" fill="var(--text-secondary)">权重</text>
             </svg>
             <div class="donut-legend">
                 <div><span class="donut-dot" style="background:var(--green);"></span>长期回报 {{ (w.return*100)|int }}%</div>
@@ -80,34 +49,41 @@
                 <div><span class="donut-dot" style="background:#b7950b;"></span>质量 {{ (w.quality*100)|int }}%</div>
             </div>
         </div>
-        <div style="margin-top:12px; font-size:12px; color:var(--text-secondary); line-height:1.6;">{{ cycle_info.description }}</div>
+        <div style="margin-top:8px;font-size:12px;color:var(--text-secondary);line-height:1.5;">{{ cycle_info.description }}</div>
     </div>
     {% endif %}
 
-    <div class="card">
+    <div class="card card-compact">
         <div class="card-header">持仓配置</div>
         {% if holdings %}
+        {% set stock_pct = stock_sum / (stock_sum + fund_sum) if (stock_sum + fund_sum) > 0 else 0 %}
+        {% set stock_dash = stock_pct * 2 * 3.1416 * 60 %}
+        {% set all_dash = 2 * 3.1416 * 60 %}
         <div class="donut-wrap">
-            <svg width="160" height="160" viewBox="0 0 160 160">
-                {% set stock_pct = stock_sum / (stock_sum + fund_sum) if (stock_sum + fund_sum) > 0 else 0 %}
-                {% set stock_angle = stock_pct * 360 %}
+            <svg width="92" height="92" viewBox="0 0 160 160">
                 <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
-                {% if stock_angle > 0 %}
-                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24"
-                    stroke-dasharray="{{ stock_angle * 3.1416 * 60 / 180 }} {{ (360 - stock_angle) * 3.1416 * 60 / 180 }}"
-                    stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
-                {% endif %}
-                {% if fund_sum > 0 and stock_angle < 360 %}
-                <circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24"
-                    stroke-dasharray="{{ (360 - stock_angle) * 3.1416 * 60 / 180 }} {{ stock_angle * 3.1416 * 60 / 180 }}"
-                    stroke-dashoffset="{{ -stock_angle * 3.1416 * 60 / 180 }}" transform="rotate(-90 80 80)"/>
-                {% endif %}
-                <text x="80" y="84" text-anchor="middle" font-size="13" fill="var(--text-secondary)">配置比例</text>
+                {% if stock_dash > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24" stroke-dasharray="{{ stock_dash }} {{ all_dash - stock_dash }}" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>{% endif %}
+                {% if fund_sum > 0 and stock_pct < 1 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24" stroke-dasharray="{{ all_dash - stock_dash }} {{ stock_dash }}" stroke-dashoffset="{{ -stock_dash }}" transform="rotate(-90 80 80)"/>{% endif %}
+                <text x="80" y="86" text-anchor="middle" font-size="20" fill="var(--text-secondary)">比例</text>
             </svg>
             <div class="donut-legend">
                 <div><span class="donut-dot" style="background:var(--accent);"></span>股票 {{ "%.2f" % stock_sum }}%</div>
                 <div><span class="donut-dot" style="background:var(--green);"></span>基金 {{ "%.2f" % fund_sum }}%</div>
             </div>
+        </div>
+        <div class="table-wrap">
+            <table class="mini-table">
+                <thead><tr><th>代码</th><th>名称</th><th>比例(%)</th></tr></thead>
+                <tbody>
+                {% for h in holdings %}
+                <tr>
+                    <td>{{ h.get('代码', '') }}</td>
+                    <td>{{ h.get('名称', '') }}</td>
+                    <td>{{ h.get('比例(%)', 0)|num2 }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
         {% else %}
         <div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">暂无持仓数据</div><div class="empty-hint"><a href="/pipeline?date={{ selected_date }}">运行「优化持仓」</a> 生成持仓配置</div></div>
@@ -115,32 +91,57 @@
     </div>
 </div>
 
-<!-- 经理排名 Top5 -->
-<div class="card">
-    <div class="card-header">基金经理 Top5 <a href="/managers?date={{ selected_date }}" style="float:right;font-size:13px;font-weight:400;">查看全部 →</a></div>
-    {% if top_managers %}
-    <div class="table-wrap">
-        <table>
-            <thead><tr>
-                <th>排名</th><th>姓名</th><th>所属公司</th><th>管理基金数</th><th>平均收益率(%)</th><th>最佳收益率(%)</th>
-            </tr></thead>
-            <tbody>
-            {% for m in top_managers %}
-            <tr>
-                <td>{{ m.get('排名', '') }}</td>
-                <td>{{ m.get('姓名', '') }}</td>
-                <td>{{ m.get('所属公司', '') }}</td>
-                <td>{{ m.get('管理基金数', '')|num2 }}</td>
-                <td style="color:{{ 'var(--green)' if m.get('平均收益率')|float > 0 else 'var(--red)' }};">{{ m.get('平均收益率', '')|num2 }}</td>
-                <td style="color:{{ 'var(--green)' if m.get('最佳收益率')|float > 0 else 'var(--red)' }};">{{ m.get('最佳收益率', '')|num2 }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+<!-- 股票排名 Top5 + 经理 Top5 -->
+<div class="dashboard-grid">
+    <div class="card card-compact">
+        <div class="card-header">股票排名 Top5 <a class="card-link" href="/stocks?date={{ selected_date }}">查看全部 →</a></div>
+        {% if top_stocks %}
+        <p class="rank-mini-note">按综合得分 S<sub>s</sub> 排序 · <a href="/formulas?date={{ selected_date }}">评分公式</a></p>
+        <div class="table-wrap">
+            <table class="mini-table">
+                <thead><tr><th>排名</th><th>代码</th><th>名称</th><th>入选经理</th><th>综合得分</th></tr></thead>
+                <tbody>
+                {% for s in top_stocks %}
+                <tr>
+                    <td>{{ s.get('排名', '') }}</td>
+                    <td>{{ s.get('股票代码', '') }}</td>
+                    <td>{{ s.get('股票名称', '') }}</td>
+                    <td>{{ s.get('入选经理数', '') }}</td>
+                    <td style="color:var(--accent);font-weight:600;">{{ s.get('综合得分', 0)|num2 }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><div class="empty-text">暂无股票排名数据</div></div>
+        {% endif %}
     </div>
-    {% else %}
-    <div class="empty-state"><div class="empty-text">暂无排名数据</div></div>
-    {% endif %}
+
+    <div class="card card-compact">
+        <div class="card-header">基金经理 Top5 <a class="card-link" href="/managers?date={{ selected_date }}">查看全部 →</a></div>
+        {% if top_managers %}
+        <div class="table-wrap">
+            <table class="mini-table">
+                <thead><tr><th>排名</th><th>姓名</th><th>所属公司</th><th>管理基金数</th><th>平均收益率(%)</th><th>最佳收益率(%)</th></tr></thead>
+                <tbody>
+                {% for m in top_managers %}
+                <tr>
+                    <td>{{ m.get('排名', '') }}</td>
+                    <td>{{ m.get('姓名', '') }}</td>
+                    <td>{{ m.get('所属公司', '') }}</td>
+                    <td>{{ m.get('管理基金数', '')|num2 }}</td>
+                    <td style="color:{{ 'var(--green)' if m.get('平均收益率')|float > 0 else 'var(--red)' }};">{{ m.get('平均收益率', '')|num2 }}</td>
+                    <td style="color:{{ 'var(--green)' if m.get('最佳收益率')|float > 0 else 'var(--red)' }};">{{ m.get('最佳收益率', '')|num2 }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><div class="empty-text">暂无排名数据</div></div>
+        {% endif %}
+    </div>
 </div>
 
 {% endblock %}

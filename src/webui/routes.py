@@ -21,6 +21,9 @@ import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
 from .data_service import DataService
+from formula_doc import render_formula_doc
+from selection_formula import TOP_FUNDS, TOP_STOCKS, select_global_funds, select_global_stocks
+from stock_rankings import build_stock_rankings
 
 # 周期检测（可选，失败则降级）
 try:
@@ -178,6 +181,9 @@ async def dashboard(request: Request) -> Any:
         "stock_sum": stock_sum,
         "fund_sum": fund_sum,
         "top_managers": top_managers,
+        "top_stocks": build_stock_rankings(
+            ds.get_elite_stocks(date=date).to_dict("records")
+        )["rows"][:5],
         "cycle_info": cycle_info,
     }))
 
@@ -249,8 +255,7 @@ async def funds_page(request: Request) -> Any:
 
 @router.get("/stocks", response_class=HTMLResponse)
 async def stocks_page(request: Request) -> Any:
-    """全站股票排名：由每位绩优经理的股票 Top10 聚合，按共识度排序。"""
-    from stock_rankings import build_stock_rankings
+    """全站股票排名：由每位绩优经理的股票 Top10 聚合，按综合得分 S_s 排序。"""
 
     def positive_int(key: str, default: int = 1) -> int:
         try:
@@ -290,24 +295,38 @@ async def stocks_page(request: Request) -> Any:
 @router.get("/elite", response_class=HTMLResponse)
 async def elite_page(request: Request) -> Any:
     date = _get_date(request)
-    funds = ds.get_elite_funds(date=date).to_dict("records")
-    stocks = ds.get_elite_stocks(date=date).to_dict("records")
+    fund_pool = ds.get_elite_funds(date=date).to_dict("records")
+    stock_pool = ds.get_elite_stocks(date=date).to_dict("records")
 
-    # CSV 是「每位绩优经理的 Top3 基金 / Top10 股票」，20 位经理共约 37/200 行。
-    # 页面按 tab 名称只展示排名最前的 3 只基金 / 10 只股票，其余明细折叠保留。
-    top_funds, rest_funds = funds[:3], funds[3:]
-    top_stocks, rest_stocks = stocks[:10], stocks[10:]
-    manager_count = len({str(r.get("经理排名")) for r in funds + stocks})
+    # 跨所有经理按 S_f / S_s 选出唯一榜单：固定 3 只基金 / 10 只股票。
+    # 候选池仍完整保留，供「股票排名」与「优化持仓」使用。
+    top_funds = select_global_funds(fund_pool, TOP_FUNDS)
+    top_stocks = select_global_stocks(stock_pool, TOP_STOCKS)
+    for r in top_stocks:
+        code = str(r.get("股票代码", ""))
+        prefix = ("SH" if code[:1] in ("6", "9") else
+                  "SZ" if code[:1] in ("0", "2", "3") else
+                  "BJ" if code[:1] in ("4", "8") else "")
+        r["_url"] = (f"https://xueqiu.com/S/{prefix}{code}"
+                     if prefix and len(code) == 6 and code.isdigit() else "")
+    manager_count = len({str(r.get("经理排名")) for r in fund_pool + stock_pool})
 
     return _render("elite.html", _base_context(request, {
         "active_page": "elite",
         "top_funds": top_funds,
         "top_stocks": top_stocks,
-        "rest_funds": rest_funds,
-        "rest_stocks": rest_stocks,
-        "fund_total": len(funds),
-        "stock_total": len(stocks),
+        "fund_total": len(fund_pool),
+        "stock_total": len(stock_pool),
         "manager_count": manager_count,
+    }))
+
+
+@router.get("/formulas", response_class=HTMLResponse)
+async def formulas_page(request: Request) -> Any:
+    """选股与选基公式：与静态站共用 formula_doc.py 的内容源。"""
+    return _render("formulas.html", _base_context(request, {
+        "active_page": "formulas",
+        "formula_content": render_formula_doc(static=False),
     }))
 
 

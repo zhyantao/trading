@@ -982,3 +982,78 @@ table.trade-table td { white-space: nowrap; }
     .bt-hint-text { display: none; }
     .bt-stats { gap: 6px 12px; }
 }
+
+/* ================================================================
+   总览页紧凑布局：缩小环形图、压缩留白
+   ================================================================ */
+.donut-wrap { gap: 14px; padding: 0; justify-content: flex-start; }
+.donut-wrap svg { width: 92px; height: 92px; flex: 0 0 92px; }
+.donut-legend { font-size: 12px; line-height: 1.5; }
+.donut-legend div { margin: 3px 0; white-space: nowrap; }
+.dashboard-grid { gap: 14px; }
+.card-compact { padding: 14px 16px; margin-bottom: 14px; }
+.card-compact .card-header { margin-bottom: 8px; }
+.stat-strip { display: flex; gap: 10px; text-align: center; }
+.stat-strip > div { flex: 1; padding: 8px 6px; }
+.stat-strip .stat-num { font-size: 21px; font-weight: 700; line-height: 1.2; }
+.stat-strip .stat-label { font-size: 12px; color: var(--text-secondary); }
+.mini-table th, .mini-table td { padding: 6px 9px; font-size: 12px; }
+.mini-table td:first-child { font-weight: 600; }
+.rank-mini-note { font-size: 12px; color: var(--text-secondary); margin: 0 0 8px; }
+.card-link { float: right; font-size: 12px; font-weight: 400; }
+
+/* ================================================================
+   选股与选基公式页（MathML，无外部依赖）
+   ================================================================ */
+.formula-doc h2 {
+    font-size: 1.25rem; margin: 28px 0 10px;
+    border-bottom: 1px solid var(--border); padding-bottom: 4px;
+}
+.formula-lead, .formula-note {
+    font-size: 13px; color: var(--text-secondary); line-height: 1.75;
+}
+.formula-lead { margin: 0 0 14px; }
+.formula-block {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px; margin: 12px 0 18px; overflow-x: auto;
+}
+.formula-tag {
+    font-family: var(--sans); font-size: 12px;
+    color: var(--accent); font-weight: 600; margin-bottom: 6px;
+}
+/* 注意：不要覆盖 <math> 的 display。Chrome 的 MathML 引擎依赖
+   `display: inline math / block math`，改成普通 block 会让每个记号竖排。
+   横向溢出交给外层 .formula-block 的 overflow-x 处理。 */
+.formula-block math {
+    font-size: 1.05rem; color: var(--text); margin: 10px 0;
+}
+.formula-plain { font-size: 11px; color: var(--text-secondary); overflow-x: auto; }
+.formula-plain code { font-family: var(--mono); white-space: pre; }
+.formula-where {
+    font-size: 12px; color: var(--text-secondary);
+    line-height: 1.7; margin-top: 8px;
+}
+.formula-nota, .formula-params {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+}
+.formula-nota th, .formula-params th {
+    text-align: left; border-bottom: 1px solid var(--border);
+    padding: 7px 9px; font-family: var(--sans);
+}
+.formula-nota td, .formula-params td {
+    border-bottom: 1px solid var(--border);
+    padding: 7px 9px; vertical-align: top;
+}
+.f-mono { font-family: var(--mono); font-size: 12px; }
+.f-num { font-family: var(--mono); text-align: right; font-weight: 600; }
+.formula-links { margin-top: 20px; font-size: 13px; }
+.formula-links a {
+    color: var(--accent); text-decoration: none;
+    border-bottom: 1px dotted currentColor; margin-right: 10px;
+}
+@media (max-width: 720px) {
+    .formula-block { padding: 10px; }
+    .formula-block math { font-size: 0.92rem; }
+    .donut-wrap svg { width: 76px; height: 76px; flex-basis: 76px; }
+}

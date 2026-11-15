@@ -147,6 +147,7 @@
       navLink('stocks.html', 'stocks', '股票排名', state.date) +
       navLink('elite.html', 'elite', '绩优标的', state.date) +
       navLink('backtest.html', 'backtest', '回测', state.date) +
+      navLink('formulas.html', 'formulas', '公式', state.date) +
       navLink('pipeline.html', 'pipeline', '流水线', state.date) +
       '</div>' +
       '<div class="nav-actions">' +
@@ -193,8 +194,9 @@
       '<thead><tr>' + headersHtml + '</tr></thead><tbody>' + rowsHtml +
       '</tbody></table></div>';
   }
-  function card(title, inner) {
-    return '<div class="card">' + (title ? '<div class="card-header">' + title + '</div>' : '') +
+  function card(title, inner, extraCls) {
+    return '<div class="card ' + (extraCls || '') + '">' +
+      (title ? '<div class="card-header">' + title + '</div>' : '') +
       inner + '</div>';
   }
   function emptyState(icon, text, hint) {
@@ -234,17 +236,19 @@
         '" stroke-dashoffset="' + -offset + '" transform="rotate(-90 80 80)"/>';
       offset += dash;
     });
-    circles += '<text x="80" y="84" text-anchor="middle" font-size="13" fill="var(--text-secondary)">' +
+    circles += '<text x="80" y="86" text-anchor="middle" font-size="20" fill="var(--text-secondary)">' +
       centerLabel + '</text>';
     var legend = segments.map(function (s) {
       return '<div><span class="donut-dot" style="background:' + s.color + ';"></span>' +
         s.label + ' ' + Math.round(s.value * 100) + '%</div>';
     }).join('');
-    return '<div class="donut-wrap"><svg width="160" height="160" viewBox="0 0 160 160">' + circles +
+    /* 视图坐标仍为 160×160，实际显示尺寸压到 92px，避免环形图挤占整页 */
+    return '<div class="donut-wrap"><svg width="92" height="92" viewBox="0 0 160 160">' + circles +
       '</svg><div class="donut-legend">' + legend + '</div></div>';
   }
 
   /* ---------------- 页面：总览 ---------------- */
+  /* 紧凑布局：环形图缩到 92px，两个 Top5 榜单并排，避免大图把表格挤到下方 */
   function renderDashboard(data) {
     var st = data.signal_stats || {};
     var html = '';
@@ -252,61 +256,85 @@
     if (st.total > 0) {
       html += '<a href="signals.html?date=' + state.date + '" style="text-decoration:none; color:inherit;">' +
         card('今日信号摘要 <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span>',
-          '<div style="display:flex; gap:16px; text-align:center;">' +
-          '<div style="flex:1; padding:12px;"><div style="font-size:24px; font-weight:700; color:var(--green);">' + st.buy +
-          '</div><div style="font-size:13px; color:var(--text-secondary);">关注买入</div></div>' +
-          '<div style="flex:1; padding:12px;"><div style="font-size:24px; font-weight:700; color:var(--gold,#b7950b);">' + st.hold +
-          '</div><div style="font-size:13px; color:var(--text-secondary);">继续关注</div></div>' +
-          '<div style="flex:1; padding:12px;"><div style="font-size:24px; font-weight:700; color:var(--red);">' + st.sell +
-          '</div><div style="font-size:13px; color:var(--text-secondary);">关注卖出</div></div>' +
-          '</div>') + '</a>';
+          '<div class="stat-strip">' +
+          '<div><div class="stat-num" style="color:var(--green);">' + st.buy +
+          '</div><div class="stat-label">关注买入</div></div>' +
+          '<div><div class="stat-num" style="color:var(--yellow);">' + st.hold +
+          '</div><div class="stat-label">继续关注</div></div>' +
+          '<div><div class="stat-num" style="color:var(--red);">' + st.sell +
+          '</div><div class="stat-label">关注卖出</div></div>' +
+          '</div>', 'card-compact') + '</a>';
     } else {
       html += card('今日信号摘要',
         '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div>' +
-        '<div class="empty-hint">数据由 GitHub Actions 每个交易日 22:00 自动更新</div></div>');
+        '<div class="empty-hint">数据由 GitHub Actions 每个交易日 22:00 自动更新</div></div>',
+        'card-compact');
     }
 
-    /* 周期 + 持仓配置 */
+    /* 周期 + 持仓配置：两张小图并排 */
     var grid = '';
     var ci = data.cycle_info;
     if (ci && ci.weights) {
       var w = ci.weights;
       grid += card('市场周期定位（Dalio 框架）',
-        '<div style="display:flex; gap:16px; margin-bottom:20px; text-align:center;">' +
-        '<div style="flex:1; padding:10px;"><div style="font-size:13px; color:var(--text-secondary);">当前阶段</div>' +
-        '<div style="font-size:16px; font-weight:700; color:var(--accent);">' + esc(ci.phase_label) + '</div></div>' +
-        '<div style="flex:1; padding:10px;"><div style="font-size:13px; color:var(--text-secondary);">置信度</div>' +
-        '<div style="font-size:16px; font-weight:700;">' + esc(ci.confidence) + '</div></div></div>' +
+        '<div class="stat-strip" style="margin-bottom:8px;">' +
+        '<div><div class="stat-label">当前阶段</div>' +
+        '<div style="font-size:15px;font-weight:700;color:var(--accent);">' + esc(ci.phase_label) + '</div></div>' +
+        '<div><div class="stat-label">置信度</div>' +
+        '<div style="font-size:15px;font-weight:700;">' + esc(ci.confidence) + '</div></div></div>' +
         donutSvg([
           { value: num(w.return) || 0, color: 'var(--green)', label: '长期回报' },
           { value: num(w.risk) || 0, color: 'var(--red)', label: '风险调整' },
           { value: num(w.stability) || 0, color: 'var(--accent)', label: '稳定性' },
-          { value: num(w.quality) || 0, color: 'var(--gold,#b7950b)', label: '质量' },
-        ], '因子权重') +
-        '<div style="margin-top:12px; font-size:12px; color:var(--text-secondary); line-height:1.6;">' +
-        esc(ci.description) + '</div>');
+          { value: num(w.quality) || 0, color: 'var(--yellow)', label: '质量' },
+        ], '权重') +
+        '<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);line-height:1.5;">' +
+        esc(ci.description) + '</div>', 'card-compact');
     }
     if (data.holdings && data.holdings.length) {
+      var hrows = data.holdings.map(function (h) {
+        return '<tr><td>' + codeLink(h['类型'], h['代码']) + '</td><td>' + esc(h['名称']) +
+          '</td><td>' + num2(h['比例(%)']) + '</td></tr>';
+      }).join('');
       grid += card('持仓配置', donutSvg([
         { value: (data.stock_sum || 0) / ((data.stock_sum || 0) + (data.fund_sum || 0) || 1), color: 'var(--accent)', label: '股票' },
         { value: (data.fund_sum || 0) / ((data.stock_sum || 0) + (data.fund_sum || 0) || 1), color: 'var(--green)', label: '基金' },
-      ], '配置比例'));
+      ], '比例') +
+        (hrows ? table('<th>代码</th><th>名称</th><th>比例(%)</th>', hrows, 'mini-table') : ''),
+        'card-compact');
     }
     if (grid) html += '<div class="dashboard-grid">' + grid + '</div>';
 
-    /* 经理 Top5 */
+    /* 股票排名 Top5 + 经理 Top5：并排放在下方 */
+    var lower = '';
+    var ts = data.top_stocks || [];
+    if (ts.length) {
+      var srows = ts.map(function (s) {
+        return '<tr><td>' + esc(s['排名']) + '</td><td>' + codeLink('股票', s['股票代码']) + '</td>' +
+          '<td>' + esc(s['股票名称']) + '</td><td>' + esc(s['入选经理数']) + '</td>' +
+          '<td style="font-weight:600;color:var(--accent);">' + num2(s['综合得分']) + '</td></tr>';
+      }).join('');
+      lower += card('股票排名 Top5 <a class="card-link" href="stocks.html?date=' + state.date +
+        '">查看全部 →</a>',
+        '<p class="rank-mini-note">按综合得分 S<sub>s</sub>（共识度/覆盖/仓位/名次/经理质量）排序，共 ' +
+        esc(data.stock_count || ts.length) + ' 只 · <a href="formulas.html">评分公式</a></p>' +
+        table('<th>排名</th><th>代码</th><th>名称</th><th>入选经理</th><th>综合得分</th>', srows, 'mini-table'),
+        'card-compact');
+    }
     var tm = data.top_managers || [];
     if (tm.length) {
-      var rows = tm.map(function (m) {
+      var mrows = tm.map(function (m) {
         return '<tr><td>' + esc(m['排名']) + '</td><td>' + esc(m['姓名']) + '</td><td>' + esc(m['所属公司']) +
           '</td><td>' + num2(m['管理基金数']) +
           '</td><td style="' + pc(m['平均收益率']) + ';">' + num2(m['平均收益率']) +
           '</td><td style="' + pc(m['最佳收益率']) + ';">' + num2(m['最佳收益率']) + '</td></tr>';
       }).join('');
-      html += card('基金经理 Top5 <a href="managers.html?date=' + state.date +
-        '" style="float:right;font-size:13px;font-weight:400;">查看全部 →</a>',
-        table('<th>排名</th><th>姓名</th><th>所属公司</th><th>管理基金数</th><th>平均收益率(%)</th><th>最佳收益率(%)</th>', rows));
+      lower += card('基金经理 Top5 <a class="card-link" href="managers.html?date=' + state.date +
+        '">查看全部 →</a>',
+        table('<th>排名</th><th>姓名</th><th>所属公司</th><th>管理基金数</th><th>平均收益率(%)</th><th>最佳收益率(%)</th>',
+          mrows, 'mini-table'), 'card-compact');
     }
+    if (lower) html += '<div class="dashboard-grid">' + lower + '</div>';
     root.innerHTML = html;
   }
 
@@ -462,7 +490,7 @@
   }
 
   /* ---------------- 页面：股票排名 ---------------- */
-  /* 数据由「每位绩优经理的股票 Top10」聚合，按被多少位经理同时重仓排序 */
+  /* 数据由「每位绩优经理的股票 Top10」去重聚合，按形式化综合得分 S_s 排序 */
   function renderStocks(data) {
     var rows = data.rows || [];
     if (!rows.length) {
@@ -479,6 +507,7 @@
     var body = pageSlice(filtered).map(function (r) {
       return '<tr>' +
         '<td style="font-weight:600;">' + esc(r['排名']) + '</td>' +
+        '<td style="font-weight:600;color:var(--accent);">' + num2(r['综合得分']) + '</td>' +
         '<td>' + codeLink('股票', r['股票代码']) + '</td>' +
         '<td>' + esc(r['股票名称']) + '</td>' +
         '<td style="font-weight:600;">' + esc(r['入选经理数']) + '</td>' +
@@ -491,13 +520,13 @@
 
     root.innerHTML = card('',
       '<p class="rank-note">由 ' + esc(data.manager_count) + ' 位绩优经理各自的股票 Top10（共 ' +
-      esc(data.record_count) + ' 条）汇总，按被多少位经理同时重仓排序；占比为各经理 Top3 基金重仓股占净值比例之和的均值。共 ' +
-      esc(data.stock_count) + ' 只股票</p>' +
+      esc(data.record_count) + ' 条）去重汇总，按形式化综合得分 S<sub>s</sub> 降序排列（共识度 / 覆盖基金数 / 平均占净值比例 / 最好名次 / 经理质量），' +
+      '<a href="formulas.html">查看评分公式 →</a>。共 ' + esc(data.stock_count) + ' 只股票</p>' +
       '<div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; align-items:center;" id="stocks-filter">' +
       '<span style="font-size:13px; color:var(--text-secondary);">入选经理数 &ge;</span>' + btns +
       '<span style="font-size:13px; color:var(--text-secondary); margin-left:16px;">筛选出 ' + filtered.length + ' 只股票</span></div>' +
       (filtered.length
-        ? table('<th>排名</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th><th>出现基金数</th><th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th>', body)
+        ? table('<th>排名</th><th>综合得分</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th><th>出现基金数</th><th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th>', body)
         : '<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">没有符合条件的股票</div></div>') +
       pager(filtered.length, { min_mgr: String(state.minMgr) }));
 
@@ -513,45 +542,44 @@
   }
 
   /* ---------------- 页面：绩优标的 ---------------- */
-  /* 数据文件是「每位绩优经理的 Top3 基金 / Top10 股票」，20 位经理共约 37/200 行。
-     页面按 tab 名称只展示排名最前的 3 只基金 / 10 只股票，其余明细折叠保留。 */
+  /* 后端已按 S_f / S_s 综合所有经理算出唯一榜单：固定 3 只基金 / 10 只股票。
+     完整候选池（按经理分组）仍可在「股票排名 / 基金排名」页查看。 */
   function renderElite(data) {
     var ef = data.funds || [], es = data.stocks || [];
-    var topFunds = ef.slice(0, 3);
-    var topStocks = es.slice(0, 10);
-    var restFunds = ef.slice(3);
-    var restStocks = es.slice(10);
-    var ranks = {};
-    ef.concat(es).forEach(function (r) { ranks[String(r['经理排名'])] = 1; });
-    var managerCount = Object.keys(ranks).length;
+    var fundHead = '<th>排名</th><th>综合得分</th><th>基金代码</th><th>基金简称</th><th>入选经理数</th>' +
+      '<th>首选经理</th><th>成立来年化</th><th>近1年</th><th>成立天数</th>';
+    var stockHead = '<th>排名</th><th>综合得分</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th>' +
+      '<th>出现基金数</th><th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th>';
+    var fundRows = ef.map(function (f) {
+      return '<tr>' +
+        '<td style="font-weight:600;">' + esc(f['基金排名']) + '</td>' +
+        '<td style="font-weight:600;color:var(--accent);">' + num2(f['综合得分']) + '</td>' +
+        '<td>' + codeLink('基金', f['基金代码']) + '</td><td>' + esc(f['基金简称']) + '</td>' +
+        '<td>' + esc(f['入选经理数']) + '</td>' +
+        '<td>' + esc(f['姓名']) + ' <span style="font-size:11px;color:var(--text-secondary);">' +
+        esc(f['经理排名']) + '</span></td>' +
+        '<td style="' + pc(f['成立来年化']) + ';">' + num2(f['成立来年化']) + '</td>' +
+        '<td style="' + pc(f['近1年']) + ';">' + num2(f['近1年']) + '</td>' +
+        '<td>' + num2(f['成立天数']) + '</td></tr>';
+    }).join('');
+    var stockRows = es.map(function (s) {
+      return '<tr>' +
+        '<td style="font-weight:600;">' + esc(s['排名']) + '</td>' +
+        '<td style="font-weight:600;color:var(--accent);">' + num2(s['综合得分']) + '</td>' +
+        '<td>' + codeLink('股票', s['股票代码']) + '</td><td>' + esc(s['股票名称']) + '</td>' +
+        '<td>' + esc(s['入选经理数']) + '</td><td>' + esc(s['出现基金数']) + '</td>' +
+        '<td>' + num2(s['平均占净值比例']) + '</td><td>' + esc(s['最高名次']) + '</td>' +
+        '<td style="font-size:12px;max-width:230px;">' + esc(s['关联经理']) + '</td>' +
+        '<td>' + esc(s['最新季度']) + '</td></tr>';
+    }).join('');
 
-    var fundHead = '<th>经理排名</th><th>姓名</th><th>所属公司</th><th>基金代码</th><th>基金简称</th><th>成立来年化</th><th>成立来</th><th>近1年</th>';
-    var stockHead = '<th>经理排名</th><th>姓名</th><th>所属公司</th><th>股票代码</th><th>股票名称</th><th>汇总占净值比例</th><th>出现基金数</th><th>最新季度</th>';
-    function fundRows(list) {
-      return list.map(function (f) {
-        return '<tr>' +
-          '<td>' + esc(f['经理排名']) + '</td><td>' + esc(f['姓名']) + '</td><td>' + esc(f['所属公司']) + '</td>' +
-          '<td>' + codeLink('基金', f['基金代码']) + '</td><td>' + esc(f['基金简称']) + '</td>' +
-          '<td style="' + pc(f['成立来年化']) + ' font-weight:600;">' + num2(f['成立来年化']) + '</td>' +
-          '<td>' + num2(f['成立来']) + '</td><td>' + num2(f['近1年']) + '</td></tr>';
-      }).join('');
-    }
-    function stockRows(list) {
-      return list.map(function (s) {
-        return '<tr>' +
-          '<td>' + esc(s['经理排名']) + '</td><td>' + esc(s['姓名']) + '</td><td>' + esc(s['所属公司']) + '</td>' +
-          '<td>' + codeLink('股票', s['股票代码']) + '</td><td>' + esc(s['股票名称']) + '</td>' +
-          '<td style="font-weight:600;">' + num2(s['汇总占净值比例']) + '</td>' +
-          '<td>' + num2(s['出现基金数']) + '</td><td>' + esc(s['最新季度']) + '</td></tr>';
-      }).join('');
-    }
-    function details(label, head, rows, cls) {
-      return '<details class="md-notes elite-all"><summary>' + label + '</summary>' +
-        table(head, rows, cls) + '</details>';
-    }
-
-    var scope = '<p class="elite-scope">共 ' + managerCount + ' 位绩优经理（基金 ' + ef.length +
-      ' 条 / 股票 ' + es.length + ' 条）— 下表按经理排名与标的名次，只展示最前的 3 只基金 / 10 只股票</p>';
+    var scope = '<p class="elite-scope">共 ' + esc(data.manager_count || 0) + ' 位绩优经理、' +
+      esc(data.candidate_funds || ef.length) + ' 条基金候选 / ' +
+      esc(data.candidate_stocks || es.length) + ' 条股票候选，' +
+      '按形式化综合得分跨经理统一排序，<b>全站只选 ' + esc(data.top_funds || 3) +
+      ' 只基金 / ' + esc(data.top_stocks || 10) + ' 只股票</b>（不是每位经理各 3 / 10 条）。' +
+      '<a href="formulas.html">查看评分公式 →</a> · ' +
+      '<a href="stocks.html?date=' + state.date + '">完整股票排名 →</a></p>';
 
     root.innerHTML = card('',
       scope +
@@ -559,14 +587,12 @@
       '<button class="tab-btn active" id="tab-btn-funds">基金 Top3</button>' +
       '<button class="tab-btn" id="tab-btn-stocks">股票 Top10</button></div>' +
       '<div id="tab-funds" class="tab-panel active">' +
-      (topFunds.length ? table(fundHead, fundRows(topFunds), 'elite-table')
+      (ef.length ? table(fundHead, fundRows, 'elite-table')
         : '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优基金数据</div></div>') +
-      (restFunds.length ? details('展开其余基金明细（' + restFunds.length + ' 条）', fundHead, fundRows(restFunds), 'elite-table') : '') +
       '</div>' +
       '<div id="tab-stocks" class="tab-panel">' +
-      (topStocks.length ? table(stockHead, stockRows(topStocks), 'elite-table')
+      (es.length ? table(stockHead, stockRows, 'elite-table')
         : '<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-text">暂无绩优股票数据</div></div>') +
-      (restStocks.length ? details('展开其余股票明细（' + restStocks.length + ' 条）', stockHead, stockRows(restStocks), 'elite-table') : '') +
       '</div>');
 
     function tab(name) {
@@ -739,7 +765,7 @@
         /* 用数据生成时间做版本号：CI 更新数据后 URL 自动变化，旧缓存立即失效 */
         DATA_VERSION = manifest.generated_at || String(Date.now());
         buildHeader(manifest);
-        if (PAGE === 'pipeline') return; /* 静态壳自带内容 */
+        if (PAGE === 'pipeline' || PAGE === 'formulas') return; /* 静态壳自带内容 */
 
         if (!state.date) {
           root.innerHTML = emptyState('📭', '暂无数据', '数据由 GitHub Actions 每个交易日 22:00 自动生成');

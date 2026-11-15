@@ -30,6 +30,13 @@ if _src_dir not in sys.path:
 from webui.data_service import DataService
 from webui.routes import _md_to_html
 from backtest_series import build_series
+from formula_doc import render_formula_doc
+from selection_formula import (
+    TOP_FUNDS,
+    TOP_STOCKS,
+    select_global_funds,
+    select_global_stocks,
+)
 from stock_rankings import build_stock_rankings
 
 # 周期检测（可选，失败则降级）
@@ -84,9 +91,16 @@ def _copy_static_assets() -> None:
     """拷贝静态壳、CSS、JS、字体、favicon、图表。"""
     print("静态资源:")
 
-    # 静态壳 HTML
+    # 静态壳 HTML；公式页由 formula_doc.py 注入正文（静态/动态站共用同一份内容）
     for f in sorted(SITE_DIR.glob("*.html")):
-        shutil.copy2(f, DOCS_DIR / f.name)
+        if f.name == "formulas.html":
+            shell = f.read_text(encoding="utf-8")
+            (DOCS_DIR / f.name).write_text(
+                shell.replace("<!--FORMULA_CONTENT-->", render_formula_doc(static=True)),
+                encoding="utf-8",
+            )
+        else:
+            shutil.copy2(f, DOCS_DIR / f.name)
         print(f"  {f.name}")
 
     # CSS / JS
@@ -166,6 +180,13 @@ def generate_data_for_date(date: str) -> None:
     holdings = ds.get_holdings()
     managers = ds.get_manager_rankings(date)
 
+    # 候选池（按经理分组）→ 全站股票排名 / 全局绩优标的，三处共用同一份数据
+    elite_fund_records = _records(ds.get_elite_funds(date))
+    elite_stock_records = _records(ds.get_elite_stocks(date))
+    stock_ranking = build_stock_rankings(elite_stock_records)
+    global_funds = select_global_funds(elite_fund_records, TOP_FUNDS)
+    global_stocks = select_global_stocks(elite_stock_records, TOP_STOCKS)
+
     signal_stats = {"buy": 0, "sell": 0, "hold": 0, "total": 0}
     if signals is not None and not signals.empty and "建议标签(非投资建议)" in signals.columns:
         tag_col = "建议标签(非投资建议)"
@@ -189,6 +210,8 @@ def generate_data_for_date(date: str) -> None:
         "stock_sum": round(stock_sum, 2),
         "fund_sum": round(fund_sum, 2),
         "top_managers": _records(top_managers),
+        "top_stocks": stock_ranking["rows"][:5],
+        "stock_count": stock_ranking["stock_count"],
         "cycle_info": _cycle_info(),
     }
     _write_json(out / "dashboard.json", dashboard)
@@ -205,13 +228,18 @@ def generate_data_for_date(date: str) -> None:
         funds = funds.iloc[:FUNDS_MAX_ROWS]
     _write_json(out / "funds.json", {"rows": _records(funds), "max_rows": FUNDS_MAX_ROWS})
 
-    # --- elite + 全站股票排名（同一份数据，两处口径一致）---
-    elite_stocks = _records(ds.get_elite_stocks(date))
+    # --- elite：跨所有经理的唯一榜单（固定 3 只基金 / 10 只股票）---
     _write_json(out / "elite.json", {
-        "funds": _records(ds.get_elite_funds(date)),
-        "stocks": elite_stocks,
+        "funds": global_funds,
+        "stocks": global_stocks,
+        "candidate_funds": len(elite_fund_records),
+        "candidate_stocks": len(elite_stock_records),
+        "manager_count": stock_ranking["manager_count"],
+        "top_funds": TOP_FUNDS,
+        "top_stocks": TOP_STOCKS,
     })
-    _write_json(out / "stocks.json", build_stock_rankings(elite_stocks))
+    # --- 完整去重股票池：按形式化综合得分 S_s 排序 ---
+    _write_json(out / "stocks.json", stock_ranking)
 
     # --- backtest（含 md 预渲染 HTML + 交互图表数据）---
     # 曲线数据单独成文件，前端只在用户查看对应回测时按需加载，

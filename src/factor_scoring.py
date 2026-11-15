@@ -11,6 +11,16 @@ Dalio 框架映射：
 
 因子权重（可通过 economic_cycle.py 按周期阶段动态调整）：
   长期回报 35% / 风险调整 25% / 稳定性 20% / 质量 20%
+
+数值稳健性约定（v2 优化）：
+  1. 所有输入先做有限化（inf → NaN）与 1%/99% 缩尾，避免单个极端值
+     把 min-max 压成一条「所有样本都得 0」的退化分布；
+  2. 缺失值一律按「中性」处理（z-score 记 0、min-max 记中位数），
+     不再隐式当成 0 分而惩罚数据不全的标的；
+  3. 多周期合成按「每行实际可用周期的权重和」归一，
+     不同标的可用周期数不同时仍可公平比较；
+  4. 不同周期的收益量纲不同（近1月 vs 成立来年化），风险/稳定性因子
+     先逐列标准化再计算横向离散度，不再直接对原始百分数求标准差。
 """
 
 from __future__ import annotations
@@ -48,136 +58,179 @@ DEFAULT_MANAGER_FACTOR_WEIGHTS: dict[str, float] = {
 }
 
 
+# ── 稳健数值工具 ──────────────────────────────────────────
+
+def finite_series(values: pd.Series) -> pd.Series:
+    """转数值并把 ±inf 变成 NaN。"""
+    return pd.to_numeric(pd.Series(values), errors="coerce").replace([np.inf, -np.inf], np.nan)
+
+
+def winsorize(series: pd.Series, lower: float = 0.01, upper: float = 0.99) -> pd.Series:
+    """1%/99% 缩尾，样本太少时原样返回。"""
+    s = finite_series(series)
+    if s.notna().sum() < 5:
+        return s
+    lo, hi = s.quantile(lower), s.quantile(upper)
+    if not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
+        return s
+    return s.clip(lo, hi)
+
+
 def _robust_zscore(series: pd.Series) -> pd.Series:
-    """用中位数和 IQR 做稳健标准化（避免极端值扭曲）。"""
-    med = series.median()
-    iqr = series.quantile(0.75) - series.quantile(0.25)
-    if iqr == 0:
-        iqr = series.std()
-    if iqr == 0:
-        return pd.Series(0.0, index=series.index)
-    return (series - med) / iqr
+    """缩尾后用中位数和 IQR 做稳健标准化；缺失取 0（中性），并裁到 ±3。"""
+    s = winsorize(series)
+    med = s.median()
+    iqr = s.quantile(0.75) - s.quantile(0.25)
+    scale = iqr
+    if not np.isfinite(scale) or scale <= 0:
+        scale = s.std()
+    if not np.isfinite(scale) or scale <= 0:
+        return pd.Series(0.0, index=s.index)
+    return ((s - med) / scale).clip(-3.0, 3.0).fillna(0.0)
+
+
+def _neutral_minmax(series: pd.Series) -> pd.Series:
+    """Min-Max 归一化到 [0, 1]，缺失值用中位数补齐（中性），常量序列记 0.5。"""
+    s = finite_series(series)
+    fill = s.median() if s.notna().any() and np.isfinite(s.median()) else 0.0
+    s = s.fillna(fill)
+    lo, hi = s.min(), s.max()
+    if not np.isfinite(lo) or not np.isfinite(hi) or hi <= lo:
+        return pd.Series(0.5, index=s.index)
+    return (s - lo) / (hi - lo)
 
 
 def _minmax(series: pd.Series) -> pd.Series:
-    """Min-Max 归一化到 [0, 1]。"""
-    lo, hi = series.min(), series.max()
-    if hi == lo:
-        return pd.Series(0.5, index=series.index)
-    return (series - lo) / (hi - lo)
+    """兼容旧调用名的公开别名。"""
+    return _neutral_minmax(series)
+
+
+# 对外公开的函数名（供 selection_formula.py 复用，避免私有名跨模块）
+robust_zscore = _robust_zscore
+minmax = _neutral_minmax
+
+
+def _weighted_period_zscore(df: pd.DataFrame, periods: dict[str, float]) -> pd.Series:
+    """多周期稳健 z-score 加权平均；按每行实际可用周期的权重和归一。"""
+    score = pd.Series(0.0, index=df.index)
+    weight = pd.Series(0.0, index=df.index)
+    for col, w in periods.items():
+        if col not in df.columns:
+            continue
+        vals = finite_series(df[col])
+        score += _robust_zscore(vals) * w
+        weight += vals.notna().astype(float) * w
+    weight = weight.replace(0.0, np.nan)
+    return (score / weight).fillna(0.0)
+
+
+def _standardized_period_matrix(df: pd.DataFrame) -> pd.DataFrame:
+    """逐列标准化后的周期收益矩阵（消除不同周期的量纲差异）。"""
+    cols = [c for c in FUND_RETURN_PERIODS if c in df.columns]
+    if not cols:
+        return pd.DataFrame(index=df.index)
+    return pd.DataFrame({c: _robust_zscore(df[c]) for c in cols}, index=df.index)
 
 
 # ── 基金综合评分 ──────────────────────────────────────────
 
 def compute_fund_return_score(df: pd.DataFrame) -> pd.Series:
-    """多周期回报得分：加权各周期的稳健 z-score。"""
-    score = pd.Series(0.0, index=df.index)
-    for col, w in FUND_RETURN_PERIODS.items():
-        if col not in df.columns:
-            continue
-        vals = pd.to_numeric(df[col], errors="coerce")
-        score += _robust_zscore(vals).fillna(0.0) * w
-    return _minmax(score)
+    """多周期回报得分：加权各周期的稳健 z-score，按可用周期权重归一。"""
+    return _neutral_minmax(_weighted_period_zscore(df, FUND_RETURN_PERIODS))
 
 
 def compute_fund_risk_score(df: pd.DataFrame) -> pd.Series:
     """
     风险调整得分（越高 = 风险越低）。
-    用多周期回报的离散度作为波动率代理，加入最大回撤惩罚（若有历史数据）。
+
+    v2：先对每个周期列单独标准化，再计算「跨周期离散度」与「负收益周期占比」；
+    旧版直接把近1月、近1年、成立来年化混在一起求 std，量纲不一致，
+    会把长期年化高的基金系统性判成高风险。
     """
-    period_cols = [c for c in FUND_RETURN_PERIODS if c in df.columns]
-    if not period_cols:
+    mat = _standardized_period_matrix(df)
+    if mat.empty:
         return pd.Series(0.5, index=df.index)
 
-    period_data = df[period_cols].apply(pd.to_numeric, errors="coerce")
-    # 跨周期标准差 → 波动率代理
-    dispersion = period_data.std(axis=1, skipna=True)
-    # 负收益周期数 → 下行风险代理
-    neg_count = (period_data < 0).sum(axis=1)
+    dispersion = mat.std(axis=1, skipna=True).fillna(0.0)
+    neg_ratio = (mat < 0).sum(axis=1) / mat.notna().sum(axis=1).replace(0, np.nan)
+    neg_ratio = neg_ratio.fillna(0.0)
 
-    risk_raw = dispersion.fillna(0) + neg_count.fillna(0) * 0.5
-    # 得分反转：风险越低分越高
-    score = -_robust_zscore(risk_raw)
-    return _minmax(score)
+    risk_raw = dispersion + neg_ratio * 0.5
+    # 若带历史最大回撤数据，额外惩罚（回撤通常为负数，取绝对值）
+    if "最大回撤" in df.columns:
+        dd = finite_series(df["最大回撤"]).abs().fillna(0.0)
+        risk_raw += _neutral_minmax(dd) * 0.5
+
+    return _neutral_minmax(-_robust_zscore(risk_raw))
 
 
 def compute_fund_stability_score(df: pd.DataFrame) -> pd.Series:
     """
-    稳定性得分：多周期正收益占比 + 收益一致性。
-    Dalio：生产力增长是平稳的，暴涨暴跌说明杠杆/投机成分重。
+    稳定性得分：多周期正收益占比（贝叶斯收缩）+ 跨周期表现一致性。
+
+    v2：样本少的基金不再因为 1 个周期恰好为正就拿到满分；
+    一致性改用标准化后周期得分的离散度。
     """
-    period_cols = [c for c in FUND_RETURN_PERIODS if c in df.columns]
-    if not period_cols:
+    mat = _standardized_period_matrix(df)
+    if mat.empty:
         return pd.Series(0.5, index=df.index)
 
-    period_data = df[period_cols].apply(pd.to_numeric, errors="coerce")
-    # 正收益周期占比
-    pos_ratio = (period_data > 0).sum(axis=1) / period_data.notna().sum(axis=1)
-    # 收益一致性：各周期排名的标准差（越小说明各周期表现越一致）
-    ranks = period_data.rank(axis=0, pct=True)
-    rank_std = ranks.std(axis=1, skipna=True)
+    n = mat.notna().sum(axis=1)
+    pos = (mat > 0).sum(axis=1)
+    prior = 1.5  # 伪样本：先验收益为正的概率 0.5
+    pos_ratio = (pos + prior * 0.5) / (n + prior).replace(0, np.nan)
+    rank_std = mat.std(axis=1, skipna=True).fillna(0.5)
 
-    score = pos_ratio.fillna(0) * 0.6 + (1 - _minmax(rank_std.fillna(0.5))) * 0.4
-    return _minmax(score)
+    score = pos_ratio.fillna(0.5) * 0.6 + (1 - _neutral_minmax(rank_std)) * 0.4
+    return _neutral_minmax(score)
 
 
 def compute_fund_quality_score(df: pd.DataFrame) -> pd.Series:
-    """
-    质量得分：成立时长 + 低费率 + 规模适中。
-    Dalio：长期存活本身就是竞争力的证明。
-    """
-    score = pd.Series(0.0, index=df.index)
+    """质量得分：成立时长 + 低费率（缺失费率时自动把时长权重补齐到 1）。"""
+    parts: list[pd.Series] = []
 
-    # 成立天数（越长越好）
     if "成立天数" in df.columns:
-        days = pd.to_numeric(df["成立天数"], errors="coerce").fillna(180)
-        score += _minmax(np.log1p(days)) * 0.5
+        days = finite_series(df["成立天数"]).fillna(180)
+        parts.append(_neutral_minmax(np.log1p(days.clip(lower=0))))
     elif "成立日" in df.columns:
         days = (pd.Timestamp.today() - pd.to_datetime(df["成立日"], errors="coerce")).dt.days
-        score += _minmax(np.log1p(days.fillna(180))) * 0.5
+        parts.append(_neutral_minmax(np.log1p(days.fillna(180).clip(lower=0))))
 
-    # 手续费（越低越好）
-    fee_col = None
-    for c in ["手续费", "费率"]:
-        if c in df.columns:
-            fee_col = c
-            break
+    fee_col = next((c for c in ["手续费", "费率"] if c in df.columns), None)
     if fee_col:
-        fee = pd.to_numeric(df[fee_col].astype(str).str.replace("%", "", regex=False), errors="coerce")
+        fee = finite_series(df[fee_col].astype(str).str.replace("%", "", regex=False))
         fee = fee.fillna(fee.median() if fee.notna().any() else 0.15)
-        score += (1 - _minmax(fee)) * 0.5
+        parts.append(1 - _neutral_minmax(fee))
 
-    return _minmax(score)
+    if not parts:
+        return pd.Series(0.5, index=df.index)
+    return _neutral_minmax(sum(parts) / len(parts))
 
 
 def compute_fund_composite_score(
     df: pd.DataFrame,
     weights: dict[str, float] | None = None,
 ) -> pd.Series:
-    """
-    基金综合评分（0-1，越高越好）。
-    可传入自定义因子权重以适应不同经济周期阶段。
-    """
+    """基金综合评分（0-1，越高越好）；权重可按经济周期阶段调整。"""
     w = weights or DEFAULT_FUND_FACTOR_WEIGHTS
-    total = 0.0
     score = pd.Series(0.0, index=df.index)
+    total = 0.0
 
-    if w.get("return", 0) > 0:
-        score += compute_fund_return_score(df) * w["return"]
-        total += w["return"]
-    if w.get("risk", 0) > 0:
-        score += compute_fund_risk_score(df) * w["risk"]
-        total += w["risk"]
-    if w.get("stability", 0) > 0:
-        score += compute_fund_stability_score(df) * w["stability"]
-        total += w["stability"]
-    if w.get("quality", 0) > 0:
-        score += compute_fund_quality_score(df) * w["quality"]
-        total += w["quality"]
+    builders = {
+        "return": compute_fund_return_score,
+        "risk": compute_fund_risk_score,
+        "stability": compute_fund_stability_score,
+        "quality": compute_fund_quality_score,
+    }
+    for key, fn in builders.items():
+        weight = float(w.get(key, 0.0))
+        if weight > 0:
+            score += fn(df) * weight
+            total += weight
 
     if total > 0:
-        score = score / total
-    return _minmax(score)
+        score /= total
+    return _neutral_minmax(score)
 
 
 # ── 经理综合评分 ──────────────────────────────────────────
@@ -188,76 +241,71 @@ def compute_manager_composite_score(
 ) -> pd.Series:
     """
     基金经理综合评分（0-1，越高越好）。
-    使用的列：平均收益率、中位数收益率、最佳收益率、最差收益率、
-              有效基金数、管理基金数、累计从业时间。
+
+    v2 修正：
+      - 旧版 med/|best| 在 best=0 时产生 inf，会把整列 min-max 压成退化；
+        现在分母下限 1.0 且比值裁到 [-2, 2]；
+      - 回报因子乘以样本可靠性 n/(n+2)，只管 1 只基金的经理不再靠单只
+        极端收益冲到榜首。
     """
     w = weights or DEFAULT_MANAGER_FACTOR_WEIGHTS
     score = pd.Series(0.0, index=df.index)
 
-    # 回报因子：平均 + 中位数（稳健）+ 最佳
     if w.get("return", 0) > 0:
         ret_score = pd.Series(0.0, index=df.index)
         for col, rw in [("平均收益率", 0.4), ("中位数收益率", 0.3), ("最佳收益率", 0.3)]:
             if col in df.columns:
-                vals = pd.to_numeric(df[col], errors="coerce")
-                ret_score += _robust_zscore(vals).fillna(0.0) * rw
-        score += _minmax(ret_score) * w["return"]
+                ret_score += _robust_zscore(df[col]) * rw
+        n = finite_series(df["有效基金数"]).fillna(1.0).clip(lower=1.0) if "有效基金数" in df.columns \
+            else pd.Series(1.0, index=df.index)
+        reliability = n / (n + 2.0)          # 1 只→0.33，3 只→0.60，10 只→0.83
+        score += _neutral_minmax(ret_score * (0.5 + 0.5 * reliability)) * w["return"]
 
-    # 一致性因子：最差收益不要太差 + 中位/最佳比值
     if w.get("consistency", 0) > 0:
         cons_score = pd.Series(0.0, index=df.index)
         if "最差收益率" in df.columns:
-            worst = pd.to_numeric(df["最差收益率"], errors="coerce")
-            # 最差收益越接近 0 或正值越好
-            cons_score += _minmax(worst.fillna(worst.min())) * 0.4
+            worst = finite_series(df["最差收益率"])
+            cons_score += _neutral_minmax(worst) * 0.4
         if "中位数收益率" in df.columns and "最佳收益率" in df.columns:
-            med = pd.to_numeric(df["中位数收益率"], errors="coerce")
-            best = pd.to_numeric(df["最佳收益率"], errors="coerce")
-            ratio = med / best.abs().replace(0, np.nan)
-            cons_score += _minmax(ratio.fillna(0.5)) * 0.6
-        score += _minmax(cons_score) * w["consistency"]
+            med = finite_series(df["中位数收益率"])
+            best = finite_series(df["最佳收益率"])
+            ratio = (med / best.abs().clip(lower=1.0)).replace([np.inf, -np.inf], np.nan).clip(-2.0, 2.0)
+            cons_score += _neutral_minmax(ratio) * 0.6
+        score += _neutral_minmax(cons_score) * w["consistency"]
 
-    # 经验因子：从业年限 + 管理规模
     if w.get("experience", 0) > 0:
         exp_score = pd.Series(0.0, index=df.index)
         if "累计从业时间" in df.columns:
-            # 格式可能是 "5年200天" 或纯数字
             career = df["累计从业时间"].astype(str).str.extract(r"(\d+)").iloc[:, 0]
-            career = pd.to_numeric(career, errors="coerce")
-            exp_score += _minmax(np.log1p(career.fillna(1))) * 0.6
+            exp_score += _neutral_minmax(np.log1p(finite_series(career).fillna(1))) * 0.6
         if "现任基金资产总规模" in df.columns:
-            scale = pd.to_numeric(df["现任基金资产总规模"], errors="coerce")
-            exp_score += _minmax(np.log1p(scale.fillna(1))) * 0.4
-        score += _minmax(exp_score) * w["experience"]
+            scale = finite_series(df["现任基金资产总规模"]).fillna(1)
+            exp_score += _neutral_minmax(np.log1p(scale.clip(lower=0))) * 0.4
+        score += _neutral_minmax(exp_score) * w["experience"]
 
-    # 质量因子：有效基金占比 + 管理广度
     if w.get("quality", 0) > 0:
         qual_score = pd.Series(0.0, index=df.index)
         if "有效基金数" in df.columns and "管理基金数" in df.columns:
-            eff = pd.to_numeric(df["有效基金数"], errors="coerce")
-            total_m = pd.to_numeric(df["管理基金数"], errors="coerce")
-            ratio = eff / total_m.replace(0, np.nan)
-            qual_score += _minmax(ratio.fillna(0.5)) * 0.5
+            eff = finite_series(df["有效基金数"])
+            total_m = finite_series(df["管理基金数"]).replace(0, np.nan)
+            qual_score += _neutral_minmax((eff / total_m).clip(0, 1)) * 0.5
         if "管理基金数" in df.columns:
-            mgr_cnt = pd.to_numeric(df["管理基金数"], errors="coerce")
-            # 管理 3-10 只最优，过多则精力分散
-            ideal = 1.0 - np.abs(np.log1p(mgr_cnt.fillna(3)) - np.log1p(5))
-            qual_score += _minmax(pd.Series(ideal, index=df.index)) * 0.5
-        score += _minmax(qual_score) * w["quality"]
+            cnt = finite_series(df["管理基金数"]).fillna(3).clip(lower=0)
+            ideal = 1.0 - np.abs(np.log1p(cnt) - np.log1p(5))
+            qual_score += _neutral_minmax(pd.Series(ideal, index=df.index)) * 0.5
+        score += _neutral_minmax(qual_score) * w["quality"]
 
-    return _minmax(score)
+    return _neutral_minmax(score)
 
 
 # ── CLI 调试入口 ──────────────────────────────────────────
 
 if __name__ == "__main__":
-    import sys
     from pathlib import Path
 
     root = Path(__file__).resolve().parent.parent
     out_dir = root / "out"
 
-    # 读取最新基金排名数据测试因子评分
     fund_files = sorted(out_dir.glob("基金_年化排行_*.csv"))
     mgr_files = sorted(out_dir.glob("经理_排行_*.csv"))
 
@@ -269,8 +317,7 @@ if __name__ == "__main__":
         df_fund["stability_score"] = compute_fund_stability_score(df_fund)
         df_fund["quality_score"] = compute_fund_quality_score(df_fund)
         df_fund["composite"] = compute_fund_composite_score(df_fund)
-        top10 = df_fund.nlargest(10, "composite")
-        for _, r in top10.iterrows():
+        for _, r in df_fund.nlargest(10, "composite").iterrows():
             print(
                 f"  {r['基金代码']} {r.get('基金简称','')} "
                 f"复合={r['composite']:.4f} "
@@ -284,8 +331,7 @@ if __name__ == "__main__":
         df_mgr = pd.read_csv(mgr_files[-1])
         print("\n=== 经理因子得分（前10） ===")
         df_mgr["composite"] = compute_manager_composite_score(df_mgr)
-        top10 = df_mgr.nlargest(10, "composite")
-        for _, r in top10.iterrows():
+        for _, r in df_mgr.nlargest(10, "composite").iterrows():
             print(f"  {r.get('姓名','')}({r.get('所属公司','')}) 复合={r['composite']:.4f}")
     else:
         print("未找到经理排行数据，跳过经理因子测试")

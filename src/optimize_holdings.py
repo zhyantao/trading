@@ -6,8 +6,8 @@
 默认做法（与你当前偏好一致，可用参数调整）：
 - 目标持仓总数：5 个
 - 股票/基金大类比例：股票30% / 基金70%
-- 股票权重：使用 out/绩优基金经理_股票Top10_*.csv 的“汇总占净值比例”作为得分，取 TopK 后按得分归一
-- 基金权重：使用 out/绩优基金经理_基金Top3_*.csv 的“成立来年化(>0)”作为得分，取 TopK 后按得分归一
+- 股票权重：使用 selection_formula 的形式化综合得分 S_s（共识度/覆盖基金数/仓位/名次/经理质量），取 TopK 后按得分归一
+- 基金权重：默认用 out/绩优基金经理_基金Top3_*.csv 的“成立来年化(>0)”；--composite 时改用多因子综合评分 S_f
 
 输出文件（只保留一个）：out/我的持仓.csv
 格式（长表，便于记录历史）：
@@ -148,15 +148,25 @@ def main() -> None:
         ["股票代码", "股票名称", "汇总占净值比例", "经理排名"],
     )
 
-    # 股票得分：汇总占净值比例（越高越好）
+    # 股票得分：改用与「股票排名 / 公式页」一致的形式化综合得分 S_s
+    # （共识度 + 覆盖基金数 + 仓位 + 最好名次 + 经理质量），
+    # 旧版只把各经理的占净值比例求和，容易被单只基金的高仓位主导。
+    from selection_formula import score_stock_candidates
+
     stocks["汇总占净值比例"] = pd.to_numeric(stocks.get("汇总占净值比例"), errors="coerce").fillna(0.0)
-    stock_score = (
-        stocks.groupby(["股票代码", "股票名称"], dropna=False)
-        .agg(score=("汇总占净值比例", "sum"), 覆盖经理数=("经理排名", "nunique"))
-        .reset_index()
-        .sort_values("score", ascending=False)
-    )
-    stock_score["股票代码"] = stock_score["股票代码"].astype(str).str.zfill(6)
+    ranked = score_stock_candidates(stocks.to_dict("records"))
+    stock_score = pd.DataFrame([
+        {
+            "股票代码": str(r["股票代码"]).zfill(6),
+            "股票名称": r["股票名称"],
+            "score": float(r["综合得分"]),
+            "覆盖经理数": int(r["入选经理数"]),
+        }
+        for r in ranked
+    ])
+    if stock_score.empty:
+        stock_score = pd.DataFrame(columns=["股票代码", "股票名称", "score", "覆盖经理数"])
+    stock_score = stock_score[stock_score["score"] > 0].sort_values("score", ascending=False)
     # 风险代理：覆盖经理数越少 → 集中度风险越高
     if args.risk_parity:
         stock_score["risk_score"] = 1.0 / stock_score["覆盖经理数"].clip(lower=1)
