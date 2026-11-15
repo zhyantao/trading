@@ -57,6 +57,7 @@ PERIOD_WINDOWS: dict[str, tuple[int, float]] = {
 FUND_SIGMA_PRIOR = 0.012     # 无序列时的基金日波动先验（约 1.2%）
 STOCK_SIGMA_PRIOR = 0.022    # 无序列时的股票日波动先验（约 2.2%）
 PERIOD_NEFF = 21.0           # 区间收益率口径的等效样本量
+STOCK_STALE_DAYS = 15        # 股票行情序列最近日期超过该天数视为过期（退市/长停）
 
 PRICE_PARAMS: dict[str, Any] = {
     "lambda": PRICE_LAMBDA,
@@ -69,6 +70,7 @@ PRICE_PARAMS: dict[str, Any] = {
     "fund_sigma_prior": FUND_SIGMA_PRIOR,
     "stock_sigma_prior": STOCK_SIGMA_PRIOR,
     "period_neff": PERIOD_NEFF,
+    "stock_stale_days": STOCK_STALE_DAYS,
 }
 
 
@@ -85,6 +87,17 @@ def _text(v: Any) -> str:
         return ""
     s = str(v).strip()
     return "" if s.lower() in ("nan", "none", "nat") else s
+
+
+def _series_fresh(dates: list[str], max_stale_days: int) -> bool:
+    """序列最近日期距今天不超过 max_stale_days 个自然日（覆盖节假日休市）。"""
+    if not dates:
+        return False
+    try:
+        last = datetime.strptime(dates[-1], "%Y-%m-%d")
+    except ValueError:
+        return False
+    return (datetime.now() - last).days <= max_stale_days
 
 
 def _read_series(path: Path) -> tuple[list[str], list[float]]:
@@ -311,6 +324,10 @@ def build_price_estimates(
         if not re.fullmatch(r"\d{6}", code):
             continue
         s = stock_series.get(code)
+        # 退市/长期停牌股票的序列停在多年以前，拿旧价外推 T+1 会误导，
+        # 视为无序列回退「重仓基金净值代理」口径（只给涨跌不给绝对价）。
+        if s and not _series_fresh(s[0], STOCK_STALE_DAYS):
+            s = None
         est = estimate_from_prices(s[0], s[1], STOCK_SIGMA_PRIOR) if s else None
         if est:
             priced += 1

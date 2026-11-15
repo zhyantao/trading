@@ -33,6 +33,7 @@ from backtest_series import build_series
 from formula_doc import render_formula_doc
 from manager_index import build_manager_index
 from price_estimate import build_price_estimates
+from fetch_stock_series import ensure_stock_series
 from selection_formula import (
     TOP_FUNDS,
     TOP_STOCKS,
@@ -205,6 +206,13 @@ def generate_data_for_date(date: str) -> None:
     stock_codes |= {str(r.get("代码", "")).zfill(6) for r in holding_records if r.get("类型") == "股票"}
     stock_codes |= {str(r.get("代码", "")).zfill(6) for r in signal_records if r.get("资产类型") == "股票"}
     stock_codes.discard("000000")
+
+    # 抓取/刷新股票前复权日线（腾讯财经，本地已有新鲜序列则跳过）。
+    # 失败个股自动回退「重仓基金净值代理」口径，不影响整站生成。
+    try:
+        ensure_stock_series(sorted(stock_codes))
+    except Exception as exc:  # 网络全挂也不阻断静态站产出
+        print(f"  [行情] 股票日线抓取跳过：{exc}")
 
     price_book = build_price_estimates(
         ROOT, fund_est_rows, sorted(stock_codes), stock_proxy_records=elite_stock_records

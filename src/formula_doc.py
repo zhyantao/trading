@@ -84,6 +84,10 @@ def _param_rows(params: dict[str, Any]) -> str:
         f'<td class="f-num">{pp["fund_sigma_prior"]*100:.1f}% / {pp["stock_sigma_prior"]*100:.1f}%</td></tr>'
     )
     rows.append(
+        '<tr><td>估算价格</td><td>股票行情序列新鲜度上限（退市/长停回退代理）</td>'
+        f'<td class="f-num">{pp.get("stock_stale_days", 15)} 天</td></tr>'
+    )
+    rows.append(
         '<tr><td>估算价格</td><td>MAD 缩尾倍数 / 区间收益率折算权重（周:月:季）</td>'
         f'<td class="f-num">{pp["return_winsor_mad"]:.0f} / '
         f'{pp["period_windows"]["近1周"][1]:.1f}:{pp["period_windows"]["近1月"][1]:.1f}:'
