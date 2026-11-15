@@ -26,9 +26,6 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
-  function fmtDate(d) {
-    return d && d.length === 8 ? d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6, 8) : d || '';
-  }
   function num(v) {
     var f = parseFloat(v);
     return isNaN(f) ? null : f;
@@ -124,11 +121,7 @@
       setParam('date', state.date);
     }
 
-    var dateOpts = dates.map(function (d) {
-      return '<option value="' + d + '"' + (d === state.date ? ' selected' : '') + '>' +
-        fmtDate(d) + '</option>';
-    }).join('');
-
+    /* 站上只保留最新一天的数据，因此不再提供日期下拉；URL 中的旧日期由上面统一纠正 */
     document.getElementById('site-header').innerHTML =
       '<nav class="site-nav" aria-label="站点导航"><div class="nav-inner">' +
       '<a href="index.html"><img class="nav-badge" src="favicon.svg" alt="TRADING"></a>' +
@@ -156,19 +149,8 @@
       '<button id="ci-run" class="btn btn-sm btn-outline ci-btn" title="打开 GitHub Actions 手动运行数据更新">' +
       '&#10227; 更新数据</button>' +
       '<span id="ci-status" class="ci-status" title="最近一次数据更新（GitHub Actions）"></span>' +
-      (dates.length
-        ? '<select id="date-select" class="nav-date-select" aria-label="选择数据日期">' + dateOpts + '</select>'
-        : '') +
       '<label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单"><span></span><span></span><span></span></label>' +
       '</div></div></nav>';
-
-    var sel = document.getElementById('date-select');
-    if (sel) sel.addEventListener('change', function () {
-      var p = new URLSearchParams(location.search);
-      p.set('date', sel.value);
-      p.delete('page');
-      location.href = location.pathname + '?' + p.toString();
-    });
 
     /* 数据更新按钮：打开 Actions 触发页 + 显示最近一次运行状态 */
     var runBtn = document.getElementById('ci-run');
@@ -581,7 +563,7 @@
     var current = results.filter(function (r) { return r.id === state.view; })[0] || results[0];
     state.view = current.id;
 
-    /* 回测记录选择器：放在右上角日期下拉旁边 */
+    /* 回测记录选择器：放在导航栏右侧 */
     if (navActions) {
       var sel = document.createElement('select');
       sel.id = 'backtest-select';

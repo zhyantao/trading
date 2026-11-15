@@ -38,13 +38,6 @@
             <a href="pipeline.html?date={{ selected_date }}" class="{{ 'active' if active_page == 'pipeline' }}">流水线</a>
         </div>
         <div class="nav-actions">
-        {% if available_dates %}
-        <select id="date-select" class="nav-date-select" onchange="onDateChange(this.value)" aria-label="选择数据日期">
-            {% for d in available_dates %}
-            <option value="{{ d }}" {{ 'selected' if d == selected_date }}>{{ d[:4] }}-{{ d[4:6] }}-{{ d[6:8] }}</option>
-            {% endfor %}
-        </select>
-        {% endif %}
         <label for="nav-toggle" class="nav-toggle-btn" aria-label="菜单">
             <span></span><span></span><span></span>
         </label>
@@ -61,13 +54,6 @@
     <div class="credits">&copy; 2026 YANTAO ZHANG &middot; Powered by <a href="https://github.com/edwardtufte/tufte-css">Tufte CSS</a></div>
 </footer>
 
-<script>
-function onDateChange(date) {
-    // 静态站点：保持当前页面，仅更新日期参数
-    var currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    window.location = currentPage + '?date=' + date;
-}
-</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>
