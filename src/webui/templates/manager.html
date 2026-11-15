@@ -48,7 +48,7 @@
 {% if funds %}
 <h2 class="mgr-section-title">绩优基金 Top3（{{ funds|length }}）</h2>
 <div class="table-wrap"><table>
-    <thead><tr><th>名次</th><th>基金代码</th><th>基金简称</th><th>年化排名</th><th>成立来年化(%)</th><th>近1年(%)</th><th>成立天数</th></tr></thead>
+    <thead><tr><th>名次</th><th>基金代码</th><th>基金简称</th><th>年化排名</th><th>成立来年化(%)</th><th>近1年(%)</th><th>成立天数</th><th>估算价格</th></tr></thead>
     <tbody>
     {% for f in funds %}
     <tr>
@@ -59,6 +59,7 @@
         <td style="color:{{ 'var(--green)' if f.get('成立来年化')|float >= 0 else 'var(--red)' }};">{{ f.get('成立来年化')|num2s }}%</td>
         <td style="color:{{ 'var(--green)' if f.get('近1年')|float >= 0 else 'var(--red)' }};">{{ f.get('近1年')|num2s }}%</td>
         <td>{{ f.get('成立天数', '') }}</td>
+        {{ f.get('基金代码', '')|estcell('基金') }}
     </tr>
     {% endfor %}
     </tbody>
@@ -68,7 +69,7 @@
 {% if stocks %}
 <h2 class="mgr-section-title">重仓股票 Top10（{{ stocks|length }}）</h2>
 <div class="table-wrap"><table>
-    <thead><tr><th>名次</th><th>股票代码</th><th>股票名称</th><th>汇总占净值比例(%)</th><th>出现基金数</th><th>最新季度</th><th>Top3 基金</th></tr></thead>
+    <thead><tr><th>名次</th><th>股票代码</th><th>股票名称</th><th>汇总占净值比例(%)</th><th>出现基金数</th><th>最新季度</th><th>Top3 基金</th><th>估算价格</th></tr></thead>
     <tbody>
     {% for s in stocks %}
     {% set c = s.get('股票代码', '') %}
@@ -81,6 +82,7 @@
         <td>{{ s.get('出现基金数', '') }}</td>
         <td>{{ s.get('最新季度', '') }}</td>
         <td class="mgr-cell">{{ s.get('Top3基金列表', '') }}</td>
+        {{ c|estcell('股票') }}
     </tr>
     {% endfor %}
     </tbody>
@@ -90,7 +92,7 @@
 {% if signals %}
 <h2 class="mgr-section-title">相关每日信号（{{ signals|length }}）</h2>
 <div class="table-wrap"><table>
-    <thead><tr><th>资产类型</th><th>代码</th><th>名称</th><th>建议标签</th><th>净强度</th><th>关联经理</th></tr></thead>
+    <thead><tr><th>资产类型</th><th>代码</th><th>名称</th><th>建议标签</th><th>净强度</th><th>关联经理</th><th>估算价格</th></tr></thead>
     <tbody>
     {% for g in signals %}
     {% set c = g.get('代码', '') %}
@@ -102,6 +104,7 @@
         <td>{{ g.get('建议标签(非投资建议)', '') }}</td>
         <td style="color:{{ 'var(--green)' if g.get('净强度')|float >= 0 else 'var(--red)' }};">{{ g.get('净强度')|num2s }}</td>
         {{ g.get('关联经理Top3(净强度)', '')|mgrcell(selected_date) }}
+        {{ c|estcell(g.get('资产类型', '')) }}
     </tr>
     {% endfor %}
     </tbody>

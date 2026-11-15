@@ -2,12 +2,11 @@
 {% block title %}总览 - 量化交易研究{% endblock %}
 
 {% block content %}
-<!-- 今日信号摘要 -->
-{% if signal_stats.total > 0 %}<a href="/signals?date={{ selected_date }}" style="text-decoration:none; color:inherit;">{% endif %}
-<div class="card card-compact {{ 'card-clickable' if signal_stats.total > 0 else '' }}" style="margin-bottom:14px;">
-    <div class="card-header">今日信号摘要{% if signal_stats.total > 0 %} <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span>{% endif %}</div>
+<!-- 今日信号摘要 · 市场周期定位：合并为一张卡片 -->
+<div class="card card-compact" style="margin-bottom:14px;">
+    <div class="card-header">今日信号摘要 · 市场周期 <a class="card-link" href="/signals?date={{ selected_date }}">信号明细 →</a></div>
     {% if signal_stats.total > 0 %}
-    <div class="stat-strip">
+    <div class="stat-strip" style="max-width:620px;">
         <div><div class="stat-num" style="color:var(--green);">{{ signal_stats.buy }}</div><div class="stat-label">关注买入</div></div>
         <div><div class="stat-num" style="color:var(--yellow);">{{ signal_stats.hold }}</div><div class="stat-label">继续关注</div></div>
         <div><div class="stat-num" style="color:var(--red);">{{ signal_stats.sell }}</div><div class="stat-label">关注卖出</div></div>
@@ -15,11 +14,7 @@
     {% else %}
     <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成每日调仓信号</div></div>
     {% endif %}
-</div>
-{% if signal_stats.total > 0 %}</a>{% endif %}
 
-<!-- 经济周期 + 持仓配置：两张小环形图并排 -->
-<div class="dashboard-grid">
     {% if cycle_info %}
     {% set w = cycle_info.weights %}
     {% set circum = 2 * 3.1416 * 60 %}
@@ -27,32 +22,33 @@
     {% set risk_dash = w.risk * circum %}
     {% set s_dash = w.stability * circum %}
     {% set q_dash = w.quality * circum %}
-    <div class="card card-compact">
-        <div class="card-header">市场周期定位（Dalio 框架）</div>
-        <div class="stat-strip" style="margin-bottom:8px;">
-            <div><div class="stat-label">当前阶段</div><div style="font-size:15px;font-weight:700;color:var(--accent);">{{ cycle_info.phase_label }}</div></div>
-            <div><div class="stat-label">置信度</div><div style="font-size:15px;font-weight:700;">{{ cycle_info.confidence }}</div></div>
-        </div>
-        <div class="donut-wrap">
-            <svg width="92" height="92" viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
-                {% if w.return > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24" stroke-dasharray="{{ r_dash }} {{ circum - r_dash }}" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>{% endif %}
-                {% if w.risk > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24" stroke-dasharray="{{ risk_dash }} {{ circum - risk_dash }}" stroke-dashoffset="{{ -r_dash }}" transform="rotate(-90 80 80)"/>{% endif %}
-                {% if w.stability > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24" stroke-dasharray="{{ s_dash }} {{ circum - s_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
-                {% if w.quality > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="#b7950b" stroke-width="24" stroke-dasharray="{{ q_dash }} {{ circum - q_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash + s_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
-                <text x="80" y="86" text-anchor="middle" font-size="20" fill="var(--text-secondary)">权重</text>
-            </svg>
-            <div class="donut-legend">
-                <div><span class="donut-dot" style="background:var(--green);"></span>长期回报 {{ (w.return*100)|int }}%</div>
-                <div><span class="donut-dot" style="background:var(--red);"></span>风险调整 {{ (w.risk*100)|int }}%</div>
-                <div><span class="donut-dot" style="background:var(--accent);"></span>稳定性 {{ (w.stability*100)|int }}%</div>
-                <div><span class="donut-dot" style="background:#b7950b;"></span>质量 {{ (w.quality*100)|int }}%</div>
-            </div>
-        </div>
-        <div style="margin-top:8px;font-size:12px;color:var(--text-secondary);line-height:1.5;">{{ cycle_info.description }}</div>
+    <div class="cycle-divider"></div>
+    <div class="stat-strip" style="margin-bottom:8px; max-width:620px;">
+        <div><div class="stat-label">当前阶段（Dalio 框架）</div><div style="font-size:15px;font-weight:700;color:var(--accent);">{{ cycle_info.phase_label }}</div></div>
+        <div><div class="stat-label">置信度</div><div style="font-size:15px;font-weight:700;">{{ cycle_info.confidence }}</div></div>
     </div>
+    <div class="donut-wrap">
+        <svg width="92" height="92" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
+            {% if w.return > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24" stroke-dasharray="{{ r_dash }} {{ circum - r_dash }}" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>{% endif %}
+            {% if w.risk > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24" stroke-dasharray="{{ risk_dash }} {{ circum - risk_dash }}" stroke-dashoffset="{{ -r_dash }}" transform="rotate(-90 80 80)"/>{% endif %}
+            {% if w.stability > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24" stroke-dasharray="{{ s_dash }} {{ circum - s_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
+            {% if w.quality > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="#b7950b" stroke-width="24" stroke-dasharray="{{ q_dash }} {{ circum - q_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash + s_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
+            <text x="80" y="86" text-anchor="middle" font-size="20" fill="var(--text-secondary)">权重</text>
+        </svg>
+        <div class="donut-legend">
+            <div><span class="donut-dot" style="background:var(--green);"></span>长期回报 {{ (w.return*100)|int }}%</div>
+            <div><span class="donut-dot" style="background:var(--red);"></span>风险调整 {{ (w.risk*100)|int }}%</div>
+            <div><span class="donut-dot" style="background:var(--accent);"></span>稳定性 {{ (w.stability*100)|int }}%</div>
+            <div><span class="donut-dot" style="background:#b7950b;"></span>质量 {{ (w.quality*100)|int }}%</div>
+        </div>
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text-secondary);line-height:1.5;">{{ cycle_info.description }}</div>
     {% endif %}
+</div>
 
+<!-- 持仓配置 -->
+<div class="dashboard-grid">
     <div class="card card-compact">
         <div class="card-header">持仓配置</div>
         {% if holdings %}
@@ -96,7 +92,7 @@
     <div class="card card-compact">
         <div class="card-header">股票排名 Top5 <a class="card-link" href="/stocks?date={{ selected_date }}">查看全部 →</a></div>
         {% if top_stocks %}
-        <p class="rank-mini-note">按综合得分 S<sub>s</sub> 排序 · <a href="/formulas?date={{ selected_date }}">评分公式</a></p>
+        <p class="rank-mini-note">按综合得分 S<sub>s</sub>（共识度/覆盖/仓位/名次/经理质量）排序，共 {{ stock_count or top_stocks|length }} 只 · <a href="/formulas?date={{ selected_date }}">评分公式</a></p>
         <div class="table-wrap">
             <table class="mini-table">
                 <thead><tr><th>排名</th><th>代码</th><th>名称</th><th>入选经理</th><th>综合得分</th></tr></thead>
@@ -121,6 +117,7 @@
     <div class="card card-compact">
         <div class="card-header">基金经理 Top5 <a class="card-link" href="/managers?date={{ selected_date }}">查看全部 →</a></div>
         {% if top_managers %}
+        <p class="rank-mini-note">按近1年平均收益率降序（东方财富全市场基金经理排行），共 {{ manager_count or top_managers|length }} 位</p>
         <div class="table-wrap">
             <table class="mini-table">
                 <thead><tr><th>排名</th><th>姓名</th><th>所属公司</th><th>管理基金数</th><th>平均收益率(%)</th><th>最佳收益率(%)</th></tr></thead>

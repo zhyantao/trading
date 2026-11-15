@@ -1098,6 +1098,31 @@ td.mgr-cell {
 .mgr-stat .v { font-size: 19px; font-weight: 700; margin-top: 4px; line-height: 1.25; }
 .mgr-section-title { font-size: 15px; font-weight: 600; margin: 24px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
 .mgr-note { font-size: 12px; color: var(--text-secondary); line-height: 1.7; margin: 6px 0 12px; }
+
+/* ================================================================
+   估算价格列（T+1 参考价 / 代理涨跌）
+   ================================================================ */
+td.est-cell {
+    white-space: normal;
+    min-width: 132px;
+    max-width: 210px;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+    font-size: 11px;
+}
+.est-main { font-weight: 600; line-height: 1.35; }
+.est-sub {
+    font-size: 10px; color: var(--text-secondary);
+    line-height: 1.35; margin-top: 2px; white-space: normal;
+}
+/* ================================================================
+   总览：信号摘要 · 市场周期合并卡片
+   ================================================================ */
+.cycle-divider {
+    height: 1px; background: var(--border);
+    margin: 10px 0 12px;
+}
+
 @media (max-width: 720px) {
     .formula-block { padding: 10px; }
     .formula-block math { font-size: 0.92rem; }

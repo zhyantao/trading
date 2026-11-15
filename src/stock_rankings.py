@@ -9,7 +9,9 @@ v2 口径：不再用「入选经理数 → 出现基金数 → 占比 → 名�
 改用 selection_formula.score_stock_candidates() 的形式化综合得分
 
     S_s = a·ñ(ln(1+M)) + b·ñ(ln(1+F)) + c·ñ(ln(1+P))
-          + d·(1−ñ(T)) + e·ñ(Q)
+          + d·(1−ñ(T)) + e·ñ(Q) + f·Ṽ
+
+其中 Ṽ 为 price_estimate.py 给出的估算价格因子。
 
 降序排列（得分相同时使用共识度、覆盖基金数、占比、名次依次打破平局）。
 共识度仍是最大权重，但仓位与经理质量也会实质参与排序。
@@ -21,18 +23,25 @@ from __future__ import annotations
 
 from typing import Any
 
-from selection_formula import ranking_meta, score_stock_candidates
+from selection_formula import STOCK_WEIGHTS, ranking_meta, score_stock_candidates
 
 
-def build_stock_rankings(stocks: list[dict[str, Any]] | None) -> dict[str, Any]:
+def build_stock_rankings(
+    stocks: list[dict[str, Any]] | None, estimates: dict | None = None
+) -> dict[str, Any]:
     """返回 {"rows": [...], "manager_count", "stock_count", "record_count"}。"""
     records = [r for r in (stocks or []) if isinstance(r, dict)]
-    rows = score_stock_candidates(records)
+    rows = score_stock_candidates(records, estimates)
     meta = ranking_meta(records)
+    w = STOCK_WEIGHTS
     return {
         "rows": rows,
         "manager_count": meta["manager_count"],
         "stock_count": len(rows),
         "record_count": meta["record_count"],
-        "score_formula": "S_s = 0.34·ñ(ln(1+M)) + 0.18·ñ(ln(1+F)) + 0.18·ñ(ln(1+P)) + 0.12·(1−ñ(T)) + 0.18·ñ(Q)",
+        "score_formula": (
+            f"S_s = {w['managers']:.2f}·ñ(ln(1+M)) + {w['funds']:.2f}·ñ(ln(1+F)) + "
+            f"{w['holding_ratio']:.2f}·ñ(ln(1+P)) + {w['best_rank']:.2f}·(1−ñ(T)) + "
+            f"{w['manager_quality']:.2f}·ñ(Q) + {w['valuation']:.2f}·Ṽ"
+        ),
     }

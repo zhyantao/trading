@@ -133,6 +133,39 @@ _jinja_env.filters["mgrcell"] = _mgr_cell
 _jinja_env.filters["mgrlink"] = _mgr_link
 
 
+def _est_cell(code: Any, kind: str = "基金") -> Markup:
+    """估算价格单元格（动态站），与静态站 app.js 的 priceCell() 同口径。"""
+    from price_estimate import estimate_for, load_latest_estimates
+
+    book = load_latest_estimates()
+    section = "funds" if kind == "基金" else "stocks"
+    e = estimate_for(book, section, code)
+    if not e:
+        return Markup('<td class="est-cell">—</td>')
+    last = _html_escape(str(e.get("最新价格", "")))
+    est = _html_escape(str(e.get("估算价格", "")))
+    try:
+        chg = f"{float(e.get('估算涨跌')):+.2f}%"
+    except (TypeError, ValueError):
+        chg = ""
+    lo, hi = e.get("估算下界", ""), e.get("估算上界", "")
+    band = f"{lo}–{hi}" if lo and hi else ""
+    method = _html_escape(str(e.get("估算口径", "")))
+    asof = _html_escape(str(e.get("数据截至", "")))
+    title = " · ".join(x for x in (method, f"截至 {asof}" if asof else "",
+                                   f"±1σ {band}" if band else "") if x)
+    main = f"{last} → {est}" if last and est else "暂无价格"
+    sub = " · ".join(x for x in (chg, "代理" if not est else "", method) if x)
+    return Markup(
+        '<td class="est-cell" title="' + _html_escape(title, quote=True) + '">' +
+        '<div class="est-main">' + _html_escape(main) + '</div>' +
+        '<div class="est-sub">' + _html_escape(sub) + '</div></td>'
+    )
+
+
+_jinja_env.filters["estcell"] = _est_cell
+
+
 def _render(name: str, context: dict[str, Any] | None = None) -> HTMLResponse:
     template = _jinja_env.get_template(name)
     return HTMLResponse(template.render(**(context or {})))
@@ -263,6 +296,9 @@ async def dashboard(request: Request) -> Any:
         except Exception:
             cycle_info = None
 
+    stock_ranking = build_stock_rankings(
+        ds.get_elite_stocks(date=date).to_dict("records")
+    )
     return _render("dashboard.html", _base_context(request, {
         "active_page": "dashboard",
         "signal_stats": signal_stats,
@@ -270,9 +306,9 @@ async def dashboard(request: Request) -> Any:
         "stock_sum": stock_sum,
         "fund_sum": fund_sum,
         "top_managers": top_managers,
-        "top_stocks": build_stock_rankings(
-            ds.get_elite_stocks(date=date).to_dict("records")
-        )["rows"][:5],
+        "manager_count": len(managers) if not managers.empty else 0,
+        "top_stocks": stock_ranking["rows"][:5],
+        "stock_count": stock_ranking["stock_count"],
         "cycle_info": cycle_info,
     }))
 

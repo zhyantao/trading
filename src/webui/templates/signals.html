@@ -26,7 +26,7 @@
             <thead><tr>
                 <th>资产类型</th><th>代码</th><th>名称</th><th>是否持有</th>
                 <th>建议标签</th><th>净强度</th><th>买入强度</th><th>卖出强度</th>
-                <th>关联经理</th>
+                <th>关联经理</th><th>估算价格</th>
             </tr></thead>
             <tbody>
             {% for s in signals %}
@@ -42,6 +42,7 @@
                 <td>{{ s.get('买入强度', '')|num2 }}</td>
                 <td>{{ s.get('卖出强度', '')|num2 }}</td>
                 {{ s.get('关联经理Top3(净强度)', '')|mgrcell(selected_date) }}
+                {{ s.get('代码', '')|estcell(s.get('资产类型', '')) }}
             </tr>
             {% endfor %}
             </tbody>

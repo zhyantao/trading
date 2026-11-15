@@ -27,6 +27,7 @@
                 <th>近2年</th>
                 <th>近3年</th>
                 <th>今年来</th>
+                <th>估算价格</th>
             </tr></thead>
             <tbody>
             {% for f in funds %}
@@ -41,6 +42,7 @@
                 <td>{{ f.get('近2年', '')|num2 }}</td>
                 <td>{{ f.get('近3年', '')|num2 }}</td>
                 <td>{{ f.get('今年来', '')|num2 }}</td>
+                {{ f.get('基金代码', '')|estcell('基金') }}
             </tr>
             {% endfor %}
             </tbody>

@@ -17,7 +17,7 @@
         <table>
             <thead><tr>
                 <th>排名</th><th>综合得分</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th><th>出现基金数</th>
-                <th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th>
+                <th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th><th>估算价格</th>
             </tr></thead>
             <tbody>
             {% for s in stocks %}
@@ -32,6 +32,7 @@
                 <td>{{ s.get('最高名次', '') }}</td>
                 {{ s.get('关联经理', '')|mgrcell(selected_date) }}
                 <td>{{ s.get('最新季度', '') }}</td>
+                {{ s.get('股票代码', '')|estcell('股票') }}
             </tr>
             {% endfor %}
             </tbody>

@@ -10,15 +10,17 @@
         供「股票排名」与「优化持仓」使用。
 
     S_f = α·ñ(z(R_a)) + β·ñ(z(R_1)) + γ·ñ(ln(1+C_f))
-          + δ·ñ(Q_f) + ε·ñ(ln(1+D_f)) − λ·1[R_1<0 或 R_<0]
+          + δ·ñ(Q_f) + ε·ñ(ln(1+D_f)) + ζ·Ṽ_f − λ·1[R_1<0 或 R_<0]
 
     S_s = a·ñ(ln(1+M_s)) + b·ñ(ln(1+F_s)) + c·ñ(ln(1+P_s))
-          + d·(1−ñ(T_s)) + e·ñ(Q_s)
+          + d·(1−ñ(T_s)) + e·ñ(Q_s) + f·Ṽ_s
 
 其中 ñ(·) 为缩尾后的 min-max 归一化，z(·) 为中位数/IQR 稳健标准化，
 C_f 为推荐该基金的经理数，M_s/F_s 为重仓该股票的经理数/基金数，
 P_s 为平均占净值比例，T_s 为最好名次，Q 为经理质量 1/rank 的均值。
-页面展示的「综合得分」为 100·S（满分 100）。
+Ṽ 为「估算价格因子」：由 src/price_estimate.py 用公开价格序列 EWMA
+漂移外推 T+1 估算价 P̂，取风险调整漂移 μ̃/σ₀ 后横截面缩尾归一化；
+无数据的标的取中性 0.5。页面展示的「综合得分」为 100·S（满分 100）。
 
 静态站生成器、动态站路由、流水线与「公式」页面共用本模块的常量，
 保证文档里的公式与线上实际计算完全一致。
@@ -33,24 +35,27 @@ from typing import Any
 import pandas as pd
 
 from factor_scoring import minmax, robust_zscore, winsorize
+from price_estimate import PRICE_PARAMS, estimate_for, load_latest_estimates
 
 # ── 形式化参数（公式页面与 README 直接引用） ──────────────────
 
 FUND_WEIGHTS: dict[str, float] = {
-    "annualized": 0.32,       # α 成立来年化
-    "recent_1y": 0.13,        # β 近1年
-    "consensus": 0.25,        # γ 跨经理共识
-    "manager_quality": 0.20,  # δ 经理质量
-    "longevity": 0.10,        # ε 成立时长
+    "annualized": 0.28,       # α 成立来年化
+    "recent_1y": 0.12,        # β 近1年
+    "consensus": 0.22,        # γ 跨经理共识
+    "manager_quality": 0.18,  # δ 经理质量
+    "longevity": 0.08,        # ε 成立时长
+    "valuation": 0.12,        # ζ 估算价格因子 Ṽ_f
 }
 FUND_NEGATIVE_PENALTY = 0.15  # λ 负收益惩罚
 
 STOCK_WEIGHTS: dict[str, float] = {
-    "managers": 0.34,         # a 入选经理数
-    "funds": 0.18,            # b 出现基金数
-    "holding_ratio": 0.18,    # c 平均占净值比例
-    "best_rank": 0.12,        # d 最好名次（越小越好）
-    "manager_quality": 0.18,  # e 经理质量
+    "managers": 0.30,         # a 入选经理数
+    "funds": 0.16,            # b 出现基金数
+    "holding_ratio": 0.16,    # c 平均占净值比例
+    "best_rank": 0.10,        # d 最好名次（越小越好）
+    "manager_quality": 0.16,  # e 经理质量
+    "valuation": 0.12,        # f 估算价格因子 Ṽ_s
 }
 
 TOP_FUNDS = 3
@@ -76,6 +81,7 @@ def formula_parameters() -> dict[str, Any]:
         "manager_factor_weights": DEFAULT_MANAGER_FACTOR_WEIGHTS,
         "return_periods": FUND_RETURN_PERIODS,
         "risk_parity": True,
+        "price_params": PRICE_PARAMS,
     }
 
 
@@ -135,10 +141,59 @@ def _z_norm(values: list[float]) -> list[float]:
     return [float(v) for v in minmax(robust_zscore(s))]
 
 
+def _valuation_norm(codes: list[str], book: dict, section: str) -> list[float]:
+    """估算价格因子 Ṽ：V_raw = μ̃/σ₀ 横截面缩尾 + min-max；缺失取中性 0.5。
+
+    缺失（没有行情序列也没有重仓基金代理）不代表看空，按 0.5 处理，
+    与 factor_scoring 的「缺失中性」口径一致。
+    """
+    raw: list[float | None] = []
+    for code in codes:
+        e = estimate_for(book, section, code)
+        v = None
+        if e:
+            try:
+                f = float(e.get("估值信号"))
+                v = f if math.isfinite(f) else None
+            except (TypeError, ValueError):
+                v = None
+        raw.append(v)
+    valid = [v for v in raw if v is not None]
+    if not valid:
+        return [0.5] * len(raw)
+    it = iter(_norm(valid))
+    return [next(it) if v is not None else 0.5 for v in raw]
+
+
+def _price_fields(book: dict, section: str, code: str) -> dict[str, Any]:
+    """把估算价格册的字段附到榜单行，供前端展示。"""
+    e = estimate_for(book, section, code) or {}
+    lo, hi = e.get("估算下界", ""), e.get("估算上界", "")
+    return {
+        "最新价格": e.get("最新价格", ""),
+        "估算价格": e.get("估算价格", ""),
+        "估算涨跌": e.get("估算涨跌", ""),
+        "估算区间": f"{lo}–{hi}" if lo and hi else "",
+        "估算口径": e.get("估算口径", ""),
+        "数据截至": e.get("数据截至", ""),
+    }
+
+
+def _book(estimates: dict | None) -> dict:
+    return estimates if estimates is not None else load_latest_estimates()
+
+
 # ── 全局选基 ──────────────────────────────────────────────
 
-def score_fund_candidates(records: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
-    """对候选池里的每只基金计算 S_f，按得分降序返回全部候选（含排名）。"""
+def score_fund_candidates(
+    records: list[dict[str, Any]] | None, estimates: dict | None = None
+) -> list[dict[str, Any]]:
+    """对候选池里的每只基金计算 S_f，按得分降序返回全部候选（含排名）。
+
+    estimates 为 price_estimate.build_price_estimates() 的结果；不传时自动
+    读取 docs/data/ 下最新一份估算册，文件缺失则估值因子全部取中性 0.5。
+    """
+    book = _book(estimates)
     groups: dict[str, dict[str, Any]] = {}
     for r in records or []:
         if not isinstance(r, dict):
@@ -187,6 +242,7 @@ def score_fund_candidates(records: list[dict[str, Any]] | None) -> list[dict[str
     n_cons = _norm(metrics["consensus"], log=True)
     n_qual = _norm(metrics["quality"])
     n_days = _norm(metrics["days"], log=True)
+    v_scores = _valuation_norm([g["基金代码"] for g in gs], book, "funds")
 
     rows: list[dict[str, Any]] = []
     for i, g in enumerate(gs):
@@ -196,6 +252,7 @@ def score_fund_candidates(records: list[dict[str, Any]] | None) -> list[dict[str
             + FUND_WEIGHTS["consensus"] * n_cons[i]
             + FUND_WEIGHTS["manager_quality"] * n_qual[i]
             + FUND_WEIGHTS["longevity"] * n_days[i]
+            + FUND_WEIGHTS["valuation"] * v_scores[i]
             - FUND_NEGATIVE_PENALTY * metrics["negative"][i]
         )
         best_rank = min(g["_managers"]) if g["_managers"] else 9999
@@ -214,7 +271,9 @@ def score_fund_candidates(records: list[dict[str, Any]] | None) -> list[dict[str
             "成立天数": round(metrics["days"][i], 0),
             "共识分": round(n_cons[i] * 100, 2),
             "年化分": round(z_annual[i] * 100, 2),
+            "估值分": round(v_scores[i] * 100, 2),
             "综合得分": round(max(0.0, min(1.0, s)) * 100, 2),
+            **_price_fields(book, "funds", g["基金代码"]),
         })
 
     rows.sort(key=lambda r: (-r["综合得分"], -r["入选经理数"], -r["成立来年化"], r["基金代码"]))
@@ -223,11 +282,13 @@ def score_fund_candidates(records: list[dict[str, Any]] | None) -> list[dict[str
     return rows
 
 
-def select_global_funds(records: list[dict[str, Any]] | None, top_k: int = TOP_FUNDS) -> list[dict[str, Any]]:
+def select_global_funds(
+    records: list[dict[str, Any]] | None, top_k: int = TOP_FUNDS, estimates: dict | None = None
+) -> list[dict[str, Any]]:
     """全局选基：所有经理候选中按 S_f 取前 top_k，同一基金不同份额只留一只。"""
     picked: list[dict[str, Any]] = []
     seen: set[str] = set()
-    for r in score_fund_candidates(records):
+    for r in score_fund_candidates(records, estimates):
         base = _share_base(str(r["基金简称"]))
         key = base or str(r["基金代码"])
         if key in seen:
@@ -243,8 +304,11 @@ def select_global_funds(records: list[dict[str, Any]] | None, top_k: int = TOP_F
 
 # ── 全局选股 / 股票排名 ─────────────────────────────────────
 
-def score_stock_candidates(records: list[dict[str, Any]] | None) -> list[dict[str, Any]]:
+def score_stock_candidates(
+    records: list[dict[str, Any]] | None, estimates: dict | None = None
+) -> list[dict[str, Any]]:
     """对候选池里的每只股票计算 S_s，按得分降序返回全部候选（含排名）。"""
+    book = _book(estimates)
     groups: dict[str, dict[str, Any]] = {}
     managers_all: set[str] = set()
     valid = 0
@@ -302,6 +366,7 @@ def score_stock_candidates(records: list[dict[str, Any]] | None) -> list[dict[st
     n_ratio = _norm(metrics["ratio"], log=True)
     n_top = _norm(metrics["top"], invert=True)
     n_qual = _norm(metrics["quality"])
+    v_scores = _valuation_norm([g["股票代码"] for g in gs], book, "stocks")
 
     rows: list[dict[str, Any]] = []
     for i, g in enumerate(gs):
@@ -311,6 +376,7 @@ def score_stock_candidates(records: list[dict[str, Any]] | None) -> list[dict[st
             + STOCK_WEIGHTS["holding_ratio"] * n_ratio[i]
             + STOCK_WEIGHTS["best_rank"] * n_top[i]
             + STOCK_WEIGHTS["manager_quality"] * n_qual[i]
+            + STOCK_WEIGHTS["valuation"] * v_scores[i]
         )
         names = sorted(g["_managers"].items(), key=lambda kv: (kv[0], kv[1]))
         shown = [n for _, n in names[:3]]
@@ -327,7 +393,9 @@ def score_stock_candidates(records: list[dict[str, Any]] | None) -> list[dict[st
             "共识分": round(n_mgr[i] * 100, 2),
             "覆盖分": round(n_fund[i] * 100, 2),
             "仓位分": round(n_ratio[i] * 100, 2),
+            "估值分": round(v_scores[i] * 100, 2),
             "综合得分": round(max(0.0, min(1.0, s)) * 100, 2),
+            **_price_fields(book, "stocks", g["股票代码"]),
         })
 
     rows.sort(key=lambda r: (
@@ -339,9 +407,11 @@ def score_stock_candidates(records: list[dict[str, Any]] | None) -> list[dict[st
     return rows
 
 
-def select_global_stocks(records: list[dict[str, Any]] | None, top_k: int = TOP_STOCKS) -> list[dict[str, Any]]:
+def select_global_stocks(
+    records: list[dict[str, Any]] | None, top_k: int = TOP_STOCKS, estimates: dict | None = None
+) -> list[dict[str, Any]]:
     """全局选股：所有经理候选中按 S_s 取前 top_k。"""
-    return score_stock_candidates(records)[:top_k]
+    return score_stock_candidates(records, estimates)[:top_k]
 
 
 def ranking_meta(records: list[dict[str, Any]] | None) -> dict[str, int]:

@@ -11,7 +11,7 @@
     <div class="table-wrap">
         <table>
             <thead><tr>
-                <th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>比例柱</th>
+                <th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>比例柱</th><th>估算价格</th>
             </tr></thead>
             <tbody>
             {% set max_pct = holdings | map(attribute='比例(%)') | map('float') | max | default(1) %}
@@ -27,6 +27,7 @@
                         <div style="height:100%; width:{{ (pct / max_pct * 100) if max_pct > 0 else 0 }}%; background:{{ 'var(--accent)' if h.get('类型') == '股票' else 'var(--green)' }}; border-radius:4px;"></div>
                     </div>
                 </td>
+                {{ h.get('代码', '')|estcell(h.get('类型', '')) }}
             </tr>
             {% endfor %}
             </tbody>

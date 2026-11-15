@@ -116,6 +116,29 @@
     return '<td class="mgr-cell">' + items.join('') + '</td>';
   }
 
+  /* ---------------- 估算价格 ----------------
+     price_estimates.json 由 generate_static.py 生成：T+1 估算价、估算涨跌与
+     参考区间。没有行情序列的股票只有「代理」涨跌、没有绝对价格，显示暂无。 */
+  var PRICE_BOOK = { funds: {}, stocks: {} };
+  function priceCell(kind, code) {
+    var c = String(code == null ? '' : code);
+    while (c.length < 6 && /^\d+$/.test(c)) c = '0' + c;
+    var e = (PRICE_BOOK[kind === '股票' ? 'stocks' : 'funds'] || {})[c];
+    if (!e) return '<td class="est-cell">—</td>';
+    var last = e['最新价格'], est = e['估算价格'];
+    var main = (last && est) ? esc(last) + ' → ' + esc(est) : '暂无价格';
+    var chg = num(e['估算涨跌']);
+    var parts = [chg === null ? '' : (chg > 0 ? '+' : '') + chg.toFixed(2) + '%'];
+    if (!est) parts.push('代理');
+    if (e['估算口径']) parts.push(e['估算口径']);
+    var band = e['估算下界'] && e['估算上界'] ? e['估算下界'] + '–' + e['估算上界'] : '';
+    var tip = [e['估算口径'], e['数据截至'] ? '截至 ' + e['数据截至'] : '',
+      band ? '±1σ ' + band : ''].filter(Boolean).join(' · ');
+    return '<td class="est-cell" title="' + esc(tip) + '">' +
+      '<div class="est-main">' + main + '</div>' +
+      '<div class="est-sub">' + esc(parts.filter(Boolean).join(' · ')) + '</div></td>';
+  }
+
   function pageUrl(page, extra) {
     var p = new URLSearchParams(location.search);
     p.set('page', String(page));
@@ -304,33 +327,28 @@
   /* 紧凑布局：环形图缩到 92px，两个 Top5 榜单并排，避免大图把表格挤到下方 */
   function renderDashboard(data) {
     var st = data.signal_stats || {};
+    var ci = data.cycle_info;
     var html = '';
 
+    /* 信号摘要 + 市场周期定位：合并为一张卡片 */
+    var body = '';
     if (st.total > 0) {
-      html += '<a href="signals.html?date=' + state.date + '" style="text-decoration:none; color:inherit;">' +
-        card('今日信号摘要 <span style="font-size:12px;color:var(--text-secondary);">&rarr;</span>',
-          '<div class="stat-strip">' +
-          '<div><div class="stat-num" style="color:var(--green);">' + st.buy +
-          '</div><div class="stat-label">关注买入</div></div>' +
-          '<div><div class="stat-num" style="color:var(--yellow);">' + st.hold +
-          '</div><div class="stat-label">继续关注</div></div>' +
-          '<div><div class="stat-num" style="color:var(--red);">' + st.sell +
-          '</div><div class="stat-label">关注卖出</div></div>' +
-          '</div>', 'card-compact') + '</a>';
+      body += '<div class="stat-strip" style="max-width:620px;">' +
+        '<div><div class="stat-num" style="color:var(--green);">' + st.buy +
+        '</div><div class="stat-label">关注买入</div></div>' +
+        '<div><div class="stat-num" style="color:var(--yellow);">' + st.hold +
+        '</div><div class="stat-label">继续关注</div></div>' +
+        '<div><div class="stat-num" style="color:var(--red);">' + st.sell +
+        '</div><div class="stat-label">关注卖出</div></div>' +
+        '</div>';
     } else {
-      html += card('今日信号摘要',
-        '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div>' +
-        '<div class="empty-hint">数据由 GitHub Actions 每个交易日 22:00 自动更新</div></div>',
-        'card-compact');
+      body += '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div>' +
+        '<div class="empty-hint">数据由 GitHub Actions 每个交易日 22:00 自动更新</div></div>';
     }
-
-    /* 周期 + 持仓配置：两张小图并排 */
-    var grid = '';
-    var ci = data.cycle_info;
     if (ci && ci.weights) {
       var w = ci.weights;
-      grid += card('市场周期定位（Dalio 框架）',
-        '<div class="stat-strip" style="margin-bottom:8px;">' +
+      body += '<div class="cycle-divider"></div>' +
+        '<div class="stat-strip" style="margin-bottom:8px; max-width:620px;">' +
         '<div><div class="stat-label">当前阶段</div>' +
         '<div style="font-size:15px;font-weight:700;color:var(--accent);">' + esc(ci.phase_label) + '</div></div>' +
         '<div><div class="stat-label">置信度</div>' +
@@ -342,8 +360,13 @@
           { value: num(w.quality) || 0, color: 'var(--yellow)', label: '质量' },
         ], '权重') +
         '<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);line-height:1.5;">' +
-        esc(ci.description) + '</div>', 'card-compact');
+        esc(ci.description) + '</div>';
     }
+    html += card('今日信号摘要 · 市场周期 <a class="card-link" href="signals.html?date=' + state.date +
+      '">信号明细 →</a>', body, 'card-compact');
+
+    /* 持仓配置 */
+    var grid = '';
     if (data.holdings && data.holdings.length) {
       var hrows = data.holdings.map(function (h) {
         return '<tr><td>' + codeLink(h['类型'], h['代码']) + '</td><td>' + esc(h['名称']) +
@@ -377,13 +400,15 @@
     var tm = data.top_managers || [];
     if (tm.length) {
       var mrows = tm.map(function (m) {
-        return '<tr><td>' + esc(m['排名']) + '</td><td>' + esc(m['姓名']) + '</td><td>' + esc(m['所属公司']) +
+        return '<tr><td>' + esc(m['排名']) + '</td><td>' + managerLink(m['姓名'], state.date) + '</td><td>' + esc(m['所属公司']) +
           '</td><td>' + num2(m['管理基金数']) +
           '</td><td style="' + pc(m['平均收益率']) + ';">' + num2(m['平均收益率']) +
           '</td><td style="' + pc(m['最佳收益率']) + ';">' + num2(m['最佳收益率']) + '</td></tr>';
       }).join('');
       lower += card('基金经理 Top5 <a class="card-link" href="managers.html?date=' + state.date +
         '">查看全部 →</a>',
+        '<p class="rank-mini-note">按近1年平均收益率降序（东方财富全市场基金经理排行），共 ' +
+        esc(data.manager_count || tm.length) + ' 位</p>' +
         table('<th>排名</th><th>姓名</th><th>所属公司</th><th>管理基金数</th><th>平均收益率(%)</th><th>最佳收益率(%)</th>',
           mrows, 'mini-table'), 'card-compact');
     }
@@ -425,12 +450,13 @@
         '<td style="' + pc(s['净强度']) + ' font-weight:600;">' + num2(s['净强度']) + '</td>' +
         '<td>' + num2(s['买入强度']) + '</td>' +
         '<td>' + num2(s['卖出强度']) + '</td>' +
-        managerCell(s['关联经理Top3(净强度)']) + '</tr>';
+        managerCell(s['关联经理Top3(净强度)']) +
+        priceCell(s['资产类型'], s['代码']) + '</tr>';
     }).join('');
 
     root.innerHTML = card('',
       '<div style="display:flex; gap:8px; margin-bottom:12px;" id="sig-filter">' + btns + '</div>' +
-      table('<th>资产类型</th><th>代码</th><th>名称</th><th>是否持有</th><th>建议标签</th><th>净强度</th><th>买入强度</th><th>卖出强度</th><th>关联经理</th>', body) +
+      table('<th>资产类型</th><th>代码</th><th>名称</th><th>是否持有</th><th>建议标签</th><th>净强度</th><th>买入强度</th><th>卖出强度</th><th>关联经理</th><th>估算价格</th>', body) +
       pager(filtered.length, { type: state.type || null }));
 
     document.getElementById('sig-filter').addEventListener('click', function (e) {
@@ -461,10 +487,10 @@
         '<td style="font-weight:600;">' + num2(pct) + '%</td>' +
         '<td style="width:120px;"><div style="height:8px; background:#e0e0e0; overflow:hidden;">' +
         '<div style="height:100%; width:' + (maxPct > 0 ? pct / maxPct * 100 : 0) + '%; background:' + color + ';"></div>' +
-        '</div></td></tr>';
+        '</div></td>' + priceCell(h['类型'], h['代码']) + '</tr>';
     }).join('');
     root.innerHTML = card('当前持仓配置',
-      table('<th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>比例柱</th>', body));
+      table('<th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>比例柱</th><th>估算价格</th>', body));
   }
 
   /* ---------------- 页面：经理排名 ---------------- */
@@ -546,30 +572,33 @@
           '<td>' + esc(f['基金简称']) + '</td><td>' + esc(f['基金年化排名']) + '</td>' +
           '<td style="' + pc(f['成立来年化']) + ';">' + num2(f['成立来年化']) + '%</td>' +
           '<td style="' + pc(f['近1年']) + ';">' + num2(f['近1年']) + '%</td>' +
-          '<td>' + esc(f['成立天数']) + '</td></tr>';
+          '<td>' + esc(f['成立天数']) + '</td>' +
+          priceCell('基金', f['基金代码']) + '</tr>';
       }).join('');
       html += '<h2 class="mgr-section-title">绩优基金 Top3（' + funds.length + '）</h2>' +
-        table('<th>名次</th><th>基金代码</th><th>基金简称</th><th>年化排名</th><th>成立来年化(%)</th><th>近1年(%)</th><th>成立天数</th>', frows);
+        table('<th>名次</th><th>基金代码</th><th>基金简称</th><th>年化排名</th><th>成立来年化(%)</th><th>近1年(%)</th><th>成立天数</th><th>估算价格</th>', frows);
     }
     if (stocks.length) {
       var krows = stocks.map(function (s) {
         return '<tr><td>' + esc(s['股票Top']) + '</td><td>' + codeLink('股票', s['股票代码']) + '</td>' +
           '<td>' + esc(s['股票名称']) + '</td><td>' + num2(s['汇总占净值比例']) + '%</td>' +
           '<td>' + esc(s['出现基金数']) + '</td><td>' + esc(s['最新季度']) + '</td>' +
-          '<td class="mgr-cell">' + esc(s['Top3基金列表']) + '</td></tr>';
+          '<td class="mgr-cell">' + esc(s['Top3基金列表']) + '</td>' +
+          priceCell('股票', s['股票代码']) + '</tr>';
       }).join('');
       html += '<h2 class="mgr-section-title">重仓股票 Top10（' + stocks.length + '）</h2>' +
-        table('<th>名次</th><th>股票代码</th><th>股票名称</th><th>汇总占净值比例(%)</th><th>出现基金数</th><th>最新季度</th><th>Top3 基金</th>', krows);
+        table('<th>名次</th><th>股票代码</th><th>股票名称</th><th>汇总占净值比例(%)</th><th>出现基金数</th><th>最新季度</th><th>Top3 基金</th><th>估算价格</th>', krows);
     }
     if (signals.length) {
       var grows = signals.map(function (g) {
         return '<tr><td>' + esc(g['资产类型']) + '</td><td>' + codeLink(g['资产类型'], g['代码']) + '</td>' +
           '<td>' + esc(g['名称']) + '</td><td>' + esc(g['建议标签(非投资建议)']) + '</td>' +
           '<td style="' + pc(g['净强度']) + ';">' + num2(g['净强度']) + '</td>' +
-          managerCell(g['关联经理Top3(净强度)']) + '</tr>';
+          managerCell(g['关联经理Top3(净强度)']) +
+          priceCell(g['资产类型'], g['代码']) + '</tr>';
       }).join('');
       html += '<h2 class="mgr-section-title">相关每日信号（' + signals.length + '）</h2>' +
-        table('<th>资产类型</th><th>代码</th><th>名称</th><th>建议标签</th><th>净强度</th><th>关联经理</th>', grows);
+        table('<th>资产类型</th><th>代码</th><th>名称</th><th>建议标签</th><th>净强度</th><th>关联经理</th><th>估算价格</th>', grows);
     }
     if (!funds.length && !stocks.length && !signals.length) {
       html += '<p class="mgr-note">该经理暂未出现在当前日期的绩优标的与调仓信号中，' +
@@ -608,7 +637,8 @@
         '<td style="' + pc(f['近1年']) + ';">' + num2(f['近1年']) + '</td>' +
         '<td>' + num2(f['近2年']) + '</td>' +
         '<td>' + num2(f['近3年']) + '</td>' +
-        '<td>' + num2(f['今年来']) + '</td></tr>';
+        '<td>' + num2(f['今年来']) + '</td>' +
+        priceCell('基金', f['基金代码']) + '</tr>';
     }).join('');
 
     root.innerHTML = card('',
@@ -616,7 +646,7 @@
       '<span style="font-size:13px; color:var(--text-secondary);">成立天数 &ge;</span>' + btns +
       '<span style="font-size:13px; color:var(--text-secondary); margin-left:16px;">共 ' + filtered.length +
       ' 只基金' + (data.max_rows && rows.length >= data.max_rows ? '（仅展示前 ' + data.max_rows + ' 名）' : '') + '</span></div>' +
-      table('<th>排名</th><th>基金代码</th><th>基金简称</th><th>成立来年化</th><th>成立来</th><th>成立天数</th><th>近1年</th><th>近2年</th><th>近3年</th><th>今年来</th>', body) +
+      table('<th>排名</th><th>基金代码</th><th>基金简称</th><th>成立来年化</th><th>成立来</th><th>成立天数</th><th>近1年</th><th>近2年</th><th>近3年</th><th>今年来</th><th>估算价格</th>', body) +
       pager(filtered.length, { min_days: String(state.minDays) }));
 
     document.getElementById('funds-filter').addEventListener('click', function (e) {
@@ -654,7 +684,8 @@
         '<td>' + num2(r['平均占净值比例']) + '</td>' +
         '<td>' + esc(r['最高名次']) + '</td>' +
         managerCell(r['关联经理']) +
-        '<td>' + esc(r['最新季度']) + '</td></tr>';
+        '<td>' + esc(r['最新季度']) + '</td>' +
+        priceCell('股票', r['股票代码']) + '</tr>';
     }).join('');
 
     root.innerHTML = card('',
@@ -665,7 +696,7 @@
       '<span style="font-size:13px; color:var(--text-secondary);">入选经理数 &ge;</span>' + btns +
       '<span style="font-size:13px; color:var(--text-secondary); margin-left:16px;">筛选出 ' + filtered.length + ' 只股票</span></div>' +
       (filtered.length
-        ? table('<th>排名</th><th>综合得分</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th><th>出现基金数</th><th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th>', body)
+        ? table('<th>排名</th><th>综合得分</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th><th>出现基金数</th><th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th><th>估算价格</th>', body)
         : '<div class="empty-state"><div class="empty-icon">🏆</div><div class="empty-text">没有符合条件的股票</div></div>') +
       pager(filtered.length, { min_mgr: String(state.minMgr) }));
 
@@ -686,9 +717,9 @@
   function renderElite(data) {
     var ef = data.funds || [], es = data.stocks || [];
     var fundHead = '<th>排名</th><th>综合得分</th><th>基金代码</th><th>基金简称</th><th>入选经理数</th>' +
-      '<th>首选经理</th><th>成立来年化</th><th>近1年</th><th>成立天数</th>';
+      '<th>首选经理</th><th>成立来年化</th><th>近1年</th><th>成立天数</th><th>估算价格</th>';
     var stockHead = '<th>排名</th><th>综合得分</th><th>股票代码</th><th>股票名称</th><th>入选经理数</th>' +
-      '<th>出现基金数</th><th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th>';
+      '<th>出现基金数</th><th>平均占净值比例(%)</th><th>最高名次</th><th>关联经理</th><th>最新季度</th><th>估算价格</th>';
     var fundRows = ef.map(function (f) {
       return '<tr>' +
         '<td style="font-weight:600;">' + esc(f['基金排名']) + '</td>' +
@@ -699,7 +730,8 @@
         esc(f['经理排名']) + '</span></td>' +
         '<td style="' + pc(f['成立来年化']) + ';">' + num2(f['成立来年化']) + '</td>' +
         '<td style="' + pc(f['近1年']) + ';">' + num2(f['近1年']) + '</td>' +
-        '<td>' + num2(f['成立天数']) + '</td></tr>';
+        '<td>' + num2(f['成立天数']) + '</td>' +
+        priceCell('基金', f['基金代码']) + '</tr>';
     }).join('');
     var stockRows = es.map(function (s) {
       return '<tr>' +
@@ -709,7 +741,8 @@
         '<td>' + esc(s['入选经理数']) + '</td><td>' + esc(s['出现基金数']) + '</td>' +
         '<td>' + num2(s['平均占净值比例']) + '</td><td>' + esc(s['最高名次']) + '</td>' +
         managerCell(s['关联经理']) +
-        '<td>' + esc(s['最新季度']) + '</td></tr>';
+        '<td>' + esc(s['最新季度']) + '</td>' +
+        priceCell('股票', s['股票代码']) + '</tr>';
     }).join('');
 
     var scope = '<p class="elite-scope">共 ' + esc(data.manager_count || 0) + ' 位绩优经理、' +
@@ -911,39 +944,44 @@
           return;
         }
 
-        var loaders = {
-          dashboard: function () {
-            return getJSON('data/' + state.date + '/dashboard.json').then(renderDashboard);
-          },
-          signals: function () {
-            return getJSON('data/' + state.date + '/signals.json').then(renderSignals);
-          },
-          holdings: function () {
-            return getJSON('data/holdings.json').then(renderHoldings);
-          },
-          managers: function () {
-            return getJSON('data/' + state.date + '/managers.json').then(renderManagers);
-          },
-          manager: function () {
-            return getJSON('data/' + state.date + '/manager_index.json').then(renderManager);
-          },
-          funds: function () {
-            return getJSON('data/' + state.date + '/funds.json').then(renderFunds);
-          },
-          stocks: function () {
-            return getJSON('data/' + state.date + '/stocks.json').then(renderStocks);
-          },
-          elite: function () {
-            return getJSON('data/' + state.date + '/elite.json').then(renderElite);
-          },
-          backtest: function () {
-            return getJSON('data/' + state.date + '/backtest.json').then(renderBacktest);
-          },
-        };
-
-        return (loaders[PAGE] || function () {
-          root.innerHTML = '';
-        })();
+        /* 估算价格册先于各页面渲染加载；旧站点没有该文件时降级为空册 */
+        return getJSON('data/' + state.date + '/price_estimates.json')
+          .catch(function () { return { funds: {}, stocks: {} }; })
+          .then(function (book) {
+            PRICE_BOOK = book || { funds: {}, stocks: {} };
+            var loaders = {
+              dashboard: function () {
+                return getJSON('data/' + state.date + '/dashboard.json').then(renderDashboard);
+              },
+              signals: function () {
+                return getJSON('data/' + state.date + '/signals.json').then(renderSignals);
+              },
+              holdings: function () {
+                return getJSON('data/holdings.json').then(renderHoldings);
+              },
+              managers: function () {
+                return getJSON('data/' + state.date + '/managers.json').then(renderManagers);
+              },
+              manager: function () {
+                return getJSON('data/' + state.date + '/manager_index.json').then(renderManager);
+              },
+              funds: function () {
+                return getJSON('data/' + state.date + '/funds.json').then(renderFunds);
+              },
+              stocks: function () {
+                return getJSON('data/' + state.date + '/stocks.json').then(renderStocks);
+              },
+              elite: function () {
+                return getJSON('data/' + state.date + '/elite.json').then(renderElite);
+              },
+              backtest: function () {
+                return getJSON('data/' + state.date + '/backtest.json').then(renderBacktest);
+              },
+            };
+            return (loaders[PAGE] || function () {
+              root.innerHTML = '';
+            })();
+          });
       })
       .catch(function (err) {
         console.error(err);

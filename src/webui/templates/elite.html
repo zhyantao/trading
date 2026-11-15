@@ -25,7 +25,7 @@
             <table class="elite-table">
                 <thead><tr>
                     <th>排名</th><th>综合得分</th><th>基金代码</th><th>基金简称</th>
-                    <th>入选经理数</th><th>首选经理</th><th>成立来年化</th><th>近1年</th><th>成立天数</th>
+                    <th>入选经理数</th><th>首选经理</th><th>成立来年化</th><th>近1年</th><th>成立天数</th><th>估算价格</th>
                 </tr></thead>
                 <tbody>
                 {% for f in top_funds %}
@@ -39,6 +39,7 @@
                     <td style="color:{{ 'var(--green)' if f.get('成立来年化')|float > 0 else 'var(--red)' }};">{{ f.get('成立来年化', '')|num2 }}</td>
                     <td>{{ f.get('近1年', '')|num2 }}</td>
                     <td>{{ f.get('成立天数', '')|num2 }}</td>
+                    {{ f.get('基金代码', '')|estcell('基金') }}
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -57,7 +58,7 @@
                 <thead><tr>
                     <th>排名</th><th>综合得分</th><th>股票代码</th><th>股票名称</th>
                     <th>入选经理数</th><th>出现基金数</th><th>平均占净值比例(%)</th>
-                    <th>最高名次</th><th>关联经理</th><th>最新季度</th>
+                    <th>最高名次</th><th>关联经理</th><th>最新季度</th><th>估算价格</th>
                 </tr></thead>
                 <tbody>
                 {% for s in top_stocks %}
@@ -72,6 +73,7 @@
                     <td>{{ s.get('最高名次', '') }}</td>
                     {{ s.get('关联经理', '')|mgrcell(selected_date) }}
                     <td>{{ s.get('最新季度', '') }}</td>
+                    {{ s.get('股票代码', '')|estcell('股票') }}
                 </tr>
                 {% endfor %}
                 </tbody>

@@ -32,6 +32,7 @@ from webui.routes import _md_to_html
 from backtest_series import build_series
 from formula_doc import render_formula_doc
 from manager_index import build_manager_index
+from price_estimate import build_price_estimates
 from selection_formula import (
     TOP_FUNDS,
     TOP_STOCKS,
@@ -176,17 +177,46 @@ def generate_data_for_date(date: str) -> None:
     """为一个日期生成全部数据 JSON 到 docs/data/{date}/。"""
     out = DATA_DIR / date
 
-    # --- dashboard：信号统计 + 持仓 + Top5 经理 + 周期 ---
+    # --- 公共数据源 ---
     signals = ds.get_signals(date)
     holdings = ds.get_holdings()
     managers = ds.get_manager_rankings(date)
+    signal_records = _records(signals)
+    holding_records = _records(holdings)
 
     # 候选池（按经理分组）→ 全站股票排名 / 全局绩优标的，三处共用同一份数据
     elite_fund_records = _records(ds.get_elite_funds(date))
     elite_stock_records = _records(ds.get_elite_stocks(date))
-    stock_ranking = build_stock_rankings(elite_stock_records)
-    global_funds = select_global_funds(elite_fund_records, TOP_FUNDS)
-    global_stocks = select_global_stocks(elite_stock_records, TOP_STOCKS)
+
+    # --- 估算价格册：只复用仓库内已有的净值/行情缓存与公开区间收益率 ---
+    funds_all = ds.get_fund_annual_returns(min_days=90, date=date)
+    funds_rows = _records(funds_all.iloc[:FUNDS_MAX_ROWS])
+    fund_codes = {str(r.get("基金代码", "")).zfill(6) for r in funds_rows}
+    fund_codes |= {str(r.get("基金代码", "")).zfill(6) for r in elite_fund_records}
+    fund_codes |= {str(r.get("代码", "")).zfill(6) for r in holding_records if r.get("类型") == "基金"}
+    fund_codes |= {str(r.get("代码", "")).zfill(6) for r in signal_records if r.get("资产类型") == "基金"}
+    fund_codes.discard("000000")
+    fund_est_rows = []
+    if not funds_all.empty and "基金代码" in funds_all.columns:
+        mask = funds_all["基金代码"].astype(str).str.zfill(6).isin(fund_codes)
+        fund_est_rows = _records(funds_all[mask])
+
+    stock_codes = {str(r.get("股票代码", "")).zfill(6) for r in elite_stock_records}
+    stock_codes |= {str(r.get("代码", "")).zfill(6) for r in holding_records if r.get("类型") == "股票"}
+    stock_codes |= {str(r.get("代码", "")).zfill(6) for r in signal_records if r.get("资产类型") == "股票"}
+    stock_codes.discard("000000")
+
+    price_book = build_price_estimates(
+        ROOT, fund_est_rows, sorted(stock_codes), stock_proxy_records=elite_stock_records
+    )
+    _write_json(out / "price_estimates.json", price_book)
+    cov = price_book["coverage"]
+    print(f"  [估算价格] 基金 {cov['funds']} 只 / 股票 {cov['stocks']} 只"
+          f"（真实行情 {cov['stock_priced']}、基金净值代理 {cov['stock_proxy']}）")
+
+    stock_ranking = build_stock_rankings(elite_stock_records, price_book)
+    global_funds = select_global_funds(elite_fund_records, TOP_FUNDS, price_book)
+    global_stocks = select_global_stocks(elite_stock_records, TOP_STOCKS, price_book)
 
     signal_stats = {"buy": 0, "sell": 0, "hold": 0, "total": 0}
     if signals is not None and not signals.empty and "建议标签(非投资建议)" in signals.columns:
@@ -211,6 +241,7 @@ def generate_data_for_date(date: str) -> None:
         "stock_sum": round(stock_sum, 2),
         "fund_sum": round(fund_sum, 2),
         "top_managers": _records(top_managers),
+        "manager_count": len(managers),
         "top_stocks": stock_ranking["rows"][:5],
         "stock_count": stock_ranking["stock_count"],
         "cycle_info": _cycle_info(),
@@ -218,7 +249,7 @@ def generate_data_for_date(date: str) -> None:
     _write_json(out / "dashboard.json", dashboard)
 
     # --- signals ---
-    _write_json(out / "signals.json", {"rows": _records(signals)})
+    _write_json(out / "signals.json", {"rows": signal_records})
 
     # --- managers（全部行，前端分页）---
     _write_json(out / "managers.json", {"rows": _records(managers)})
@@ -229,10 +260,7 @@ def generate_data_for_date(date: str) -> None:
     ))
 
     # --- funds（成立天数>=90，取前 2000 名，前端再做 min_days 筛选）---
-    funds = ds.get_fund_annual_returns(min_days=90, date=date)
-    if funds is not None and not funds.empty and len(funds) > FUNDS_MAX_ROWS:
-        funds = funds.iloc[:FUNDS_MAX_ROWS]
-    _write_json(out / "funds.json", {"rows": _records(funds), "max_rows": FUNDS_MAX_ROWS})
+    _write_json(out / "funds.json", {"rows": funds_rows, "max_rows": FUNDS_MAX_ROWS})
 
     # --- elite：跨所有经理的唯一榜单（固定 3 只基金 / 10 只股票）---
     _write_json(out / "elite.json", {
