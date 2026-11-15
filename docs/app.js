@@ -367,7 +367,7 @@
     var ci = data.cycle_info;
     var html = '';
 
-    /* 信号摘要 + 市场周期：同一行分两列 —— 左列信号环形图+买卖统计，右列市场周期 */
+    /* 信号摘要 + 市场周期：同一行分两列 —— 左列买卖统计+信号环形图，右列市场周期 */
     function cycleCol(c) {
       var w = c.weights;
       return '<div class="sum-col sum-cycle">' +
@@ -413,15 +413,16 @@
       var tot = st.total || 1;
       body += '<div class="summary-cols">' +
         '<div class="sum-col">' +
+        '<div class="sum-stats-row">' +
+        sigStat(st.buy, '关注买入', 'var(--green)', tot) +
+        sigStat(st.sell, '关注卖出', 'var(--red)', tot) +
+        '</div>' +
         donutSvg([
           { value: (st.buy || 0) / tot, color: 'var(--green)', label: '关注买入' },
           { value: (st.hold || 0) / tot, color: 'var(--yellow)', label: '继续关注' },
           { value: (st.sell || 0) / tot, color: 'var(--red)', label: '关注卖出' },
         ], String(st.total)) +
-        '<div class="sum-stats-row">' +
-        sigStat(st.buy, '关注买入', 'var(--green)', tot) +
-        sigStat(st.sell, '关注卖出', 'var(--red)', tot) +
-        '</div></div>' +
+        '</div>' +
         (ci && ci.weights ? cycleCol(ci) : '') +
         '</div>';
     } else if (ci && ci.weights) {

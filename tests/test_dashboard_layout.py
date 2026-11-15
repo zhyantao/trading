@@ -72,6 +72,9 @@ if "{{" in html:
 # 旧结构类名不应残留
 if "summary-left" in html or "summary-stats" in html:
     fails.append("旧两列类名残留")
+# 买卖统计行应排在信号环形图上方
+if html.find("sum-stats-row") > html.find("donut-wrap") or html.find("sum-stats-row") < 0:
+    fails.append("买卖统计应在环形图上方")
 
 if fails:
     print("FAIL:", fails)

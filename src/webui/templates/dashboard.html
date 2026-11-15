@@ -46,10 +46,14 @@
     {% set buy_dash = (signal_stats.buy / tot) * circum if signal_stats.total > 0 else 0 %}
     {% set hold_dash = (signal_stats.hold / tot) * circum if signal_stats.total > 0 else 0 %}
     {% set sell_dash = (signal_stats.sell / tot) * circum if signal_stats.total > 0 else 0 %}
-    <!-- 同一行两列：左列信号摘要（环形图+买卖统计），右列市场周期 -->
+    <!-- 同一行两列：左列信号摘要（买卖统计+环形图），右列市场周期 -->
     <div class="summary-cols">
         <div class="sum-col">
             {% if signal_stats.total > 0 %}
+            <div class="sum-stats-row">
+                <div class="sig-stat"><span class="sig-num" style="color:var(--green);">{{ signal_stats.buy }}</span><span class="sig-label">关注买入 · {{ '%.1f'|format(signal_stats.buy / tot * 100) }}%</span></div>
+                <div class="sig-stat"><span class="sig-num" style="color:var(--red);">{{ signal_stats.sell }}</span><span class="sig-label">关注卖出 · {{ '%.1f'|format(signal_stats.sell / tot * 100) }}%</span></div>
+            </div>
             <div class="donut-wrap">
                 <svg width="92" height="92" viewBox="0 0 160 160">
                     <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
@@ -63,10 +67,6 @@
                     <div><span class="donut-dot" style="background:var(--yellow);"></span>继续关注 {{ (signal_stats.hold / tot * 100)|round|int }}%</div>
                     <div><span class="donut-dot" style="background:var(--red);"></span>关注卖出 {{ (signal_stats.sell / tot * 100)|round|int }}%</div>
                 </div>
-            </div>
-            <div class="sum-stats-row">
-                <div class="sig-stat"><span class="sig-num" style="color:var(--green);">{{ signal_stats.buy }}</span><span class="sig-label">关注买入 · {{ '%.1f'|format(signal_stats.buy / tot * 100) }}%</span></div>
-                <div class="sig-stat"><span class="sig-num" style="color:var(--red);">{{ signal_stats.sell }}</span><span class="sig-label">关注卖出 · {{ '%.1f'|format(signal_stats.sell / tot * 100) }}%</span></div>
             </div>
             {% else %}
             <div class="empty-state" style="padding:24px 10px;"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成每日调仓信号</div></div>
