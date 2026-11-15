@@ -518,9 +518,10 @@ tr:hover { background: #f7f2e8; }
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
 }
+.dashboard-grid > * { min-width: 0; }
 
 /* ================================================================
    Holdings donut
@@ -1138,12 +1139,21 @@ td.est-cell {
     display: flex;
     align-items: flex-start;
     flex-wrap: wrap;
+    row-gap: 12px;
 }
 .sum-col { flex: 1 1 260px; min-width: 250px; }
 .sum-col + .sum-col {
     border-left: 1px solid var(--border);
     margin-left: 18px;
     padding-left: 18px;
+}
+/* 两列换行堆叠时（手机宽度）去掉分隔线与缩进 */
+@media (max-width: 580px) {
+    .sum-col + .sum-col {
+        border-left: none;
+        margin-left: 0;
+        padding-left: 0;
+    }
 }
 .sum-stats-row {
     display: flex;
