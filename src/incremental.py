@@ -479,3 +479,61 @@ def get_manager_list(ttl_days: float = 7) -> pd.DataFrame:
     meta.write_df("fund_managers", df)
     _bump("full")
     return df
+
+
+def get_manager_id_map(ttl_days: float = 7) -> pd.DataFrame:
+    """全市场基金经理 ID 映射（姓名+所属公司 → 经理ID / 公司代码）。
+
+    akshare 的 fund_manager_em 会丢掉原始接口里的经理 ID，这里直接抓
+    FundDataPortfolio_Interface 的原始 JSON，取出前三个字段：
+    [经理ID, 姓名, 公司代码, 所属公司, ...]。
+    经理 ID 用于拼天天基金个人主页 https://fund.eastmoney.com/manager/{id}.html，
+    公司代码用于拼基金公司页 https://fund.eastmoney.com/company/{code}.html。
+    失败时返回空表，页面外链自动回退为搜索。
+    """
+    meta = MetaCache()
+    cached = meta.read_df("fund_manager_ids", ttl_days, dtype=str)
+    if cached is not None and not cached.empty and {"姓名", "所属公司", "经理ID"}.issubset(cached.columns):
+        _bump("hit")
+        return cached
+
+    import requests
+
+    try:
+        import demjson3 as demjson
+    except ImportError:  # pragma: no cover - 兼容旧环境
+        import demjson as demjson  # type: ignore
+
+    url = "https://fund.eastmoney.com/Data/FundDataPortfolio_Interface.aspx"
+    params = {"dt": "14", "mc": "returnjson", "ft": "all", "pn": "500", "pi": 1, "sc": "abbname", "st": "asc"}
+    headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"}
+    rows: list[dict] = []
+    try:
+        with requests.Session() as sess:
+            resp = sess.get(url, params=params, timeout=20, headers=headers)
+            payload = demjson.decode(resp.text.split("=", 1)[1])
+            total_pages = int(payload.get("pages", 1))
+            for page in range(1, total_pages + 1):
+                if page > 1:
+                    params["pi"] = page
+                    resp = sess.get(url, params=params, timeout=20, headers=headers)
+                    payload = demjson.decode(resp.text.split("=", 1)[1])
+                for rec in payload.get("data", []):
+                    # 原始行：[经理ID, 姓名, 公司代码, 所属公司, 现任基金代码, ...]
+                    if len(rec) >= 4 and rec[0] and rec[1]:
+                        rows.append({
+                            "经理ID": str(rec[0]),
+                            "姓名": str(rec[1]),
+                            "公司代码": str(rec[2] or ""),
+                            "所属公司": str(rec[3] or ""),
+                        })
+    except Exception as exc:  # noqa: BLE001 - 网络失败不应拖垮主管道
+        print(f"[incremental][WARN] 经理 ID 映射获取失败: {exc}")
+        _bump("fallback")
+        return pd.DataFrame(columns=["经理ID", "姓名", "公司代码", "所属公司"])
+
+    df = pd.DataFrame(rows, columns=["经理ID", "姓名", "公司代码", "所属公司"])
+    df = df.drop_duplicates(subset=["姓名", "所属公司"], keep="first")
+    meta.write_df("fund_manager_ids", df)
+    _bump("full")
+    return df

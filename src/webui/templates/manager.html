@@ -21,13 +21,17 @@
 <div class="mgr-hero">
     <h1>{{ name }}</h1>
     {% if profile.get('所属公司') %}<span class="mgr-company">{{ profile['所属公司'] }}</span>{% endif %}
+    {% if profile.get('经理ID') or rank.get('经理ID') %}
+    <a class="btn btn-sm btn-outline" href="https://fund.eastmoney.com/manager/{{ (profile.get('经理ID') or rank.get('经理ID')) }}.html" target="_blank" rel="noopener noreferrer">东方财富个人主页 ↗</a>
+    {% else %}
+    <a class="btn btn-sm btn-outline" href="https://so.eastmoney.com/web/s?keyword={{ url_quote(name) }}" target="_blank" rel="noopener noreferrer">东方财富搜索该经理 ↗</a>
+    {% endif %}
+    {% set co_code = profile.get('公司代码') or rank.get('公司代码') %}
+    {% if co_code %}
+    <a class="btn btn-sm btn-outline" href="https://fund.eastmoney.com/company/{{ co_code }}.html" target="_blank" rel="noopener noreferrer">基金公司主页 ↗</a>
+    {% endif %}
 </div>
 <p class="mgr-note">资料由本站流水线从公开的基金季度持仓、基金业绩与经理排名聚合而成，仅作研究记录，不构成投资建议。</p>
-<div class="mgr-ext">
-    <a class="btn btn-sm btn-outline" href="https://so.eastmoney.com/web/s?keyword={{ url_quote(name) }}" target="_blank" rel="noopener noreferrer">东方财富搜索该经理 ↗</a>
-    <a class="btn btn-sm btn-outline" href="https://www.baidu.com/s?wd={{ url_quote(name ~ ' 基金经理') }}" target="_blank" rel="noopener noreferrer">百度搜索 ↗</a>
-    <a class="btn btn-sm btn-outline" href="https://fund.eastmoney.com/manager/" target="_blank" rel="noopener noreferrer">天天基金经理大全 ↗</a>
-</div>
 
 {% if rank.get('排名') %}
 <h2 class="mgr-section-title">业绩排名 <span style="font-size:12px;font-weight:400;color:var(--text-secondary);">口径：{{ rank.get('排名指标', '') }}</span></h2>

@@ -35,6 +35,7 @@ _SIGNAL_KEYS = (
 _RANK_KEYS = (
     "排名指标", "排名", "序号", "姓名", "所属公司", "管理基金数", "有效基金数",
     "平均收益率", "中位数收益率", "最佳收益率", "最差收益率",
+    "经理ID", "公司代码",
 )
 
 
@@ -90,6 +91,8 @@ def build_manager_index(
         name: {
             "姓名": name,
             "所属公司": companies.get(name, ""),
+            "经理ID": "",
+            "公司代码": "",
             "ranks": [],
             "funds": [],
             "stocks": [],
@@ -105,6 +108,10 @@ def build_manager_index(
         bucket["ranks"].append(_pick(row, _RANK_KEYS))
         if not bucket["所属公司"]:
             bucket["所属公司"] = _s(row.get("所属公司", "")).strip()
+        if not bucket["经理ID"]:
+            bucket["经理ID"] = _s(row.get("经理ID", "")).strip()
+        if not bucket["公司代码"]:
+            bucket["公司代码"] = _s(row.get("公司代码", "")).strip()
 
     for row in fund_rows:
         bucket = index.get(_s(row.get("姓名", "")).strip())

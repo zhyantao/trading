@@ -79,14 +79,19 @@ def main() -> None:
         raise KeyError("输入文件缺少基金经理标识列（期望至少包含：序号/姓名/所属公司 之一）")
 
     g = df.groupby(group_cols, dropna=False)
-    agg = g.agg(
-        管理基金数=("基金代码", "nunique"),
-        有效基金数=(metric, lambda s: int(s.notna().sum())),
-        平均收益率=(metric, "mean"),
-        中位数收益率=(metric, "median"),
-        最佳收益率=(metric, "max"),
-        最差收益率=(metric, "min"),
-    ).reset_index()
+    agg_spec = {
+        "管理基金数": ("基金代码", "nunique"),
+        "有效基金数": (metric, lambda s: int(s.notna().sum())),
+        "平均收益率": (metric, "mean"),
+        "中位数收益率": (metric, "median"),
+        "最佳收益率": (metric, "max"),
+        "最差收益率": (metric, "min"),
+    }
+    # 经理 ID / 公司代码（供个人页直链东方财富），同经理各行一致，取 first 即可
+    for extra in ("经理ID", "公司代码"):
+        if extra in df.columns:
+            agg_spec[extra] = (extra, "first")
+    agg = g.agg(**agg_spec).reset_index()
 
     # 只对至少有 1 只有效基金的经理排名
     ranked = agg[agg["有效基金数"] > 0].copy()

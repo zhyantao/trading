@@ -21,7 +21,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from incremental import get_manager_list, report  # noqa: E402
+from incremental import get_manager_id_map, get_manager_list, report  # noqa: E402
 from market_snapshot import as_akshare_rank_columns, get_fund_rank_snapshot  # noqa: E402
 
 
@@ -66,6 +66,15 @@ def main() -> None:
         }
     )
     mgr_df = mgr_df.drop_duplicates(subset=["序号", "姓名", "所属公司", "基金代码"])
+
+    # 经理 ID / 公司代码（姓名+公司匹配），用于个人页直链东方财富经理主页
+    id_df = get_manager_id_map()
+    if id_df is not None and not id_df.empty:
+        mgr_df = mgr_df.merge(id_df, on=["姓名", "所属公司"], how="left")
+        matched = int(mgr_df["经理ID"].notna().sum())
+        print(f"    经理 ID 映射：{matched:,} 行已匹配（共 {len(mgr_df):,} 行）")
+    else:
+        print("    [WARN] 经理 ID 映射不可用，个人页外链将回退为搜索")
 
     print("[2/3] 获取开放基金收益率排行（当日全市场快照，与年化排序共用）...")
     rank_df = as_akshare_rank_columns(get_fund_rank_snapshot(args.symbol))

@@ -544,22 +544,31 @@
     var m = (index.managers || {})[name] || null;
     var rank = (m && m.ranks && m.ranks[0]) || {};
     var company = (m && m['所属公司']) || rank['所属公司'] || '';
+    /* 外链：有经理 ID 直链天天基金个人主页，否则回退搜索；公司代码可直链公司页 */
+    var mgrId = (m && m['经理ID']) || rank['经理ID'] || '';
+    var coId = (m && m['公司代码']) || rank['公司代码'] || '';
+    var links = '';
+    if (mgrId) {
+      links += '<a class="btn btn-sm btn-outline" href="https://fund.eastmoney.com/manager/' +
+        esc(mgrId) + '.html" target="_blank" rel="noopener noreferrer">东方财富个人主页 ↗</a>';
+    } else {
+      links += '<a class="btn btn-sm btn-outline" href="https://so.eastmoney.com/web/s?keyword=' +
+        encodeURIComponent(name) + '" target="_blank" rel="noopener noreferrer">东方财富搜索该经理 ↗</a>';
+    }
+    if (coId) {
+      links += '<a class="btn btn-sm btn-outline" href="https://fund.eastmoney.com/company/' +
+        esc(coId) + '.html" target="_blank" rel="noopener noreferrer">基金公司主页 ↗</a>';
+    }
     function stat(label, value, style) {
       return '<div class="mgr-stat"><div class="k">' + esc(label) + '</div>' +
         '<div class="v" style="' + (style || '') + '">' + value + '</div></div>';
     }
     var html = crumb +
       '<div class="mgr-hero"><h1>' + esc(name) + '</h1>' +
-      (company ? '<span class="mgr-company">' + esc(company) + '</span>' : '') + '</div>' +
+      (company ? '<span class="mgr-company">' + esc(company) + '</span>' : '') +
+      links + '</div>' +
       '<p class="mgr-note">资料由本站流水线从公开的基金季度持仓、基金业绩与经理排名聚合而成，' +
-      '仅作研究记录，不构成投资建议。</p>' +
-      '<div class="mgr-ext">' +
-      '<a class="btn btn-sm btn-outline" href="https://so.eastmoney.com/web/s?keyword=' +
-      encodeURIComponent(name) + '" target="_blank" rel="noopener noreferrer">东方财富搜索该经理 ↗</a>' +
-      '<a class="btn btn-sm btn-outline" href="https://www.baidu.com/s?wd=' +
-      encodeURIComponent(name + ' 基金经理') + '" target="_blank" rel="noopener noreferrer">百度搜索 ↗</a>' +
-      '<a class="btn btn-sm btn-outline" href="https://fund.eastmoney.com/manager/" ' +
-      'target="_blank" rel="noopener noreferrer">天天基金经理大全 ↗</a></div>';
+      '仅作研究记录，不构成投资建议。</p>';
 
     if (rank && rank['排名']) {
       html += '<h2 class="mgr-section-title">业绩排名 <span style="font-size:12px;font-weight:400;' +
