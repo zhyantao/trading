@@ -68,7 +68,7 @@ out/  ── CSV / MD / PNG ──►  src/generate_static.py  ──►  docs/ 
 │   │   └── backtest_series.py                 # 净值曲线 → 交互图表 JSON
 │   ├── 站点
 │   │   ├── generate_static.py        # 生成 docs/
-│   │   ├── static_site/*.html        # 11 个静态壳（含 formulas.html / manager.html）
+│   │   ├── static_site/*.html        # 10 个静态壳（含 formulas.html / manager.html）
 │   │   ├── webui/                   # FastAPI 动态站（routes / templates / static）
 │   │   └── webui/static/
 │   │       ├── app.js                # 静态站全部页面渲染
@@ -251,9 +251,8 @@ python3 src/webui/app.py          # http://localhost:8000
 
 | 页面 | 静态站 | 动态站 | 说明 |
 | --- | --- | --- | --- |
-| 总览 | `index.html` | `/` | 信号摘要、紧凑环形图、**股票排名 Top5**、经理 Top5、持仓明细 |
+| 总览 | `index.html` | `/` | 左侧持仓配置、右侧信号摘要+市场周期（同一行），下方**股票排名 Top5** 与经理 Top5 |
 | 每日信号 | `signals.html` | `/signals` | 按标签过滤、分页 |
-| 我的持仓 | `holdings.html` | `/holdings` | 当前配置、触发重算 |
 | 经理排名 | `managers.html` | `/managers` | 分页，姓名可进入个人页 |
 | **基金经理个人页** | `manager.html?name=姓名` | `/manager?name=姓名` | 业绩排名、绩优基金 Top3、重仓股 Top10、相关每日信号、外部经理搜索 |
 | 基金排名 | `funds.html` | `/funds` | 成立天数过滤 |

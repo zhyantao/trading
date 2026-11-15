@@ -292,9 +292,8 @@ def generate_data_for_date(date: str) -> None:
 
 
 def generate_global_data() -> None:
-    """无日期概念的全局数据。"""
-    print("全局数据:")
-    _write_json(DATA_DIR / "holdings.json", {"rows": _records(ds.get_holdings())})
+    """无日期概念的全局数据（「我的持仓」页已并入总览，不再单独出数据文件）。"""
+    print("全局数据: 无（持仓配置随 dashboard.json 输出）")
 
 
 def generate_manifest(dates: list[str]) -> None:

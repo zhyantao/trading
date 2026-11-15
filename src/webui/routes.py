@@ -331,15 +331,6 @@ async def signals_page(request: Request) -> Any:
     }))
 
 
-@router.get("/holdings", response_class=HTMLResponse)
-async def holdings_page(request: Request) -> Any:
-    holdings = ds.get_holdings()
-    return _render("holdings.html", _base_context(request, {
-        "active_page": "holdings",
-        "holdings": holdings.to_dict("records"),
-    }))
-
-
 @router.get("/managers", response_class=HTMLResponse)
 async def managers_page(request: Request) -> Any:
     date = _get_date(request)

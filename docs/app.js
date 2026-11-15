@@ -217,7 +217,6 @@
       '<div class="nav-links">' +
       navLink('index.html', 'dashboard', '总览', state.date) +
       navLink('signals.html', 'signals', '每日信号', state.date) +
-      navLink('holdings.html', 'holdings', '我的持仓', state.date) +
       navLink('managers.html', 'managers', '经理排名', state.date) +
       navLink('funds.html', 'funds', '基金排名', state.date) +
       navLink('stocks.html', 'stocks', '股票排名', state.date) +
@@ -362,24 +361,25 @@
         '<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);line-height:1.5;">' +
         esc(ci.description) + '</div>';
     }
-    html += card('今日信号摘要 · 市场周期 <a class="card-link" href="signals.html?date=' + state.date +
-      '">信号明细 →</a>', body, 'card-compact');
-
-    /* 持仓配置 */
+    /* 持仓配置（左） + 信号摘要·市场周期（右）：同一行 */
     var grid = '';
     if (data.holdings && data.holdings.length) {
       var hrows = data.holdings.map(function (h) {
-        return '<tr><td>' + codeLink(h['类型'], h['代码']) + '</td><td>' + esc(h['名称']) +
+        return '<tr><td><span class="tag ' + (h['类型'] === '股票' ? 'tag-stock' : 'tag-fund') + '">' +
+          esc(h['类型']) + '</span></td>' +
+          '<td>' + codeLink(h['类型'], h['代码']) + '</td><td>' + esc(h['名称']) +
           '</td><td>' + num2(h['比例(%)']) + '</td></tr>';
       }).join('');
       grid += card('持仓配置', donutSvg([
         { value: (data.stock_sum || 0) / ((data.stock_sum || 0) + (data.fund_sum || 0) || 1), color: 'var(--accent)', label: '股票' },
         { value: (data.fund_sum || 0) / ((data.stock_sum || 0) + (data.fund_sum || 0) || 1), color: 'var(--green)', label: '基金' },
       ], '比例') +
-        (hrows ? table('<th>代码</th><th>名称</th><th>比例(%)</th>', hrows, 'mini-table') : ''),
+        (hrows ? table('<th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th>', hrows, 'mini-table') : ''),
         'card-compact');
     }
-    if (grid) html += '<div class="dashboard-grid">' + grid + '</div>';
+    grid += card('今日信号摘要 · 市场周期 <a class="card-link" href="signals.html?date=' + state.date +
+      '">信号明细 →</a>', body, 'card-compact');
+    html += '<div class="dashboard-grid">' + grid + '</div>';
 
     /* 股票排名 Top5 + 经理 Top5：并排放在下方 */
     var lower = '';
@@ -466,31 +466,6 @@
       setParam('type', t || null);
       renderSignals(data);
     });
-  }
-
-  /* ---------------- 页面：我的持仓 ---------------- */
-  function renderHoldings(data) {
-    var rows = data.rows || [];
-    if (!rows.length) {
-      root.innerHTML = emptyState('📋', '暂无持仓数据', '运行优化持仓脚本自动生成，或手动创建 out/我的持仓.csv');
-      return;
-    }
-    var maxPct = 0;
-    rows.forEach(function (h) { var f = num(h['比例(%)']); if (f !== null && f > maxPct) maxPct = f; });
-    var body = rows.map(function (h) {
-      var pct = num(h['比例(%)']) || 0;
-      var color = h['类型'] === '股票' ? 'var(--accent)' : 'var(--green)';
-      return '<tr>' +
-        '<td><span class="tag ' + (h['类型'] === '股票' ? 'tag-stock' : 'tag-fund') + '">' + esc(h['类型']) + '</span></td>' +
-        '<td>' + codeLink(h['类型'], h['代码']) + '</td>' +
-        '<td>' + esc(h['名称']) + '</td>' +
-        '<td style="font-weight:600;">' + num2(pct) + '%</td>' +
-        '<td style="width:120px;"><div style="height:8px; background:#e0e0e0; overflow:hidden;">' +
-        '<div style="height:100%; width:' + (maxPct > 0 ? pct / maxPct * 100 : 0) + '%; background:' + color + ';"></div>' +
-        '</div></td>' + priceCell(h['类型'], h['代码']) + '</tr>';
-    }).join('');
-    root.innerHTML = card('当前持仓配置',
-      table('<th>类型</th><th>代码</th><th>名称</th><th>比例(%)</th><th>比例柱</th><th>估算价格</th>', body));
   }
 
   /* ---------------- 页面：经理排名 ---------------- */
@@ -955,9 +930,6 @@
               },
               signals: function () {
                 return getJSON('data/' + state.date + '/signals.json').then(renderSignals);
-              },
-              holdings: function () {
-                return getJSON('data/holdings.json').then(renderHoldings);
               },
               managers: function () {
                 return getJSON('data/' + state.date + '/managers.json').then(renderManagers);
