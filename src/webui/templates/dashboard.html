@@ -7,20 +7,13 @@
     <div class="card card-compact">
         <div class="card-header">持仓配置</div>
         {% if holdings %}
-        {% set stock_pct = stock_sum / (stock_sum + fund_sum) if (stock_sum + fund_sum) > 0 else 0 %}
-        {% set stock_dash = stock_pct * 2 * 3.1416 * 60 %}
-        {% set all_dash = 2 * 3.1416 * 60 %}
-        <div class="donut-wrap">
-            <svg width="92" height="92" viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
-                {% if stock_dash > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24" stroke-dasharray="{{ stock_dash }} {{ all_dash - stock_dash }}" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>{% endif %}
-                {% if fund_sum > 0 and stock_pct < 1 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24" stroke-dasharray="{{ all_dash - stock_dash }} {{ stock_dash }}" stroke-dashoffset="{{ -stock_dash }}" transform="rotate(-90 80 80)"/>{% endif %}
-                <text x="80" y="86" text-anchor="middle" font-size="20" fill="var(--text-secondary)">比例</text>
-            </svg>
-            <div class="donut-legend">
-                <div><span class="donut-dot" style="background:var(--accent);"></span>股票 {{ "%.2f" % stock_sum }}%</div>
-                <div><span class="donut-dot" style="background:var(--green);"></span>基金 {{ "%.2f" % fund_sum }}%</div>
-            </div>
+        <!-- 环形图已删除：占比信息由汇总行 + 表格横条列呈现，横条以最大占比为满格 -->
+        {% set ns_max = namespace(v=0) %}
+        {% for h in holdings %}{% set p = h.get('比例(%)', 0)|float %}{% if p > ns_max.v %}{% set ns_max.v = p %}{% endif %}{% endfor %}
+        <div class="hold-sum-note">
+            <span class="donut-dot" style="background:var(--accent);"></span>股票 {{ "%.2f"|format(stock_sum) }}%
+            <span class="donut-dot" style="background:var(--green);"></span>基金 {{ "%.2f"|format(fund_sum) }}%
+            <span class="hold-bar-note">横条以最大占比为满格</span>
         </div>
         <div class="table-wrap">
             <table class="mini-table">
@@ -28,14 +21,13 @@
                 <tbody>
                 {% for h in holdings %}
                 {% set pct_raw = h.get('比例(%)', 0)|float %}
-                {% set pct_low = pct_raw if pct_raw > 0 else 0 %}
-                {% set pct_val = pct_low if pct_low < 100 else 100 %}
+                {% set bar_val = (pct_raw / ns_max.v * 100) if ns_max.v > 0 else 0 %}
                 <tr>
                     <td><span class="tag {{ 'tag-stock' if h.get('类型') == '股票' else 'tag-fund' }}">{{ h.get('类型', '') }}</span></td>
                     <td>{{ h.get('代码', '') }}</td>
                     <td>{{ h.get('名称', '') }}</td>
                     <td>{{ h.get('比例(%)', 0)|num2 }}</td>
-                    <td><div class="bar-track" title="占比 {{ '%.2f'|format(pct_raw) }}%"><div class="bar-fill {{ 'is-stock' if h.get('类型') == '股票' else 'is-fund' }}" style="width:{{ pct_val }}%;"></div></div></td>
+                    <td><div class="bar-track" title="占比 {{ '%.2f'|format(pct_raw) }}%"><div class="bar-fill {{ 'is-stock' if h.get('类型') == '股票' else 'is-fund' }}" style="width:{{ '%.1f'|format(bar_val) }}%;"></div></div></td>
                 </tr>
                 {% endfor %}
                 </tbody>
@@ -48,15 +40,16 @@
 
     <div class="card card-compact">
         <div class="card-header">今日信号摘要 · 市场周期 <a class="card-link" href="/signals?date={{ selected_date }}">信号明细 →</a></div>
-    {% if signal_stats.total > 0 %}
+    {% if signal_stats.total > 0 or cycle_info %}
     {% set tot = signal_stats.total if signal_stats.total > 0 else 1 %}
     {% set circum = 2 * 3.1416 * 60 %}
-    {% set buy_dash = (signal_stats.buy / tot) * circum %}
-    {% set hold_dash = (signal_stats.hold / tot) * circum %}
-    {% set sell_dash = (signal_stats.sell / tot) * circum %}
-    <!-- 信号摘要两列：左列环形图（信号分布），右列关注买入/卖出统计 -->
+    {% set buy_dash = (signal_stats.buy / tot) * circum if signal_stats.total > 0 else 0 %}
+    {% set hold_dash = (signal_stats.hold / tot) * circum if signal_stats.total > 0 else 0 %}
+    {% set sell_dash = (signal_stats.sell / tot) * circum if signal_stats.total > 0 else 0 %}
+    <!-- 同一行两列：左列信号摘要（环形图+买卖统计），右列市场周期 -->
     <div class="summary-cols">
-        <div class="summary-left">
+        <div class="sum-col">
+            {% if signal_stats.total > 0 %}
             <div class="donut-wrap">
                 <svg width="92" height="92" viewBox="0 0 160 160">
                     <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
@@ -71,45 +64,47 @@
                     <div><span class="donut-dot" style="background:var(--red);"></span>关注卖出 {{ (signal_stats.sell / tot * 100)|round|int }}%</div>
                 </div>
             </div>
+            <div class="sum-stats-row">
+                <div class="sig-stat"><span class="sig-num" style="color:var(--green);">{{ signal_stats.buy }}</span><span class="sig-label">关注买入 · {{ '%.1f'|format(signal_stats.buy / tot * 100) }}%</span></div>
+                <div class="sig-stat"><span class="sig-num" style="color:var(--red);">{{ signal_stats.sell }}</span><span class="sig-label">关注卖出 · {{ '%.1f'|format(signal_stats.sell / tot * 100) }}%</span></div>
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding:24px 10px;"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成每日调仓信号</div></div>
+            {% endif %}
         </div>
-        <div class="summary-stats">
-            <div class="sig-stat"><span class="sig-num" style="color:var(--green);">{{ signal_stats.buy }}</span><span class="sig-label">关注买入 · {{ '%.1f'|format(signal_stats.buy / tot * 100) }}%</span></div>
-            <div class="sig-stat"><span class="sig-num" style="color:var(--red);">{{ signal_stats.sell }}</span><span class="sig-label">关注卖出 · {{ '%.1f'|format(signal_stats.sell / tot * 100) }}%</span></div>
+        {% if cycle_info %}
+        {% set w = cycle_info.weights %}
+        {% set r_dash = w.return * circum %}
+        {% set risk_dash = w.risk * circum %}
+        {% set s_dash = w.stability * circum %}
+        {% set q_dash = w.quality * circum %}
+        <div class="sum-col sum-cycle">
+            <div class="stat-strip" style="margin-bottom:8px;">
+                <div><div class="stat-label">当前阶段（Dalio 框架）</div><div style="font-size:15px;font-weight:700;color:var(--accent);">{{ cycle_info.phase_label }}</div></div>
+                <div><div class="stat-label">置信度</div><div style="font-size:15px;font-weight:700;">{{ cycle_info.confidence }}</div></div>
+            </div>
+            <div class="donut-wrap">
+                <svg width="92" height="92" viewBox="0 0 160 160">
+                    <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
+                    {% if w.return > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24" stroke-dasharray="{{ r_dash }} {{ circum - r_dash }}" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>{% endif %}
+                    {% if w.risk > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24" stroke-dasharray="{{ risk_dash }} {{ circum - risk_dash }}" stroke-dashoffset="{{ -r_dash }}" transform="rotate(-90 80 80)"/>{% endif %}
+                    {% if w.stability > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24" stroke-dasharray="{{ s_dash }} {{ circum - s_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
+                    {% if w.quality > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="#b7950b" stroke-width="24" stroke-dasharray="{{ q_dash }} {{ circum - q_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash + s_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
+                    <text x="80" y="86" text-anchor="middle" font-size="20" fill="var(--text-secondary)">权重</text>
+                </svg>
+                <div class="donut-legend">
+                    <div><span class="donut-dot" style="background:var(--green);"></span>长期回报 {{ (w.return*100)|int }}%</div>
+                    <div><span class="donut-dot" style="background:var(--red);"></span>风险调整 {{ (w.risk*100)|int }}%</div>
+                    <div><span class="donut-dot" style="background:var(--accent);"></span>稳定性 {{ (w.stability*100)|int }}%</div>
+                    <div><span class="donut-dot" style="background:#b7950b;"></span>质量 {{ (w.quality*100)|int }}%</div>
+                </div>
+            </div>
+            <div class="sum-cycle-desc">{{ cycle_info.description }}</div>
         </div>
+        {% endif %}
     </div>
     {% else %}
     <div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">暂无信号数据</div><div class="empty-hint"><a href="/pipeline?date={{ selected_date }}">运行流水线</a> 生成每日调仓信号</div></div>
-    {% endif %}
-
-    {% if cycle_info %}
-    {% set w = cycle_info.weights %}
-    {% set circum = 2 * 3.1416 * 60 %}
-    {% set r_dash = w.return * circum %}
-    {% set risk_dash = w.risk * circum %}
-    {% set s_dash = w.stability * circum %}
-    {% set q_dash = w.quality * circum %}
-    <div class="cycle-divider"></div>
-    <div class="stat-strip" style="margin-bottom:8px; max-width:620px;">
-        <div><div class="stat-label">当前阶段（Dalio 框架）</div><div style="font-size:15px;font-weight:700;color:var(--accent);">{{ cycle_info.phase_label }}</div></div>
-        <div><div class="stat-label">置信度</div><div style="font-size:15px;font-weight:700;">{{ cycle_info.confidence }}</div></div>
-    </div>
-    <div class="donut-wrap">
-        <svg width="92" height="92" viewBox="0 0 160 160">
-            <circle cx="80" cy="80" r="60" fill="none" stroke="#e0e0e0" stroke-width="24"/>
-            {% if w.return > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--green)" stroke-width="24" stroke-dasharray="{{ r_dash }} {{ circum - r_dash }}" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>{% endif %}
-            {% if w.risk > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--red)" stroke-width="24" stroke-dasharray="{{ risk_dash }} {{ circum - risk_dash }}" stroke-dashoffset="{{ -r_dash }}" transform="rotate(-90 80 80)"/>{% endif %}
-            {% if w.stability > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="var(--accent)" stroke-width="24" stroke-dasharray="{{ s_dash }} {{ circum - s_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
-            {% if w.quality > 0 %}<circle cx="80" cy="80" r="60" fill="none" stroke="#b7950b" stroke-width="24" stroke-dasharray="{{ q_dash }} {{ circum - q_dash }}" stroke-dashoffset="{{ -(r_dash + risk_dash + s_dash) }}" transform="rotate(-90 80 80)"/>{% endif %}
-            <text x="80" y="86" text-anchor="middle" font-size="20" fill="var(--text-secondary)">权重</text>
-        </svg>
-        <div class="donut-legend">
-            <div><span class="donut-dot" style="background:var(--green);"></span>长期回报 {{ (w.return*100)|int }}%</div>
-            <div><span class="donut-dot" style="background:var(--red);"></span>风险调整 {{ (w.risk*100)|int }}%</div>
-            <div><span class="donut-dot" style="background:var(--accent);"></span>稳定性 {{ (w.stability*100)|int }}%</div>
-            <div><span class="donut-dot" style="background:#b7950b;"></span>质量 {{ (w.quality*100)|int }}%</div>
-        </div>
-    </div>
-    <div style="margin-top:8px;font-size:12px;color:var(--text-secondary);line-height:1.5;">{{ cycle_info.description }}</div>
     {% endif %}
 </div>
 

@@ -1124,22 +1124,26 @@ td.est-cell {
 }
 
 /* ================================================================
-   总览：信号摘要两列布局（左环形图 / 右买卖统计）+ 持仓占比横条
+   总览：信号摘要与市场周期同行两列 + 持仓占比横条
    ================================================================ */
 .summary-cols {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     flex-wrap: wrap;
-    gap: 18px 26px;
 }
-.summary-left { flex: 0 0 auto; }
-.summary-stats {
-    flex: 1 1 200px;
-    min-width: 190px;
+.sum-col { flex: 1 1 260px; min-width: 250px; }
+.sum-col + .sum-col {
+    border-left: 1px solid var(--border);
+    margin-left: 18px;
+    padding-left: 18px;
+}
+.sum-stats-row {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 10px;
+    margin-top: 10px;
 }
+.sum-stats-row .sig-stat { flex: 1; }
 .sig-stat {
     display: flex;
     align-items: baseline;
@@ -1160,7 +1164,30 @@ td.est-cell {
     font-size: 12px;
     color: var(--text-secondary);
 }
-/* 持仓表占比横条：轨道总长代表 100%，填充宽度 = 各标的比例(%) */
+.sum-cycle .stat-strip { margin-bottom: 8px; }
+.sum-cycle-desc {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+/* 持仓汇总行（替代已删除的环形图） */
+.hold-sum-note {
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.hold-bar-note {
+    margin-left: auto;
+    font-size: 11px;
+    font-style: italic;
+}
+/* 持仓表占比横条：以最大占比为满格（单位 1），填充宽度 = 比例/最大比例 */
 .bar-track {
     width: 110px;
     max-width: 100%;
