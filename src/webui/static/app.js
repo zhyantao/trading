@@ -805,7 +805,11 @@
       })
       .catch(function (err) {
         console.error(err);
-        if (root) root.innerHTML = errorCard(err.message || err);
+        /* 公式页 / 流水线页是静态壳自带内容，file:// 下 manifest 取不到时
+           也要保留正文，只让页眉降级，不要用错误卡片把整页覆盖掉。 */
+        if (root && PAGE !== 'formulas' && PAGE !== 'pipeline') {
+          root.innerHTML = errorCard(err.message || err);
+        }
       });
   }
 
