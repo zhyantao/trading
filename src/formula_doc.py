@@ -2,15 +2,13 @@
 # -*- coding: utf-8 -*-
 """「选股与选基公式」页面内容生成器（静态站 / 动态站唯一内容源）。
 
-公式用 MathML 排版，不依赖任何 CDN 或第三方 JS；每个公式同时给出
-一行纯文本形式，便于复制、检索与在不支持 MathML 的环境里阅读。
+公式用 MathML 排版，不依赖任何 CDN 或第三方 JS。
 权重全部从 selection_formula / factor_scoring 读取，页面与实际计算
 永远使用同一组参数。
 """
 
 from __future__ import annotations
 
-import html
 from typing import Any
 
 from selection_formula import formula_parameters
@@ -20,12 +18,11 @@ def _math(inner: str) -> str:
     return '<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">' + inner + "</math>"
 
 
-def _block(tag: str, formula: str, plain: str, where: str = "") -> str:
+def _block(tag: str, formula: str, where: str = "") -> str:
     return (
         '<div class="formula-block">'
         f'<div class="formula-tag">{tag}</div>'
         + _math(formula)
-        + f'<div class="formula-plain"><code>{html.escape(plain)}</code></div>'
         + (f'<div class="formula-where">{where}</div>' if where else "")
         + "</div>"
     )
@@ -153,7 +150,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<msub><mi>R</mi><mn>1</mn></msub><mo>(</mo><mi>f</mi><mo>)</mo><mo>≥</mo><mn>0</mn><mo>∧</mo>'
         '<msub><mi>R</mi><mo>Σ</mo></msub><mo>(</mo><mi>f</mi><mo>)</mo><mo>≥</mo><mn>0</mn><mo>∧</mo>'
         '<mi>D</mi><mo>(</mo><mi>f</mi><mo>)</mo><mo>≥</mo><mn>180</mn><mo>}</mo>',
-        "M* = { m | r_m ≤ 20, ∀ f ∈ F_m : R_1(f) ≥ 0 ∧ R_Σ(f) ≥ 0 ∧ D(f) ≥ 180 }",
         "按经理排名向下扫描补足 20 位；成立不足 180 天的新基金在关联表阶段已过滤。",
     ))
     parts.append(_block(
@@ -165,7 +161,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<mfrac><mn>1</mn><msub><mi>M</mi><mi>s</mi></msub></mfrac>'
         '<munder><mo>∑</mo><mrow><mi>m</mi><mo>:</mo><mi>s</mi><mo>∈</mo><msub><mi>G</mi><mi>m</mi></msub></mrow></munder>'
         '<mfrac><mn>1</mn><msub><mi>r</mi><mi>m</mi></msub></mfrac>',
-        "Q_f = (1/C_f) Σ_{m: f∈F_m} 1/r_m ;  Q_s = (1/M_s) Σ_{m: s∈G_m} 1/r_m",
         "后文的 <span class=\"f-mono\">Q̃</span> 表示对 Q 做式 (5) 的归一化。",
     ))
 
@@ -186,7 +181,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<mfrac><mrow><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><munder><mo>min</mo><mi>j</mi></munder><msub><mi>x</mi><mi>j</mi></msub></mrow>'
         '<mrow><munder><mo>max</mo><mi>j</mi></munder><msub><mi>x</mi><mi>j</mi></msub><mo>−</mo>'
         '<munder><mo>min</mo><mi>j</mi></munder><msub><mi>x</mi><mi>j</mi></msub></mrow></mfrac>',
-        "x' = clip(x, q0.01, q0.99);  z = clip((x' − med)/IQR, −3, 3);  x̃ = (x − min x)/(max x − min x)",
         "缺失值按中性处理（z 记 0、x̃ 记中位数），常量序列 x̃ ≡ 0.5；"
         "这样接口偶发缺字段时不会把标的误判为低分。",
     ))
@@ -205,7 +199,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<mfrac><msub><mi>P</mi><mi>t</mi></msub><msub><mi>P</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub></mfrac>'
         '<mo>)</mo><mo>,</mo><mi>med</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>±</mo><mi>c</mi><mo>·</mo>'
         '<mn>1.4826</mn><mo>·</mo><mi>MAD</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>)</mo>',
-        "r_t = clip(ln(P_t/P_{t−1}), med(r) ± c·1.4826·MAD(r)),  c = 5，窗口 = 最近 120 日",
         "分红、份额折算会造成单日 10%+ 的「假收益」；用中位数绝对偏差缩尾，避免污染 EWMA。",
     ))
     parts.append(_block(
@@ -220,8 +213,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<mrow><mn>1</mn><mo>−</mo><mi>λ</mi></mrow></mfrac><mo>,</mo><mspace width="1em"/>'
         '<mover><mi>μ</mi><mo>~</mo></mover><mo>=</mo><msub><mover><mi>μ</mi><mo>^</mo></mover><mi>n</mi></msub>'
         '<mo>·</mo><mfrac><msub><mi>n</mi><mi>eff</mi></msub><mrow><msub><mi>n</mi><mi>eff</mi></msub><mo>+</mo><mi>K</mi></mrow></mfrac>',
-        "μ̂_t = λ·μ̂_{t−1} + (1−λ)·r_t ;  σ̂_t = EWMA(r, λ) ;  "
-        "n_eff = (1−λⁿ)/(1−λ) ;  μ̃ = μ̂_n · n_eff/(n_eff+K)",
         "λ = 0.94（RiskMetrics），K = 20 为先验样本量；短的净值序列不参与序列口径，"
         "改走式 (12) 的区间收益率折算。",
     ))
@@ -238,8 +229,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<msub><mi>V</mi><mi>raw</mi></msub><mo>=</mo><mi>clip</mi><mo>(</mo>'
         '<mfrac><mover><mi>μ</mi><mo>~</mo></mover><msub><mi>σ</mi><mn>0</mn></msub></mfrac>'
         '<mo>,</mo><mo>−</mo><mn>3</mn><mo>,</mo><mn>3</mn><mo>)</mo>',
-        "P̂_{t+1} = P_t·e^{μ̃} ;  I_68% = [P_t·e^{μ̃−σ̂}, P_t·e^{μ̃+σ̂}] ;  "
-        "V_raw = clip(μ̃/σ₀, −3, 3)",
         "μ̃ 先按 ±3σ₀ 截断；σ̂ 是标的自身 EWMA 日波动（用于 ±1σ 参考区间），"
         "σ₀ 是资产类别统一先验（基金 1.2%、股票 2.2%，用于把 V_raw 拉回同一风险尺度）。"
         "估算涨跌 = P̂/P_t − 1。",
@@ -255,7 +244,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<mover><mi>V</mi><mo>~</mo></mover><mo>=</mo><mover><mi>x</mi><mo>~</mo></mover><mo>(</mo><msub><mi>V</mi><mi>raw</mi></msub><mo>)</mo>'
         '<mo>,</mo><mspace width="1em"/>'
         '<mover><mi>V</mi><mo>~</mo></mover><mo>≡</mo><mn>0.5</mn><mo> </mo><mo>(</mo><mi>missing</mi><mo>)</mo>',
-        "μ̃ = (Σ_j w_j·ln(1+R_j)/d_j / Σ_j w_j)·n_eff/(n_eff+K) ;  Ṽ = x̃(V_raw); 缺失 Ṽ ≡ 0.5",
         "j ∈ {近1周, 近1月, 近3月}，d_j = 5/21/63 交易日，w = 0.5/0.3/0.2；"
         "无行情序列的股票按季报「汇总占净值比例」对重仓基金的 μ̃_f 加权代理。"
         "Ṽ 在候选池横截面上做式 (5) 的缩尾 + min-max；缺数据的标的取中性 0.5，"
@@ -271,7 +259,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<munder><mo>∑</mo><mrow><mi>k</mi><mo>∈</mo><mo>{</mo><mi>ret</mi><mo>,</mo><mi>risk</mi><mo>,</mo>'
         '<mi>stab</mi><mo>,</mo><mi>qual</mi><mo>}</mo></mrow></munder>'
         '<msub><mi>w</mi><mi>k</mi></msub><msub><mi>φ</mi><mi>k</mi></msub><mo>(</mo><mi>f</mi><mo>)</mo>',
-        "S^fac(f) = (1/Σ_k w_k) · Σ_k w_k φ_k(f),  k ∈ {ret, risk, stab, qual}",
         "回报因子按 7 个周期收益的加权稳健 z-score 合成，并按每行「实际可用周期的权重和」归一；"
         "风险与稳定性先把各周期逐列标准化，消除近 1 月与成立来年化的量纲差异。",
     ))
@@ -288,10 +275,6 @@ def render_formula_doc(static: bool = True) -> str:
         f'<mn>{p["fund_penalty"]:.2f}</mn><mo>·</mo>'
         '<mn>1</mn><mo>[</mo><msub><mi>R</mi><mn>1</mn></msub><mo>&lt;</mo><mn>0</mn><mo>∨</mo>'
         '<msub><mi>R</mi><mo>Σ</mo></msub><mo>&lt;</mo><mn>0</mn><mo>]</mo>',
-        f'S_f = {fw["annualized"]:.2f}·z̃(R_a) + {fw["recent_1y"]:.2f}·z̃(R_1) + '
-        f'{fw["consensus"]:.2f}·lñ(1+C_f) + {fw["manager_quality"]:.2f}·Q̃_f + '
-        f'{fw["longevity"]:.2f}·lñ(1+D_f) + {fw["valuation"]:.2f}·Ṽ_f − '
-        f'{p["fund_penalty"]:.2f}·1[R_1<0 ∨ R_Σ<0]',
         "与「每位经理各取 3 只」不同，C<sub>f</sub> 让被多位经理共同选中的基金获得共识加分；"
         "Ṽ<sub>f</sub> 为式 (9)–(12) 的估算价格因子，同一基金的不同份额（A/B/C）按基础名称去重。",
     ))
@@ -299,7 +282,6 @@ def render_formula_doc(static: bool = True) -> str:
         "式 (3) · 全局选基（唯一榜单）",
         '<msup><mi>F</mi><mo>*</mo></msup><mo>=</mo>'
         '<munder><mo>Top</mo><mn>3</mn></munder><mo>{</mo><msub><mi>S</mi><mi>f</mi></msub><mo>∣</mo><mi>f</mi><mo>∈</mo><mi>F</mi><mo>}</mo>',
-        "F* = Top_3 { S_f | f ∈ F }   （同分依次比较 C_f、R_a、基金代码）",
         "即「绩优标的」页的基金 Top3：<b>综合所有经理只选 3 条</b>，不是每位经理 3 条。",
     ))
 
@@ -314,9 +296,6 @@ def render_formula_doc(static: bool = True) -> str:
         f'<mn>{sw["best_rank"]:.2f}</mn><mo>(</mo><mn>1</mn><mo>−</mo><msub><mover><mi>T</mi><mo>~</mo></mover><mi>s</mi></msub><mo>)</mo><mo>+</mo>'
         f'<mn>{sw["manager_quality"]:.2f}</mn><msub><mover><mi>Q</mi><mo>~</mo></mover><mi>s</mi></msub><mo>+</mo>'
         f'<mn>{sw["valuation"]:.2f}</mn><msub><mover><mi>V</mi><mo>~</mo></mover><mi>s</mi></msub>',
-        f'S_s = {sw["managers"]:.2f}·lñ(1+M_s) + {sw["funds"]:.2f}·lñ(1+F_s) + '
-        f'{sw["holding_ratio"]:.2f}·lñ(1+P_s) + {sw["best_rank"]:.2f}·(1−T̃_s) + '
-        f'{sw["manager_quality"]:.2f}·Q̃_s + {sw["valuation"]:.2f}·Ṽ_s',
         "对数压缩防止单只基金的高仓位主导排名；M<sub>s</sub> 与 F<sub>s</sub> 分别按经理、"
         "按 <span class=\"f-mono\">Top3基金列表</span> 去重计数；Ṽ<sub>s</sub> 为估算价格因子，"
         "无行情序列时按重仓基金净值漂移代理。「股票排名」页与「优化持仓」的股票得分都使用 S<sub>s</sub>。",
@@ -325,7 +304,6 @@ def render_formula_doc(static: bool = True) -> str:
         "式 (6) · 全局选股（唯一榜单）",
         '<msup><mi>G</mi><mo>*</mo></msup><mo>=</mo>'
         '<munder><mo>Top</mo><mn>10</mn></munder><mo>{</mo><msub><mi>S</mi><mi>s</mi></msub><mo>∣</mo><mi>s</mi><mo>∈</mo><mi>G</mi><mo>}</mo>',
-        "G* = Top_10 { S_s | s ∈ G }   （同分依次比较 M_s、F_s、P_s、T_s、代码）",
         "即「绩优标的」页的股票 Top10：<b>综合所有经理只选 10 条</b>；"
         "完整的去重股票池（含综合得分）仍在「股票排名」页展示。",
     ))
@@ -342,7 +320,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<msubsup><mi>w</mi><mi>i</mi><mi>RP</mi></msubsup><mo>=</mo><mi>B</mi><mo>·</mo>'
         '<mfrac><mrow><msub><mi>S</mi><mi>i</mi></msub><mo>/</mo><msub><mi>σ</mi><mi>i</mi></msub></mrow>'
         '<mrow><munder><mo>∑</mo><mi>j</mi></munder><msub><mi>S</mi><mi>j</mi></msub><mo>/</mo><msub><mi>σ</mi><mi>j</mi></msub></mrow></mfrac>',
-        "w_i = B · S_i / Σ_j S_j,  w_i ≤ w_max ;  w_i^RP = B · (S_i/σ_i) / Σ_j (S_j/σ_j)",
         "B 为股票/基金大类权重桶（默认 30% / 70%），w<sub>max</sub> 为单一持仓上限；"
         "启用风险平价时用覆盖经理数的倒数作为风险代理 σ。",
     ))
@@ -353,7 +330,6 @@ def render_formula_doc(static: bool = True) -> str:
         '<munder><mo>∑</mo><mrow><mi>f</mi><mo>∈</mo><msub><mi>F</mi><mi>m</mi></msub></mrow></munder>'
         '<mo>(</mo><msubsup><mi>B</mi><mrow><mi>f</mi><mo>,</mo><mi>s</mi></mrow><mo>+</mo></msubsup>'
         '<mo>−</mo><msubsup><mi>B</mi><mrow><mi>f</mi><mo>,</mo><mi>s</mi></mrow><mo>−</mo></msubsup><mo>)</mo>',
-        "N_s = Σ_{m∈M*} Σ_{f∈F_m} ( B⁺_{f,s} − B⁻_{f,s} )",
         "B<sup>+</sup> / B<sup>−</sup> 为基金季度「重大变动」中累计买入 / 卖出占期初净值比例；"
         "按 |N<sub>s</sub>| 与阈值 τ=1.0 比较，输出关注买入 / 关注卖出 / 继续关注。",
     ))
