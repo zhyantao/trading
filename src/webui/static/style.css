@@ -4,24 +4,32 @@
    纸面米色 #fffff8 · 墨色正文 #111 · 深红强调 #a00000 · ET Book 衬线
    ================================================================ */
 
-/* ---------- ET Book 字体（与参考站同源） ---------- */
+/* ---------- ET Book 字体（与参考站同源） ----------
+   已去除 TrueType hinting：原版 hint 在 Windows 上会导致字形渲染异常
+   （macOS 忽略 hint，故 Mac 上显示正常），轮廓与原版逐点一致。 */
 @font-face {
     font-family: "ET Book";
-    src: url("fonts/et-book/et-book-roman-line-figures.woff") format("woff");
+    src: url("fonts/et-book/et-book-roman-line-figures.woff2") format("woff2"),
+        url("fonts/et-book/et-book-roman-line-figures.woff") format("woff"),
+        url("fonts/et-book/et-book-roman-line-figures.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
     font-display: swap;
 }
 @font-face {
     font-family: "ET Book";
-    src: url("fonts/et-book/et-book-display-italic-old-style-figures.woff") format("woff");
+    src: url("fonts/et-book/et-book-display-italic-old-style-figures.woff2") format("woff2"),
+        url("fonts/et-book/et-book-display-italic-old-style-figures.woff") format("woff"),
+        url("fonts/et-book/et-book-display-italic-old-style-figures.ttf") format("truetype");
     font-weight: normal;
     font-style: italic;
     font-display: swap;
 }
 @font-face {
     font-family: "ET Book";
-    src: url("fonts/et-book/et-book-bold-line-figures.woff") format("woff");
+    src: url("fonts/et-book/et-book-bold-line-figures.woff2") format("woff2"),
+        url("fonts/et-book/et-book-bold-line-figures.woff") format("woff"),
+        url("fonts/et-book/et-book-bold-line-figures.ttf") format("truetype");
     font-weight: bold;
     font-style: normal;
     font-display: swap;

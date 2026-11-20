@@ -115,12 +115,13 @@ def _copy_static_assets() -> None:
     print("  app.js")
     print("  backtest-chart.js")
 
-    # 字体（ET Book）
+    # 字体（ET Book，保持 fonts/et-book/ 目录结构，与 style.css 中的引用路径一致）
     fonts_src = static_dir / "fonts"
     if fonts_src.is_dir():
-        (DOCS_DIR / "fonts").mkdir(exist_ok=True)
-        for woff in fonts_src.rglob("*.woff"):
-            shutil.copy2(woff, DOCS_DIR / "fonts" / woff.name)
+        fonts_dst = DOCS_DIR / "fonts"
+        if fonts_dst.exists():
+            shutil.rmtree(fonts_dst)
+        shutil.copytree(fonts_src, fonts_dst)
         print("  fonts/")
 
     # Favicon
