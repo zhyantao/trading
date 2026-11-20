@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import html
 from typing import Any
 
 from selection_formula import formula_parameters
@@ -16,6 +17,122 @@ from selection_formula import formula_parameters
 
 def _math(inner: str) -> str:
     return '<math display="block" xmlns="http://www.w3.org/1998/Math/MathML">' + inner + "</math>"
+
+
+# ── 行内符号的迷你记法 → MathML ─────────────────────────────
+# 记法示例：R_a（下标）、P̂_{t+1}（帽子 + 下标组）、Ṽ_f（波浪号 + 下标）、
+# ln(1+C_f)、M^*（上标）、B⁺_{f,s}、j∈{近1周,近1月,近3月}（{…} 为分组）。
+# 支持 ₀-₉ 下标数字、² ⁿ ⁺ ⁻ 上标、预组合字符 Ṽ 等；多字母标识符自动正体。
+
+_SUBSCRIPTS = str.maketrans({
+    ord("₀"): "_0", ord("₁"): "_1", ord("₂"): "_2", ord("₃"): "_3", ord("₄"): "_4",
+    ord("₅"): "_5", ord("₆"): "_6", ord("₇"): "_7", ord("₈"): "_8", ord("₉"): "_9",
+    ord("ⁿ"): "^n", ord("⁺"): "^+", ord("⁻"): "^−", ord("²"): "^2", ord("³"): "^3",
+    ord("Ṽ"): "Ṽ", ord("ṽ"): "ṽ",
+})
+_MATH_OPS = set("+-−·=<>≤≥±∈∉∨∧≡∣|:;,()[]{}*′/")
+_EXTRA_MI = set("Σ⋃")
+_ACCENTS = {"̂": "^", "̃": "~"}
+
+
+def _mi(text: str, normal: bool = False) -> str:
+    attr = ' mathvariant="normal"' if normal else ""
+    return f"<mi{attr}>{html.escape(text)}</mi>"
+
+
+def _mo(ch: str) -> str:
+    return f"<mo>{html.escape(ch)}</mo>"
+
+
+def _parse_inline(src: str) -> str:
+    s = src.translate(_SUBSCRIPTS)
+    n = len(s)
+    i = 0
+
+    def parse_atom(attach: bool = True) -> str:
+        nonlocal i
+        if i >= n:
+            raise ValueError(f"unexpected end in {src!r}")
+        ch = s[i]
+        if ch.isdigit():
+            j = i
+            while j < n and (s[j].isdigit() or s[j] == "."):
+                j += 1
+            tok = f"<mn>{s[i:j]}</mn>"
+            i = j
+        elif ch.isascii() and ch.isalpha():
+            j = i
+            while j < n and s[j].isascii() and s[j].isalpha():
+                j += 1
+            tok = _mi(s[i:j], normal=j - i > 1)
+            i = j
+        elif not ch.isascii() and ("一" <= ch <= "鿿"):
+            j = i
+            while j < n and "一" <= s[j] <= "鿿":
+                j += 1
+            tok = _mi(s[i:j], normal=True)
+            i = j
+        elif not ch.isascii() and (ch.isalpha() or ch in _EXTRA_MI):
+            tok = _mi(ch, normal=ch in _EXTRA_MI)
+            i += 1
+        elif ch in _MATH_OPS:
+            tok = _mo(ch)
+            i += 1
+        else:
+            raise ValueError(f"unhandled char {ch!r} at {i} in {src!r}")
+        sub = sup = None
+        while attach and i < n:
+            ch = s[i]
+            if ch in "_^":
+                i += 1
+                if i < n and s[i] == "{":
+                    i += 1
+                    inner = "<mrow>" + parse_seq(stop="}") + "</mrow>"
+                else:
+                    inner = parse_atom(attach=False)
+                if ch == "_":
+                    sub = inner
+                else:
+                    sup = inner
+            elif ch in _ACCENTS:
+                i += 1
+                tok = f"<mover>{tok}<mo>{_ACCENTS[ch]}</mo></mover>"
+            else:
+                break
+        if sub is not None and sup is not None:
+            return f"<msubsup>{tok}{sub}{sup}</msubsup>"
+        if sub is not None:
+            return f"<msub>{tok}{sub}</msub>"
+        if sup is not None:
+            return f"<msup>{tok}{sup}</msup>"
+        return tok
+
+    def parse_seq(stop: str | None = None) -> str:
+        nonlocal i
+        parts: list[str] = []
+        while i < n:
+            ch = s[i]
+            if stop is not None and ch == stop:
+                i += 1
+                return "".join(parts)
+            if ch == " ":
+                i += 1
+                continue
+            if ch == "{":
+                i += 1
+                parts.append("<mrow>" + parse_seq(stop="}") + "</mrow>")
+                continue
+            parts.append(parse_atom())
+        if stop is not None:
+            raise ValueError(f"unclosed group in {src!r}")
+        return "".join(parts)
+
+    return parse_seq()
+
+
+def _inline(notation: str) -> str:
+    """行内数学符号：迷你记法 → inline MathML。"""
+    return '<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML">' + _parse_inline(notation) + "</math>"
 
 
 def _block(tag: str, formula: str, where: str = "") -> str:
@@ -30,23 +147,23 @@ def _block(tag: str, formula: str, where: str = "") -> str:
 
 def _param_rows(params: dict[str, Any]) -> str:
     fund_labels = {
-        "annualized": "α · 成立来年化 <span class=\"f-mono\">R_a</span>",
-        "recent_1y": "β · 近 1 年收益 <span class=\"f-mono\">R_1</span>",
-        "consensus": "γ · 跨经理共识 <span class=\"f-mono\">ln(1+C_f)</span>",
-        "manager_quality": "δ · 经理质量 <span class=\"f-mono\">Q_f</span>",
-        "longevity": "ε · 成立时长 <span class=\"f-mono\">ln(1+D_f)</span>",
-        "valuation": "ζ · 估算价格因子 <span class=\"f-mono\">Ṽ_f</span>",
+        "annualized": _inline("α") + " · 成立来年化 " + _inline("R_a"),
+        "recent_1y": _inline("β") + " · 近 1 年收益 " + _inline("R_1"),
+        "consensus": _inline("γ") + " · 跨经理共识 " + _inline("ln(1+C_f)"),
+        "manager_quality": _inline("δ") + " · 经理质量 " + _inline("Q_f"),
+        "longevity": _inline("ε") + " · 成立时长 " + _inline("ln(1+D_f)"),
+        "valuation": _inline("ζ") + " · 估算价格因子 " + _inline("Ṽ_f"),
     }
     stock_labels = {
-        "managers": "a · 入选经理数 <span class=\"f-mono\">ln(1+M_s)</span>",
-        "funds": "b · 出现基金数 <span class=\"f-mono\">ln(1+F_s)</span>",
-        "holding_ratio": "c · 平均占净值比例 <span class=\"f-mono\">ln(1+P_s)</span>",
-        "best_rank": "d · 最好名次 <span class=\"f-mono\">1−T̃_s</span>",
-        "manager_quality": "e · 经理质量 <span class=\"f-mono\">Q_s</span>",
-        "valuation": "f · 估算价格因子 <span class=\"f-mono\">Ṽ_s</span>",
+        "managers": _inline("a") + " · 入选经理数 " + _inline("ln(1+M_s)"),
+        "funds": _inline("b") + " · 出现基金数 " + _inline("ln(1+F_s)"),
+        "holding_ratio": _inline("c") + " · 平均占净值比例 " + _inline("ln(1+P_s)"),
+        "best_rank": _inline("d") + " · 最好名次 " + _inline("1−T̃_s"),
+        "manager_quality": _inline("e") + " · 经理质量 " + _inline("Q_s"),
+        "valuation": _inline("f") + " · 估算价格因子 " + _inline("Ṽ_s"),
     }
     factor_labels = {
-        "return": "长期回报（多周期加权 z-score）",
+        "return": "长期回报（多周期加权 " + _inline("z") + "-score）",
         "risk": "风险调整（跨周期离散度 + 负周期占比）",
         "stability": "稳定性（正周期占比 + 一致性）",
         "quality": "质量（成立时长 + 费率）",
@@ -56,28 +173,28 @@ def _param_rows(params: dict[str, Any]) -> str:
 
     rows: list[str] = []
     for key, value in params["fund_weights"].items():
-        rows.append(f'<tr><td>选基 S<sub>f</sub></td><td>{fund_labels[key]}</td><td class="f-num">{value:.2f}</td></tr>')
+        rows.append(f'<tr><td>选基 ' + _inline("S_f") + f'</td><td>{fund_labels[key]}</td><td class="f-num">{value:.2f}</td></tr>')
     rows.append(
-        '<tr><td>选基 S<sub>f</sub></td><td>λ · 出现负收益周期的惩罚</td>'
+        '<tr><td>选基 ' + _inline("S_f") + '</td><td>' + _inline("λ") + ' · 出现负收益周期的惩罚</td>'
         f'<td class="f-num">{params["fund_penalty"]:.2f}</td></tr>'
     )
     for key, value in params["stock_weights"].items():
-        rows.append(f'<tr><td>选股 S<sub>s</sub></td><td>{stock_labels[key]}</td><td class="f-num">{value:.2f}</td></tr>')
+        rows.append(f'<tr><td>选股 ' + _inline("S_s") + f'</td><td>{stock_labels[key]}</td><td class="f-num">{value:.2f}</td></tr>')
     for key, value in params["fund_factor_weights"].items():
         rows.append(f'<tr><td>基金多因子</td><td>{factor_labels.get(key, key)}</td><td class="f-num">{value:.2f}</td></tr>')
     for key, value in params["manager_factor_weights"].items():
         rows.append(f'<tr><td>经理多因子</td><td>{factor_labels.get(key, key)}</td><td class="f-num">{value:.2f}</td></tr>')
     pp = params["price_params"]
     rows.append(
-        '<tr><td>估算价格</td><td>λ · EWMA 衰减因子</td>'
+        '<tr><td>估算价格</td><td>' + _inline("λ") + ' · ' + _inline("EWMA") + ' 衰减因子</td>'
         f'<td class="f-num">{pp["lambda"]:.2f}</td></tr>'
     )
     rows.append(
-        '<tr><td>估算价格</td><td>K · 有效样本量收缩先验 / 最少序列长度</td>'
+        '<tr><td>估算价格</td><td>' + _inline("K") + ' · 有效样本量收缩先验 / 最少序列长度</td>'
         f'<td class="f-num">{pp["shrinkage_k"]:.0f} / {pp["min_series"]}</td></tr>'
     )
     rows.append(
-        '<tr><td>估算价格</td><td>σ₀ · 日波动先验（基金 / 股票）</td>'
+        '<tr><td>估算价格</td><td>' + _inline("σ₀") + ' · 日波动先验（基金 / 股票）</td>'
         f'<td class="f-num">{pp["fund_sigma_prior"]*100:.1f}% / {pp["stock_sigma_prior"]*100:.1f}%</td></tr>'
     )
     rows.append(
@@ -85,7 +202,7 @@ def _param_rows(params: dict[str, Any]) -> str:
         f'<td class="f-num">{pp.get("stock_stale_days", 15)} 天</td></tr>'
     )
     rows.append(
-        '<tr><td>估算价格</td><td>MAD 缩尾倍数 / 区间收益率折算权重（周:月:季）</td>'
+        '<tr><td>估算价格</td><td>' + _inline("MAD") + ' 缩尾倍数 / 区间收益率折算权重（周:月:季）</td>'
         f'<td class="f-num">{pp["return_winsor_mad"]:.0f} / '
         f'{pp["period_windows"]["近1周"][1]:.1f}:{pp["period_windows"]["近1月"][1]:.1f}:'
         f'{pp["period_windows"]["近3月"][1]:.1f}</td></tr>'
@@ -116,7 +233,7 @@ def render_formula_doc(static: bool = True) -> str:
         '<span class="f-mono">src/selection_formula.py</span>、'
         '<span class="f-mono">src/price_estimate.py</span>、'
         '<span class="f-mono">src/factor_scoring.py</span> 中的实现一一对应，参数表由代码直接生成；'
-        '页面展示的「综合得分」为 <span class="f-mono">100 · S</span>（满分 100）。</p>'
+        '页面展示的「综合得分」为 ' + _inline("100·S") + '（满分 100）。</p>'
     )
 
     # ── 1. 记号 ────────────────────────────────────────────
@@ -124,19 +241,19 @@ def render_formula_doc(static: bool = True) -> str:
         '<h2>1. 记号与数据域</h2>'
         '<div class="table-wrap"><table class="formula-nota"><thead><tr>'
         '<th>记号</th><th>含义</th><th>数据来源</th></tr></thead><tbody>'
-        '<tr><td class="f-mono">m, r<sub>m</sub></td><td>基金经理及其业绩排名（越小越优）</td><td>基金经理业绩排名 CSV</td></tr>'
-        '<tr><td class="f-mono">F<sub>m</sub>, G<sub>m</sub></td><td>经理 m 的 Top3 基金候选 / Top10 股票候选</td><td>绩优基金经理候选池 CSV</td></tr>'
-        '<tr><td class="f-mono">F = ⋃<sub>m</sub> F<sub>m</sub></td><td>全站基金候选池（按代码去重）</td><td>同上</td></tr>'
-        '<tr><td class="f-mono">G = ⋃<sub>m</sub> G<sub>m</sub></td><td>全站股票候选池（按代码去重）</td><td>同上</td></tr>'
-        '<tr><td class="f-mono">R<sub>a</sub>, R<sub>1</sub>, R<sub>Σ</sub></td><td>成立来年化、近 1 年、成立来累计收益（%）</td><td>全市场基金排行</td></tr>'
-        '<tr><td class="f-mono">D(f)</td><td>基金成立天数</td><td>基金-经理关联表</td></tr>'
-        '<tr><td class="f-mono">C<sub>f</sub>, Q<sub>f</sub></td><td>推荐该基金的经理数、经理质量均值</td><td>由候选池聚合</td></tr>'
-        '<tr><td class="f-mono">M<sub>s</sub>, F<sub>s</sub></td><td>重仓该股票的经理数、基金数</td><td>由候选池聚合</td></tr>'
-        '<tr><td class="f-mono">P<sub>s</sub>, T<sub>s</sub></td><td>平均占净值比例（%）、所有经理中的最好名次</td><td>由候选池聚合</td></tr>'
-        '<tr><td class="f-mono">P<sub>t</sub>, P̂<sub>t+1</sub></td><td>最新价（基金单位净值 / 股票前复权收盘价）与 T+1 估算价</td><td>净值、行情缓存序列与全市场基金排行</td></tr>'
-        '<tr><td class="f-mono">μ̃, σ̂, σ₀</td><td>收缩后的日漂移、EWMA 日波动、资产类别日波动先验</td><td>见式 (10)–(11)</td></tr>'
-        '<tr><td class="f-mono">V, Ṽ</td><td>风险调整估值信号 μ̃/σ₀ 及其横截面归一化</td><td>见式 (11)–(12)</td></tr>'
-        '<tr><td class="f-mono">z̃(x), x̃</td><td>稳健标准化后归一化、缩尾后 min-max 归一化</td><td>见式 (5)</td></tr>'
+        '<tr><td>' + _inline("m,r_m") + '</td><td>基金经理及其业绩排名（越小越优）</td><td>基金经理业绩排名 CSV</td></tr>'
+        '<tr><td>' + _inline("F_m,G_m") + '</td><td>经理 ' + _inline("m") + ' 的 Top3 基金候选 / Top10 股票候选</td><td>绩优基金经理候选池 CSV</td></tr>'
+        '<tr><td>' + _inline("F=⋃_m F_m") + '</td><td>全站基金候选池（按代码去重）</td><td>同上</td></tr>'
+        '<tr><td>' + _inline("G=⋃_m G_m") + '</td><td>全站股票候选池（按代码去重）</td><td>同上</td></tr>'
+        '<tr><td>' + _inline("R_a,R_1,R_Σ") + '</td><td>成立来年化、近 1 年、成立来累计收益（%）</td><td>全市场基金排行</td></tr>'
+        '<tr><td>' + _inline("D(f)") + '</td><td>基金成立天数</td><td>基金-经理关联表</td></tr>'
+        '<tr><td>' + _inline("C_f,Q_f") + '</td><td>推荐该基金的经理数、经理质量均值</td><td>由候选池聚合</td></tr>'
+        '<tr><td>' + _inline("M_s,F_s") + '</td><td>重仓该股票的经理数、基金数</td><td>由候选池聚合</td></tr>'
+        '<tr><td>' + _inline("P_s,T_s") + '</td><td>平均占净值比例（%）、所有经理中的最好名次</td><td>由候选池聚合</td></tr>'
+        '<tr><td>' + _inline("P_t,P̂_{t+1}") + '</td><td>最新价（基金单位净值 / 股票前复权收盘价）与 ' + _inline("T+1") + ' 估算价</td><td>净值、行情缓存序列与全市场基金排行</td></tr>'
+        '<tr><td>' + _inline("μ̃,σ̂,σ₀") + '</td><td>收缩后的日漂移、' + _inline("EWMA") + ' 日波动、资产类别日波动先验</td><td>见式 (10)–(11)</td></tr>'
+        '<tr><td>' + _inline("V,Ṽ") + '</td><td>风险调整估值信号 ' + _inline("μ̃/σ₀") + ' 及其横截面归一化</td><td>见式 (11)–(12)</td></tr>'
+        '<tr><td>' + _inline("z̃(x),x̃") + '</td><td>稳健标准化后归一化、缩尾后 min-max 归一化</td><td>见式 (5)</td></tr>'
         '</tbody></table></div>'
     )
 
@@ -161,7 +278,7 @@ def render_formula_doc(static: bool = True) -> str:
         '<mfrac><mn>1</mn><msub><mi>M</mi><mi>s</mi></msub></mfrac>'
         '<munder><mo>∑</mo><mrow><mi>m</mi><mo>:</mo><mi>s</mi><mo>∈</mo><msub><mi>G</mi><mi>m</mi></msub></mrow></munder>'
         '<mfrac><mn>1</mn><msub><mi>r</mi><mi>m</mi></msub></mfrac>',
-        "后文的 <span class=\"f-mono\">Q̃</span> 表示对 Q 做式 (5) 的归一化。",
+        "后文的 " + _inline("Q̃") + " 表示对 " + _inline("Q") + " 做式 (5) 的归一化。",
     ))
 
     # ── 3. 归一化 ───────────────────────────────────────────
@@ -181,14 +298,15 @@ def render_formula_doc(static: bool = True) -> str:
         '<mfrac><mrow><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><munder><mo>min</mo><mi>j</mi></munder><msub><mi>x</mi><mi>j</mi></msub></mrow>'
         '<mrow><munder><mo>max</mo><mi>j</mi></munder><msub><mi>x</mi><mi>j</mi></msub><mo>−</mo>'
         '<munder><mo>min</mo><mi>j</mi></munder><msub><mi>x</mi><mi>j</mi></msub></mrow></mfrac>',
-        "缺失值按中性处理（z 记 0、x̃ 记中位数），常量序列 x̃ ≡ 0.5；"
+        "缺失值按中性处理（" + _inline("z") + " 记 " + _inline("0") + "、" + _inline("x̃") + " 记中位数），"
+        "常量序列 " + _inline("x̃≡0.5") + "；"
         "这样接口偶发缺字段时不会把标的误判为低分。",
     ))
 
     # ── 4. 估算价格 ─────────────────────────────────────────
     parts.append('<h2>4. 估算价格与估值因子</h2>')
     parts.append(
-        '<p class="formula-note">估算价格 P̂ 是「按公开历史价格序列外推的下一交易日参考价」，'
+        '<p class="formula-note">估算价格 ' + _inline("P̂") + ' 是「按公开历史价格序列外推的下一交易日参考价」，'
         '不是实时报价，也不是目标价。基金用日单位净值序列（无序列时用公开区间收益率折算），'
         '股票用前复权收盘价序列（无序列时用重仓它的基金净值漂移按季报权重代理，只给涨跌、'
         '不虚构绝对价格）。数据全部来自仓库内已有的缓存序列与全市场排行字段，不新增联网请求。</p>'
@@ -199,7 +317,8 @@ def render_formula_doc(static: bool = True) -> str:
         '<mfrac><msub><mi>P</mi><mi>t</mi></msub><msub><mi>P</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub></mfrac>'
         '<mo>)</mo><mo>,</mo><mi>med</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>±</mo><mi>c</mi><mo>·</mo>'
         '<mn>1.4826</mn><mo>·</mo><mi>MAD</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>)</mo>',
-        "分红、份额折算会造成单日 10%+ 的「假收益」；用中位数绝对偏差缩尾，避免污染 EWMA。",
+        "分红、份额折算会造成单日 10%+ 的「假收益」；用最近 120 日的中位数绝对偏差缩尾（倍数 "
+        + _inline("c=5") + "），避免污染 " + _inline("EWMA") + "。",
     ))
     parts.append(_block(
         "式 (10) · EWMA 漂移、波动与样本量收缩",
@@ -213,11 +332,11 @@ def render_formula_doc(static: bool = True) -> str:
         '<mrow><mn>1</mn><mo>−</mo><mi>λ</mi></mrow></mfrac><mo>,</mo><mspace width="1em"/>'
         '<mover><mi>μ</mi><mo>~</mo></mover><mo>=</mo><msub><mover><mi>μ</mi><mo>^</mo></mover><mi>n</mi></msub>'
         '<mo>·</mo><mfrac><msub><mi>n</mi><mi>eff</mi></msub><mrow><msub><mi>n</mi><mi>eff</mi></msub><mo>+</mo><mi>K</mi></mrow></mfrac>',
-        "λ = 0.94（RiskMetrics），K = 20 为先验样本量；短的净值序列不参与序列口径，"
+        _inline("λ=0.94") + "（RiskMetrics），" + _inline("K=20") + " 为先验样本量；短的净值序列不参与序列口径，"
         "改走式 (12) 的区间收益率折算。",
     ))
     parts.append(_block(
-        "式 (11) · T+1 估算价、参考区间与估值信号",
+        "式 (11) · " + _inline("T+1") + " 估算价、参考区间与估值信号",
         '<msub><mover><mi>P</mi><mo>^</mo></mover><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub>'
         '<mo>=</mo><msub><mi>P</mi><mi>t</mi></msub><mo>·</mo><msup><mi>e</mi><mover><mi>μ</mi><mo>~</mo></mover></msup>'
         '<mo>,</mo><mspace width="1em"/>'
@@ -229,12 +348,13 @@ def render_formula_doc(static: bool = True) -> str:
         '<msub><mi>V</mi><mi>raw</mi></msub><mo>=</mo><mi>clip</mi><mo>(</mo>'
         '<mfrac><mover><mi>μ</mi><mo>~</mo></mover><msub><mi>σ</mi><mn>0</mn></msub></mfrac>'
         '<mo>,</mo><mo>−</mo><mn>3</mn><mo>,</mo><mn>3</mn><mo>)</mo>',
-        "μ̃ 先按 ±3σ₀ 截断；σ̂ 是标的自身 EWMA 日波动（用于 ±1σ 参考区间），"
-        "σ₀ 是资产类别统一先验（基金 1.2%、股票 2.2%，用于把 V_raw 拉回同一风险尺度）。"
-        "估算涨跌 = P̂/P_t − 1。",
+        _inline("μ̃") + " 先按 " + _inline("±3σ₀") + " 截断；" + _inline("σ̂") + " 是标的自身 "
+        + _inline("EWMA") + " 日波动（用于 " + _inline("±1σ") + " 参考区间），"
+        + _inline("σ₀") + " 是资产类别统一先验（基金 1.2%、股票 2.2%，用于把 " + _inline("V_raw") + " 拉回同一风险尺度）。"
+        "估算涨跌 = " + _inline("P̂/P_t−1") + "。",
     ))
     parts.append(_block(
-        "式 (12) · 降级口径与 Ṽ 的横截面归一化",
+        "式 (12) · 降级口径与 " + _inline("Ṽ") + " 的横截面归一化",
         '<mover><mi>μ</mi><mo>~</mo></mover><mo>=</mo>'
         '<mfrac><mrow><munder><mo>∑</mo><mi>j</mi></munder><msub><mi>w</mi><mi>j</mi></msub><mo>·</mo>'
         '<mfrac><mrow><mi>ln</mi><mo>(</mo><mn>1</mn><mo>+</mo><msub><mi>R</mi><mi>j</mi></msub><mo>)</mo></mrow>'
@@ -244,10 +364,11 @@ def render_formula_doc(static: bool = True) -> str:
         '<mover><mi>V</mi><mo>~</mo></mover><mo>=</mo><mover><mi>x</mi><mo>~</mo></mover><mo>(</mo><msub><mi>V</mi><mi>raw</mi></msub><mo>)</mo>'
         '<mo>,</mo><mspace width="1em"/>'
         '<mover><mi>V</mi><mo>~</mo></mover><mo>≡</mo><mn>0.5</mn><mo> </mo><mo>(</mo><mi>missing</mi><mo>)</mo>',
-        "j ∈ {近1周, 近1月, 近3月}，d_j = 5/21/63 交易日，w = 0.5/0.3/0.2；"
-        "无行情序列的股票按季报「汇总占净值比例」对重仓基金的 μ̃_f 加权代理。"
-        "Ṽ 在候选池横截面上做式 (5) 的缩尾 + min-max；缺数据的标的取中性 0.5，"
-        "既不奖励也不惩罚。",
+        _inline("j∈{近1周,近1月,近3月}") + "，" + _inline("d_j=5/21/63") + " 交易日，"
+        + _inline("w=0.5/0.3/0.2") + "；"
+        "无行情序列的股票按季报「汇总占净值比例」对重仓基金的 " + _inline("μ̃_f") + " 加权代理。"
+        + _inline("Ṽ") + " 在候选池横截面上做式 (5) 的缩尾 + min-max；缺数据的标的取中性 "
+        + _inline("0.5") + "，既不奖励也不惩罚。",
     ))
 
     # ── 5. 选基 ─────────────────────────────────────────────
@@ -259,7 +380,7 @@ def render_formula_doc(static: bool = True) -> str:
         '<munder><mo>∑</mo><mrow><mi>k</mi><mo>∈</mo><mo>{</mo><mi>ret</mi><mo>,</mo><mi>risk</mi><mo>,</mo>'
         '<mi>stab</mi><mo>,</mo><mi>qual</mi><mo>}</mo></mrow></munder>'
         '<msub><mi>w</mi><mi>k</mi></msub><msub><mi>φ</mi><mi>k</mi></msub><mo>(</mo><mi>f</mi><mo>)</mo>',
-        "回报因子按 7 个周期收益的加权稳健 z-score 合成，并按每行「实际可用周期的权重和」归一；"
+        "回报因子按 7 个周期收益的加权稳健 " + _inline("z") + "-score 合成，并按每行「实际可用周期的权重和」归一；"
         "风险与稳定性先把各周期逐列标准化，消除近 1 月与成立来年化的量纲差异。",
     ))
     parts.append(_block(
@@ -275,8 +396,8 @@ def render_formula_doc(static: bool = True) -> str:
         f'<mn>{p["fund_penalty"]:.2f}</mn><mo>·</mo>'
         '<mn>1</mn><mo>[</mo><msub><mi>R</mi><mn>1</mn></msub><mo>&lt;</mo><mn>0</mn><mo>∨</mo>'
         '<msub><mi>R</mi><mo>Σ</mo></msub><mo>&lt;</mo><mn>0</mn><mo>]</mo>',
-        "与「每位经理各取 3 只」不同，C<sub>f</sub> 让被多位经理共同选中的基金获得共识加分；"
-        "Ṽ<sub>f</sub> 为式 (9)–(12) 的估算价格因子，同一基金的不同份额（A/B/C）按基础名称去重。",
+        "与「每位经理各取 3 只」不同，" + _inline("C_f") + " 让被多位经理共同选中的基金获得共识加分；"
+        + _inline("Ṽ_f") + " 为式 (9)–(12) 的估算价格因子，同一基金的不同份额（A/B/C）按基础名称去重。",
     ))
     parts.append(_block(
         "式 (3) · 全局选基（唯一榜单）",
@@ -296,9 +417,9 @@ def render_formula_doc(static: bool = True) -> str:
         f'<mn>{sw["best_rank"]:.2f}</mn><mo>(</mo><mn>1</mn><mo>−</mo><msub><mover><mi>T</mi><mo>~</mo></mover><mi>s</mi></msub><mo>)</mo><mo>+</mo>'
         f'<mn>{sw["manager_quality"]:.2f}</mn><msub><mover><mi>Q</mi><mo>~</mo></mover><mi>s</mi></msub><mo>+</mo>'
         f'<mn>{sw["valuation"]:.2f}</mn><msub><mover><mi>V</mi><mo>~</mo></mover><mi>s</mi></msub>',
-        "对数压缩防止单只基金的高仓位主导排名；M<sub>s</sub> 与 F<sub>s</sub> 分别按经理、"
-        "按 <span class=\"f-mono\">Top3基金列表</span> 去重计数；Ṽ<sub>s</sub> 为估算价格因子，"
-        "无行情序列时按重仓基金净值漂移代理。「股票排名」页与「优化持仓」的股票得分都使用 S<sub>s</sub>。",
+        "对数压缩防止单只基金的高仓位主导排名；" + _inline("M_s") + " 与 " + _inline("F_s") + " 分别按经理、"
+        "按 <span class=\"f-mono\">Top3基金列表</span> 去重计数；" + _inline("Ṽ_s") + " 为估算价格因子，"
+        "无行情序列时按重仓基金净值漂移代理。「股票排名」页与「优化持仓」的股票得分都使用 " + _inline("S_s") + "。",
     ))
     parts.append(_block(
         "式 (6) · 全局选股（唯一榜单）",
@@ -320,8 +441,8 @@ def render_formula_doc(static: bool = True) -> str:
         '<msubsup><mi>w</mi><mi>i</mi><mi>RP</mi></msubsup><mo>=</mo><mi>B</mi><mo>·</mo>'
         '<mfrac><mrow><msub><mi>S</mi><mi>i</mi></msub><mo>/</mo><msub><mi>σ</mi><mi>i</mi></msub></mrow>'
         '<mrow><munder><mo>∑</mo><mi>j</mi></munder><msub><mi>S</mi><mi>j</mi></msub><mo>/</mo><msub><mi>σ</mi><mi>j</mi></msub></mrow></mfrac>',
-        "B 为股票/基金大类权重桶（默认 30% / 70%），w<sub>max</sub> 为单一持仓上限；"
-        "启用风险平价时用覆盖经理数的倒数作为风险代理 σ。",
+        _inline("B") + " 为股票/基金大类权重桶（默认 30% / 70%），" + _inline("w_max") + " 为单一持仓上限；"
+        "启用风险平价时用覆盖经理数的倒数作为风险代理 " + _inline("σ") + "。",
     ))
     parts.append(_block(
         "式 (8) · 调仓信号净强度",
@@ -330,8 +451,8 @@ def render_formula_doc(static: bool = True) -> str:
         '<munder><mo>∑</mo><mrow><mi>f</mi><mo>∈</mo><msub><mi>F</mi><mi>m</mi></msub></mrow></munder>'
         '<mo>(</mo><msubsup><mi>B</mi><mrow><mi>f</mi><mo>,</mo><mi>s</mi></mrow><mo>+</mo></msubsup>'
         '<mo>−</mo><msubsup><mi>B</mi><mrow><mi>f</mi><mo>,</mo><mi>s</mi></mrow><mo>−</mo></msubsup><mo>)</mo>',
-        "B<sup>+</sup> / B<sup>−</sup> 为基金季度「重大变动」中累计买入 / 卖出占期初净值比例；"
-        "按 |N<sub>s</sub>| 与阈值 τ=1.0 比较，输出关注买入 / 关注卖出 / 继续关注。",
+        _inline("B⁺") + " / " + _inline("B⁻") + " 为基金季度「重大变动」中累计买入 / 卖出占期初净值比例；"
+        "按 " + _inline("|N_s|") + " 与阈值 " + _inline("τ=1.0") + " 比较，输出关注买入 / 关注卖出 / 继续关注。",
     ))
 
     # ── 8. 参数表 ───────────────────────────────────────────
@@ -341,9 +462,11 @@ def render_formula_doc(static: bool = True) -> str:
         '<th>模块</th><th>因子</th><th>权重 / 取值</th></tr></thead><tbody>'
         + _param_rows(p)
         + '</tbody></table></div>'
-        '<p class="formula-note">所有权重按组归一（Σ = 1）；S<sub>f</sub>、S<sub>s</sub> 截断到 [0, 1]，'
-        '页面得分 = 100 · S。调整权重请修改 <span class="f-mono">selection_formula.py</span> 顶部的常量，'
-        '估算价格参数请修改 <span class="f-mono">price_estimate.py</span> 的 PRICE_PARAMS，'
+        '<p class="formula-note">所有权重按组归一（' + _inline("Σ=1") + '）；' + _inline("S_f") + '、'
+        + _inline("S_s") + ' 截断到 ' + _inline("[0,1]") + '，页面得分 = ' + _inline("100·S") + '。'
+        '调整权重请修改 <span class="f-mono">selection_formula.py</span> 顶部的常量，'
+        '估算价格参数请修改 <span class="f-mono">price_estimate.py</span> 的 '
+        '<span class="f-mono">PRICE_PARAMS</span>，'
         '公式页、静态站与动态站会同步更新。</p>'
     )
 
@@ -354,7 +477,7 @@ def render_formula_doc(static: bool = True) -> str:
         '<th>公式</th><th>实现位置</th><th>消费方</th></tr></thead><tbody>'
         '<tr><td>定义 1</td><td class="f-mono">pick_elite_managers_targets.py</td><td>候选池 CSV</td></tr>'
         '<tr><td>式 (1)、式 (5)</td><td class="f-mono">factor_scoring.py</td><td>基金排名、经理排名、优化持仓</td></tr>'
-        '<tr><td>式 (9)–(12)</td><td class="f-mono">price_estimate.py</td><td>估算价格册 price_estimates.json、估值因子 Ṽ</td></tr>'
+        '<tr><td>式 (9)–(12)</td><td class="f-mono">price_estimate.py</td><td>估算价格册 <span class="f-mono">price_estimates.json</span>、估值因子 ' + _inline("Ṽ") + '</td></tr>'
         '<tr><td>式 (2)、式 (3)</td><td class="f-mono">selection_formula.py → select_global_funds</td><td>绩优标的 · 基金 Top3</td></tr>'
         '<tr><td>式 (4)、式 (6)</td><td class="f-mono">selection_formula.py → score_stock_candidates</td><td>绩优标的 · 股票 Top10、股票排名、优化持仓</td></tr>'
         '<tr><td>式 (7)</td><td class="f-mono">optimize_holdings.py</td><td>我的持仓</td></tr>'
@@ -362,9 +485,9 @@ def render_formula_doc(static: bool = True) -> str:
         '</tbody></table></div>'
         '<p class="formula-note">口径边界：基金/股票候选来自公开披露的季报前十大重仓股与'
         '「重大变动」数据，属于季度滞后信息；净值与收益率来自第三方排行接口，'
-        '可能存在披露延迟或口径差异。估算价格是「用历史价格序列外推的 T+1 参考价」，'
+        '可能存在披露延迟或口径差异。估算价格是「用历史价格序列外推的 ' + _inline("T+1") + ' 参考价」，'
         '不含盘中实时行情、公告事件与分析师预期；没有行情序列的股票显示为「暂无」，'
-        '其估值因子按重仓基金净值漂移代理或取中性 0.5，代理口径不代表个股真实涨跌。'
+        '其估值因子按重仓基金净值漂移代理或取中性 ' + _inline("0.5") + '，代理口径不代表个股真实涨跌。'
         '估算价格与估值因子仅用于数据研究，不构成投资建议。</p>'
         '<p class="formula-links"><a href="' + prefix + 'elite' + suffix + '">查看绩优标的 →</a> · '
         '<a href="' + prefix + 'stocks' + suffix + '">查看股票排名 →</a> · '
